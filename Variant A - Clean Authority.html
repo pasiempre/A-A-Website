@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A&A Cleaning Services | Architectural Narrative</title>
+    <meta name="description" content="Standards-driven facility care for construction pros. Professional cleaning across the Austin metro.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .serif { font-family: 'Cormorant Garamond', serif; }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #fafaf9; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+        
+        /* Module H1: Animations */
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-500 { animation-delay: 0.5s; }
+        .delay-800 { animation-delay: 0.8s; }
+
+        .ken-burns {
+            animation: kenBurns 15s ease-out forwards;
+            transform: scale(1);
+        }
+        @keyframes kenBurns {
+            to { transform: scale(1.05); }
+        }
+
+        /* Module N2: Disappearing Nav */
+        .nav-hidden {
+            transform: translateY(-100%);
+        }
+        
+        select, input, textarea {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        /* Scroll Animation Classes for Modules */
+        .slide-in-left { opacity: 0; transform: translateX(-50px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .slide-in-right { opacity: 0; transform: translateX(50px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in-right { opacity: 0; transform: translateX(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in-left { opacity: 0; transform: translateX(-30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in-up-scroll { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        
+        .is-visible { opacity: 1; transform: translate(0, 0); }
+        
+        /* Module P1: Timeline Styles */
+        .timeline-line {
+            width: 2px;
+            background: #e7e5e4; /* stone-200 */
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .timeline-progress {
+            width: 100%;
+            background: #1c1917; /* stone-900 */
+            height: 0%;
+        }
+        @media (max-width: 768px) {
+            .timeline-line {
+                left: 2rem;
+            }
+        }
+        
+        /* Module T2: Testimonial Styles */
+        .testimonial-slide {
+            opacity: 0;
+            position: absolute;
+            inset: 0;
+            transition: opacity 1s ease-in-out;
+            pointer-events: none;
+            display: flex;
+            flex-col;
+            align-items: center;
+        }
+        .testimonial-slide.active {
+            opacity: 1;
+            position: relative;
+            pointer-events: auto;
+        }
+        .testimonial-word {
+            opacity: 0;
+            transform: translateY(10px);
+            display: inline-block;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .testimonial-word.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .gold-line {
+            width: 0;
+            height: 1px;
+            background-color: #C9A94E;
+            transition: width 1s ease-out 0.5s;
+            margin: 2rem auto;
+        }
+        .gold-line.is-visible {
+            width: 60px;
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-900 antialiased selection:bg-stone-200 selection:text-stone-900 overflow-x-hidden">
+
+    <!-- MODULE N2: Disappearing Nav -->
+    <header id="main-nav" class="fixed top-0 left-0 w-full z-50 bg-stone-50/80 backdrop-blur-md border-b border-stone-200/50 transition-transform duration-300">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <span class="font-serif text-2xl font-normal tracking-tight text-stone-900 group-hover:text-stone-600 transition-colors">A&A</span>
+                <span class="hidden sm:block w-px h-4 bg-stone-300"></span>
+                <span class="hidden sm:block uppercase tracking-[0.2em] text-xs font-medium text-stone-500 group-hover:text-stone-400 transition-colors">Cleaning Services</span>
+            </a>
+            
+            <nav class="hidden md:flex gap-10 items-center">
+                <a href="#services" class="text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors">Services</a>
+                <a href="#about" class="text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors">About</a>
+                <a href="#careers" class="text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors">Careers</a>
+            </nav>
+
+            <div class="flex items-center gap-6">
+                <!-- Phone icon for mobile, text for desktop -->
+                <a href="tel:5125550199" class="text-stone-600 hover:text-stone-900 transition-colors flex items-center gap-2">
+                    <i data-lucide="phone" stroke-width="1.5" class="w-5 h-5"></i>
+                    <span class="hidden lg:inline text-sm tracking-wide">(512) 555-0199</span>
+                </a>
+                <!-- Opens Q2 Floating Form -->
+                <button class="hidden sm:inline-flex px-6 py-2.5 bg-stone-900 text-stone-50 text-xs uppercase tracking-widest font-medium rounded-sm hover:bg-stone-800 transition-colors duration-300 open-floating-form">
+                    Get a Quote
+                </button>
+                <button class="md:hidden text-stone-900">
+                    <i data-lucide="menu" stroke-width="1.5" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MODULE H1: Cinematic Immersion Hero -->
+    <section class="relative h-screen w-full flex flex-col justify-end overflow-hidden">
+        <!-- Background Image with Ken Burns & Parallax -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2700&auto=format&fit=crop" alt="Modern glass-walled office lobby" class="w-full h-full object-cover object-center ken-burns parallax-bg">
+            <div class="absolute inset-0 bg-stone-900/30"></div>
+            <!-- Gradient fading up from bottom to make text readable -->
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/40 to-transparent"></div>
+        </div>
+
+        <div class="relative z-10 w-full px-6 pb-24 md:pb-32 flex flex-col items-center text-center">
+            <div class="max-w-4xl fade-in-up delay-800">
+                <h1 class="text-6xl md:text-8xl lg:text-[100px] text-white font-normal leading-[1.0] tracking-tight mb-6 serif">
+                    Every Surface.<br>
+                    Every Detail.<br>
+                    <span class="italic text-stone-300">Every Time.</span>
+                </h1>
+                
+                <p class="text-stone-200 text-lg md:text-xl font-light leading-relaxed mb-10 max-w-2xl mx-auto">
+                    Post-construction & commercial cleaning across the Austin metro area.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12">
+                    <button class="w-full sm:w-auto inline-flex items-center justify-center h-14 px-10 bg-white text-stone-900 text-xs uppercase tracking-widest font-medium hover:bg-stone-100 transition-colors rounded-sm open-floating-form">
+                        Request a Quote
+                    </button>
+                    <a href="tel:5125550199" class="group flex items-center gap-3 text-sm font-medium text-white hover:text-stone-300 transition-colors">
+                        <i data-lucide="phone" stroke-width="1.5" class="w-5 h-5"></i>
+                        <span class="tracking-wide">Call: (512) 555-0199</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Strip Anchored to Bottom -->
+        <div class="absolute bottom-0 left-0 w-full border-t border-white/20 bg-stone-900/40 backdrop-blur-md z-20 fade-in-up delay-1000">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex flex-wrap justify-center md:justify-between items-center gap-x-8 gap-y-4">
+                <div class="flex items-center gap-2 text-xs uppercase tracking-widest text-stone-200 font-medium">
+                    <i data-lucide="shield-check" stroke-width="1.5" class="w-4 h-4 text-stone-400"></i> Licensed & Insured
+                </div>
+                <div class="hidden sm:block w-1 h-1 rounded-full bg-stone-500"></div>
+                <div class="flex items-center gap-2 text-xs uppercase tracking-widest text-stone-200 font-medium">
+                    <i data-lucide="map-pin" stroke-width="1.5" class="w-4 h-4 text-stone-400"></i> Austin Metro
+                </div>
+                <div class="hidden md:block w-1 h-1 rounded-full bg-stone-500"></div>
+                <div class="flex items-center gap-2 text-xs uppercase tracking-widest text-stone-200 font-medium">
+                    <i data-lucide="users" stroke-width="1.5" class="w-4 h-4 text-stone-400"></i> Bilingual Crew
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE T1: Authority Bar -->
+    <section class="py-24 bg-stone-50 border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-12 md:gap-8 text-center" id="stats-container">
+                <div class="flex flex-col items-center justify-center">
+                    <div class="font-serif text-6xl md:text-7xl lg:text-[84px] text-stone-900 font-normal tracking-tight mb-2"><span class="counter" data-target="15">0</span><span class="text-stone-400">+</span></div>
+                    <div class="text-[10px] text-stone-500 font-medium uppercase tracking-widest">Years</div>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <div class="font-serif text-6xl md:text-7xl lg:text-[84px] text-stone-900 font-normal tracking-tight mb-2"><span class="counter" data-target="500">0</span><span class="text-stone-400">+</span></div>
+                    <div class="text-[10px] text-stone-500 font-medium uppercase tracking-widest">Projects</div>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <div class="font-serif text-4xl md:text-5xl lg:text-[64px] text-stone-900 font-normal tracking-tight mb-2 leading-tight">Licensed<br>& Insured</div>
+                </div>
+                <div class="flex flex-col items-center justify-center">
+                    <div class="font-serif text-6xl md:text-7xl lg:text-[84px] text-stone-900 font-normal tracking-tight mb-2"><span class="counter" data-target="100">0</span><span class="text-stone-400">%</span></div>
+                    <div class="text-[10px] text-stone-500 font-medium uppercase tracking-widest">On-Time</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        lucide.createIcons();
+
+        // Disappearing Nav Logic
+        let lastScrollY = window.scrollY;
+        const nav = document.getElementById('main-nav');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                if (window.scrollY > lastScrollY) {
+                    nav.classList.add('nav-hidden');
+                } else {
+                    nav.classList.remove('nav-hidden');
+                }
+            } else {
+                nav.classList.remove('nav-hidden');
+            }
+            lastScrollY = window.scrollY;
+        });
+
+        // Parallax Effect
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const scrolled = window.pageYOffset;
+                    const parallaxBgs = document.querySelectorAll('.parallax-bg');
+                    parallaxBgs.forEach(bg => {
+                        bg.style.transform = `translateY(${scrolled * 0.3}px) scale(1.05)`;
+                    });
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        });
+
+        // Counter Animation for T1 Authority Bar
+        const counters = document.querySelectorAll('.counter');
+        const speed = 200; // The lower the slower
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.5
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.querySelectorAll('.counter').forEach((counter, index) => {
+                        setTimeout(() => {
+                            const updateCount = () => {
+                                const target = +counter.getAttribute('data-target');
+                                const count = +counter.innerText;
+                                const inc = target / speed;
+
+                                if (count < target) {
+                                    counter.innerText = Math.ceil(count + inc);
+                                    setTimeout(updateCount, 10);
+                                } else {
+                                    counter.innerText = target;
+                                }
+                            };
+                            updateCount();
+                        }, index * 200); // Stagger by 0.2s
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        const statsContainer = document.getElementById('stats-container');
+        if (statsContainer) {
+            observer.observe(statsContainer);
+        }
+    </script>
+
+    <!-- MODULE S1: Editorial Spreads -->
+    <section id="services" class="bg-white overflow-hidden border-b border-stone-200">
+        <!-- Service 1: Post-Construction (Photo Left) -->
+        <div class="flex flex-col md:flex-row w-full min-h-[60vh] service-spread group">
+            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
+                <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2662&auto=format&fit=crop" alt="Freshly completed commercial space" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            </div>
+            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-white fade-in-right">
+                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+                    <h2 class="text-4xl md:text-5xl xl:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Post-<br>Construction<br>Clean</h2>
+                    <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
+                        Rough and final clean for new construction projects. We handle the debris, dust, and detail work so the space is move-in ready.
+                    </p>
+                    <ul class="space-y-3 mb-10 text-stone-700 font-light">
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Multifamily buildings</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Commercial offices</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Schools & institutional</li>
+                    </ul>
+                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                        Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service 2: Final Clean (Photo Right) -->
+        <div class="flex flex-col md:flex-row-reverse w-full min-h-[60vh] service-spread group">
+            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-right">
+                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670&auto=format&fit=crop" alt="Pristine apartment unit" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            </div>
+            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-stone-50 fade-in-left">
+                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Final<br>Clean</h2>
+                    <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
+                        Detail-level cleaning for move-in readiness. First final and second final cleans — ensuring every surface is inspected to standard.
+                    </p>
+                    <ul class="space-y-3 mb-10 text-stone-700 font-light">
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Hardwood floors & tiling</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Fixtures & appliances</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Complete dust removal</li>
+                    </ul>
+                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                        Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service 3: Commercial (Photo Left) -->
+        <div class="flex flex-col md:flex-row w-full min-h-[60vh] service-spread group">
+            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
+                <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=2669&auto=format&fit=crop" alt="Modern commercial office" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            </div>
+            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-white fade-in-right">
+                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Commercial<br>Cleaning</h2>
+                    <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
+                        Ongoing and one-time cleaning for offices, retail spaces, and commercial facilities. Consistent quality that works around your operations.
+                    </p>
+                    <ul class="space-y-3 mb-10 text-stone-700 font-light">
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Office complexes</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Retail environments</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Regular maintenance</li>
+                    </ul>
+                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                        Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service 4: Move-In/Move-Out (Photo Right) -->
+        <div class="flex flex-col md:flex-row-reverse w-full min-h-[60vh] service-spread group">
+            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-right">
+                <img src="https://images.unsplash.com/photo-1556912173-3bb406ef7e77?q=80&w=2670&auto=format&fit=crop" alt="Empty luxury apartment" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            </div>
+            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-stone-50 fade-in-left">
+                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Move-In<br>Move-Out</h2>
+                    <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
+                        Vacant unit turnover cleaning for property managers. Fast turnaround — same-day available. Every unit left inspection-ready.
+                    </p>
+                    <ul class="space-y-3 mb-10 text-stone-700 font-light">
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Apartment turns</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Deep sanitation</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Property management support</li>
+                    </ul>
+                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                        Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service 5: Windows & Power Wash (Photo Left) -->
+        <div class="flex flex-col md:flex-row w-full min-h-[60vh] service-spread group">
+            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
+                <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2670&auto=format&fit=crop" alt="Gleaming glass storefront" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            </div>
+            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-white fade-in-right">
+                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Windows &<br>Power Wash</h2>
+                    <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
+                        Interior and exterior window cleaning, plus power washing for building exteriors, walkways, and parking structures.
+                    </p>
+                    <ul class="space-y-3 mb-10 text-stone-700 font-light">
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Exterior facades</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> High-reach windows</li>
+                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Concrete & walkways</li>
+                    </ul>
+                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                        Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE X1: Full-Bleed Photo Break -->
+    <section class="w-full h-[60vh] md:h-[70vh] relative overflow-hidden bg-stone-900">
+        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600&auto=format&fit=crop" alt="Pristine luxury interior" class="w-full h-full object-cover opacity-90 parallax-bg-fast">
+    </section>
+
+    <!-- MODULE BA1: Before/After Comparison Slider -->
+    <section class="py-24 md:py-32 bg-stone-50 overflow-hidden border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16 fade-in-up-scroll">
+                <span class="block text-stone-500 text-xs uppercase tracking-widest mb-4 font-medium">The A&A Standard</span>
+                <h2 class="text-4xl md:text-5xl font-serif text-stone-900 tracking-tight">
+                    See the Difference
+                </h2>
+            </div>
+            
+            <div class="relative max-w-5xl mx-auto rounded-sm overflow-hidden shadow-2xl aspect-[4/3] md:aspect-video select-none fade-in-up-scroll delay-200" id="ba-slider-container">
+                <!-- After Image (Background) -->
+                <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop" alt="Pristine clean office space" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
+                
+                <!-- Before Image (Foreground, clipped) -->
+                <div class="absolute inset-y-0 left-0 overflow-hidden pointer-events-none" id="ba-before-image" style="width: 50%;">
+                    <img src="https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2670&auto=format&fit=crop" alt="Dusty construction site" class="absolute inset-y-0 left-0 h-full object-cover filter grayscale opacity-90 ba-inner-image">
+                </div>
+                
+                <!-- Labels -->
+                <div class="absolute top-6 left-6 bg-stone-900/80 backdrop-blur-sm text-white text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-sm pointer-events-none z-10 transition-opacity" id="ba-label-before">Before</div>
+                <div class="absolute top-6 right-6 bg-stone-900/80 backdrop-blur-sm text-white text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-sm pointer-events-none z-10 transition-opacity" id="ba-label-after">After</div>
+
+                <!-- Divider & Handle -->
+                <div class="absolute inset-y-0 w-1 bg-white cursor-ew-resize left-1/2 -translate-x-1/2 z-20 flex items-center justify-center hover:bg-stone-200 transition-colors" id="ba-divider">
+                    <div class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center gap-1 border border-stone-200 text-stone-500">
+                        <i data-lucide="chevron-left" class="w-4 h-4 -mr-1.5"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 -ml-1.5"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-6 text-stone-500 text-sm font-light fade-in-up-scroll delay-200">
+                Commercial Office Finish • Downtown Austin, TX
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE T2: Editorial Testimonial -->
+    <section class="py-32 md:py-48 bg-stone-900 text-stone-50 overflow-hidden text-center relative flex justify-center items-center">
+        <div class="max-w-5xl mx-auto px-6 relative w-full h-[400px] flex items-center justify-center">
+            
+            <!-- Slide 1 -->
+            <div class="testimonial-slide active w-full flex flex-col items-center" id="test-slide-1">
+                <div class="text-[#C9A94E] font-serif text-8xl leading-none h-10 mb-8 select-none">"</div>
+                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-12 testimonial-text">
+                    "A&A Cleaning has been our go-to subcontractor for three years. Reliable, detail-oriented, and always on schedule."
+                </blockquote>
+                <div class="opacity-0 transition-opacity duration-1000 delay-1000 author-info">
+                    <p class="text-stone-300 font-light tracking-widest uppercase text-xs">Project Manager, Top-Tier Construction</p>
+                    <div class="gold-line"></div>
+                </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="testimonial-slide w-full flex flex-col items-center" id="test-slide-2">
+                <div class="text-[#C9A94E] font-serif text-8xl leading-none h-10 mb-8 select-none">"</div>
+                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-12 testimonial-text">
+                    "They fundamentally understand the demands of commercial builds. We don't worry when they're on the schedule."
+                </blockquote>
+                <div class="opacity-0 transition-opacity duration-1000 delay-1000 author-info">
+                    <p class="text-stone-300 font-light tracking-widest uppercase text-xs">Site Superintendent, BuildCo Partners</p>
+                    <div class="gold-line"></div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- MODULE P1: Vertical Scroll Timeline -->
+    <section class="py-32 bg-stone-50 overflow-hidden relative">
+        <div class="max-w-7xl mx-auto px-6 relative">
+            <div class="text-center mb-24 fade-in-up-scroll">
+                <h2 class="text-5xl font-serif text-stone-900 tracking-tight">How It Works</h2>
+            </div>
+
+            <div class="relative max-w-4xl mx-auto" id="timeline-container">
+                <!-- Center Line -->
+                <div class="timeline-line hidden md:block">
+                    <div class="timeline-progress" id="timeline-progress"></div>
+                </div>
+                <!-- Mobile Line -->
+                <div class="timeline-line md:hidden block">
+                    <div class="timeline-progress" id="timeline-progress-mobile"></div>
+                </div>
+
+                <!-- Step 1 -->
+                <div class="flex flex-col md:flex-row w-full mb-24 relative timeline-step group">
+                    <div class="w-full md:w-1/2 md:pr-16 text-left md:text-right flex flex-col justify-center pl-16 md:pl-0 slide-in-left">
+                        <div class="text-stone-200 font-serif text-8xl md:text-9xl leading-none absolute left-0 md:relative md:left-auto md:mb-4 transition-colors group-[.is-active]:text-stone-900 duration-500">1</div>
+                        <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0">Request a Quote</h3>
+                        <p class="text-stone-600 font-light">Submit our quick form or call us directly. We respond within the hour.</p>
+                    </div>
+                    <div class="hidden md:block w-full md:w-1/2 md:pl-16 slide-in-right">
+                        <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2670&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Contacting">
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex flex-col md:flex-row-reverse w-full mb-24 relative timeline-step group">
+                    <div class="w-full md:w-1/2 md:pl-16 text-left flex flex-col justify-center pl-16 slide-in-right">
+                        <div class="text-stone-200 font-serif text-8xl md:text-9xl leading-none absolute left-0 md:-left-8 md:mb-4 transition-colors group-[.is-active]:text-stone-900 duration-500 z-10 bg-stone-50 pr-4">2</div>
+                        <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0 z-20">We Assess</h3>
+                        <p class="text-stone-600 font-light z-20">We review the scope, visit if needed, and provide a detailed estimate.</p>
+                    </div>
+                    <div class="hidden md:block w-full md:w-1/2 md:pr-16 slide-in-left">
+                        <img src="https://images.unsplash.com/photo-1542744094-3a31f272c490?q=80&w=2670&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Assessing">
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex flex-col md:flex-row w-full mb-24 relative timeline-step group">
+                    <div class="w-full md:w-1/2 md:pr-16 text-left md:text-right flex flex-col justify-center pl-16 md:pl-0 slide-in-left">
+                        <div class="text-stone-200 font-serif text-8xl md:text-9xl leading-none absolute left-0 md:relative md:left-auto md:mb-4 transition-colors group-[.is-active]:text-stone-900 duration-500">3</div>
+                        <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0">We Clean</h3>
+                        <p class="text-stone-600 font-light">Our insured, bilingual crew handles every detail with proven standards.</p>
+                    </div>
+                    <div class="hidden md:block w-full md:w-1/2 md:pl-16 slide-in-right">
+                        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2670&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Cleaning">
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex flex-col md:flex-row-reverse w-full relative timeline-step group">
+                    <div class="w-full md:w-1/2 md:pl-16 text-left flex flex-col justify-center pl-16 slide-in-right">
+                        <div class="text-stone-200 font-serif text-8xl md:text-9xl leading-none absolute left-0 md:-left-8 md:mb-4 transition-colors group-[.is-active]:text-stone-900 duration-500 z-10 bg-stone-50 pr-4">4</div>
+                        <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0 z-20">You Walk Through</h3>
+                        <p class="text-stone-600 font-light z-20">Final QA review before we hand off the finished space.</p>
+                    </div>
+                    <div class="hidden md:block w-full md:w-1/2 md:pr-16 slide-in-left">
+                        <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Walkthrough">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE A1: Company Narrative Split -->
+    <section id="about" class="bg-white overflow-hidden border-b border-stone-200">
+        <div class="flex flex-col md:flex-row w-full min-h-[70vh]">
+            <div class="w-full md:w-[55%] flex items-center justify-center p-12 md:p-24 bg-white fade-in-up-scroll">
+                <div class="max-w-lg w-full">
+                    <span class="block text-[10px] uppercase tracking-[0.2em] mb-6 font-medium text-stone-500">About A&A</span>
+                    <h2 class="text-4xl md:text-5xl font-serif text-stone-900 tracking-tight mb-8">Built on Standards</h2>
+                    
+                    <div class="space-y-6 text-stone-600 font-light text-lg leading-relaxed mb-10">
+                        <p>
+                            A&A Cleaning was built on a singular principle: the job isn't done until every detail meets the standard. 
+                        </p>
+                        <p>
+                            Founded by Areli, we understand that the final clean is the bridge between a chaotic job site and a finished masterpiece. From rough cleans on active construction sites to final walk-throughs on luxury apartments, we bring an unyielding dedication to your timeline.
+                        </p>
+                    </div>
+
+                    <blockquote class="text-2xl font-serif italic text-stone-900 leading-snug pl-6 border-l-2 border-[#C9A94E] mb-12 opacity-0 transition-opacity duration-1000 delay-500 slide-in-left">
+                        "We don't leave until it's right."
+                    </blockquote>
+
+                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                        Learn More About Us <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="w-full md:w-[45%] relative overflow-hidden h-[50vh] md:h-auto slide-in-right">
+                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2670&auto=format&fit=crop" alt="A&A Cleaning Standards" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE SA1: Typographic Territory -->
+    <section class="py-24 md:py-32 bg-stone-50 overflow-hidden text-center border-b border-stone-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <span class="block text-[10px] uppercase tracking-[0.2em] mb-12 font-medium text-stone-500 fade-in-up-scroll">Where We Work</span>
+            
+            <div class="flex flex-col items-center justify-center gap-6 md:gap-10">
+                <h3 class="text-6xl md:text-8xl lg:text-9xl font-serif text-stone-900 tracking-tight leading-none hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-100 hover:scale-105 transform">AUSTIN</h3>
+                <div class="flex flex-wrap justify-center gap-x-8 md:gap-x-16 gap-y-4">
+                    <span class="text-3xl md:text-5xl lg:text-6xl font-serif text-stone-700 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-200 hover:scale-105 transform">Round Rock</span>
+                    <span class="text-3xl md:text-5xl lg:text-6xl font-serif text-stone-700 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-200 hover:scale-105 transform">Georgetown</span>
+                </div>
+                <div class="flex flex-wrap justify-center gap-x-6 md:gap-x-12 gap-y-4">
+                    <span class="text-2xl md:text-4xl lg:text-5xl font-serif text-stone-500 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-300 hover:scale-105 transform">Kyle</span>
+                    <span class="text-2xl md:text-4xl lg:text-5xl font-serif text-stone-500 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-300 hover:scale-105 transform">Buda</span>
+                    <span class="text-2xl md:text-4xl lg:text-5xl font-serif text-stone-500 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-300 hover:scale-105 transform">Pflugerville</span>
+                    <span class="text-2xl md:text-4xl lg:text-5xl font-serif text-stone-500 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-300 hover:scale-105 transform">Hutto</span>
+                </div>
+                <div class="flex flex-wrap justify-center gap-x-8 gap-y-4">
+                    <span class="text-3xl md:text-5xl lg:text-6xl font-serif text-stone-700 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-400 hover:scale-105 transform">San Marcos</span>
+                </div>
+            </div>
+            
+            <p class="mt-16 text-stone-500 font-light text-sm uppercase tracking-widest fade-in-up-scroll delay-500">
+                Serving the greater Austin metropolitan area
+            </p>
+        </div>
+    </section>
+
+    <!-- MODULE Q1: Split Conversation (Quote Form) -->
+    <section id="quote" class="bg-white overflow-hidden">
+        <div class="flex flex-col md:flex-row w-full min-h-screen">
+            <div class="w-full md:w-[50%] relative overflow-hidden h-[40vh] md:h-auto">
+                <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2700&auto=format&fit=crop" alt="Completed luxury apartment" class="absolute inset-0 w-full h-full object-cover">
+                <div class="absolute inset-0 bg-stone-900/40"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-transparent"></div>
+                <div class="absolute bottom-12 left-12 right-12 z-10 slide-in-left">
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-white tracking-tight mb-4">Let's Talk About Your Project</h2>
+                    <a href="tel:5125550199" class="group flex items-center gap-3 text-lg font-medium text-white hover:text-stone-300 transition-colors">
+                        <i data-lucide="phone" stroke-width="1.5" class="w-5 h-5"></i>
+                        <span class="tracking-wide">Or call now: (512) 555-0199</span>
+                    </a>
+                </div>
+            </div>
+            <div class="w-full md:w-[50%] flex items-center justify-center bg-stone-50 p-8 md:p-16 lg:p-24 slide-in-right">
+                <div class="w-full max-w-lg mx-auto">
+                    <h3 class="text-3xl font-serif text-stone-900 tracking-tight mb-2">Request a Quote</h3>
+                    <p class="text-stone-600 font-light mb-10">Tell us about your project. We call back within the hour.</p>
+                    
+                    <form class="space-y-6" id="inline-quote-form" onsubmit="event.preventDefault(); document.getElementById('inline-submit-btn').innerHTML = '<i data-lucide=\'check-circle\' class=\'w-4 h-4 mr-2 inline\'></i> We\'ll call you soon'; document.getElementById('inline-submit-btn').classList.add('bg-green-700', 'hover:bg-green-800'); lucide.createIcons(); setTimeout(() => this.reset(), 3000);">
+                        <div class="space-y-2">
+                            <input type="text" id="q1-name" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Name *">
+                        </div>
+                        <div class="space-y-2">
+                            <input type="text" id="q1-company" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Company Name *">
+                        </div>
+                        <div class="space-y-2">
+                            <input type="tel" id="q1-phone" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Phone *">
+                        </div>
+                        <div class="space-y-2">
+                            <input type="email" id="q1-email" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Email Address">
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="relative">
+                                <select id="q1-service" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-400 uppercase tracking-widest text-sm font-light focus:outline-none focus:border-stone-900 transition-colors cursor-pointer rounded-none">
+                                    <option value="" disabled selected>Service Type</option>
+                                    <option value="post-construction" class="text-stone-900 uppercase tracking-normal">Post-Construction</option>
+                                    <option value="final-clean" class="text-stone-900 uppercase tracking-normal">Final Clean</option>
+                                    <option value="commercial" class="text-stone-900 uppercase tracking-normal">Commercial</option>
+                                    <option value="move" class="text-stone-900 uppercase tracking-normal">Move-In / Move-Out</option>
+                                </select>
+                                <i data-lucide="chevron-down" stroke-width="1.5" class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"></i>
+                            </div>
+                            <div class="relative">
+                                <select id="q1-timeline" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-400 uppercase tracking-widest text-sm font-light focus:outline-none focus:border-stone-900 transition-colors cursor-pointer rounded-none">
+                                    <option value="" disabled selected>Timeline</option>
+                                    <option value="immediate" class="text-stone-900 uppercase tracking-normal">Immediate</option>
+                                    <option value="week" class="text-stone-900 uppercase tracking-normal">This Week</option>
+                                    <option value="month" class="text-stone-900 uppercase tracking-normal">This Month</option>
+                                    <option value="future" class="text-stone-900 uppercase tracking-normal">Planning</option>
+                                </select>
+                                <i data-lucide="chevron-down" stroke-width="1.5" class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <textarea id="q1-description" rows="3" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest resize-none" placeholder="Project Description"></textarea>
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" id="inline-submit-btn" class="w-full bg-stone-900 text-stone-50 font-medium text-xs py-4 rounded-sm uppercase tracking-widest hover:bg-stone-800 transition-all duration-300">
+                                Request a Quote
+                            </button>
+                            <p class="text-center text-[10px] text-stone-400 mt-4 uppercase tracking-widest">We never share your information.</p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE E1: Join the Team (Editorial Band) -->
+    <section id="careers" class="relative w-full h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=2669&auto=format&fit=crop" alt="Construction crew at high-end job site" class="absolute inset-0 w-full h-full object-cover parallax-bg-fast">
+        <div class="absolute inset-0 bg-stone-900/60"></div>
+        <div class="relative z-10 text-center px-6 fade-in-up-scroll">
+            <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-white tracking-tight mb-4">We're Building a Team</h2>
+            <p class="text-stone-200 text-lg font-light mb-8 max-w-lg mx-auto">
+                Professional cleaning careers in the Austin metro area. We value attention to detail and a commitment to quality.
+            </p>
+            <a href="#" class="group inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-white hover:text-[#C9A94E] transition-colors border-b border-white pb-1 hover:border-[#C9A94E]">
+                See Open Positions <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4 transition-transform group-hover:translate-x-1"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- MODULE F1: Functional Dark Footer -->
+    <footer class="bg-stone-950 text-stone-400 pt-24 pb-12 border-t border-stone-800">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-16 mb-20">
+            <!-- Brand -->
+            <div class="md:w-1/3">
+                <a href="#" class="flex items-center gap-3 group mb-6">
+                    <span class="font-serif text-3xl font-normal tracking-tight text-stone-50">A&A</span>
+                    <span class="w-px h-5 bg-stone-700"></span>
+                    <span class="uppercase tracking-[0.2em] text-[10px] font-medium text-stone-400">Cleaning Services</span>
+                </a>
+                <p class="text-sm font-light leading-relaxed max-w-xs mb-8">
+                    Standards-driven facility care for construction pros. Delivering immaculate final cleans across the Austin metro.
+                </p>
+                <div class="flex items-center gap-4 text-xs uppercase tracking-widest text-stone-300">
+                    <i data-lucide="shield-check" stroke-width="1.5" class="w-4 h-4"></i> Licensed & Insured
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="md:w-1/3 flex flex-col sm:flex-row gap-12 sm:gap-24">
+                <div>
+                    <h5 class="text-stone-50 text-[10px] uppercase tracking-widest font-medium mb-6">Quick Links</h5>
+                    <ul class="space-y-4 text-sm font-light">
+                        <li><a href="#services" class="hover:text-white transition-colors">Services</a></li>
+                        <li><a href="#about" class="hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#careers" class="hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#quote" class="hover:text-white transition-colors">Request Quote</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="md:w-1/3">
+                <h5 class="text-stone-50 text-[10px] uppercase tracking-widest font-medium mb-6">Contact</h5>
+                <ul class="space-y-4 text-sm font-light mb-8">
+                    <li><a href="tel:5125550199" class="hover:text-white transition-colors flex items-center gap-3"><i data-lucide="phone" stroke-width="1.5" class="w-4 h-4"></i> (512) 555-0199</a></li>
+                    <li><a href="mailto:AAcleaningservices@outlook.com" class="hover:text-white transition-colors flex items-center gap-3"><i data-lucide="mail" stroke-width="1.5" class="w-4 h-4"></i> AAcleaningservices@outlook.com</a></li>
+                </ul>
+                <div class="text-sm font-light text-stone-500">
+                    <p class="flex items-start gap-3"><i data-lucide="map-pin" stroke-width="1.5" class="w-4 h-4 mt-0.5"></i> Serving Austin, Round Rock, Georgetown, Kyle, Buda, and surrounding areas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="max-w-7xl mx-auto px-6 pt-8 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest font-medium text-stone-600">
+            <p>© 2026 A&A Cleaning Services.</p>
+            <div class="flex gap-6">
+                <a href="#" class="hover:text-stone-400 transition-colors">Privacy Policy</a>
+                <a href="#" class="hover:text-stone-400 transition-colors">Terms of Service</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODULE Q2: Floating Form Panel -->
+    <div id="floating-form-overlay" class="fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-[60] opacity-0 pointer-events-none transition-opacity duration-300">
+        <div id="floating-form-panel" class="absolute top-0 right-0 w-full md:w-[480px] h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-out overflow-y-auto flex flex-col">
+            <div class="p-6 md:p-10 flex-grow flex flex-col">
+                <div class="flex justify-between items-center mb-12">
+                    <h3 class="text-2xl font-serif text-stone-900 tracking-tight">Request a Quote</h3>
+                    <button id="close-floating-form" class="text-stone-400 hover:text-stone-900 transition-colors p-2">
+                        <i data-lucide="x" stroke-width="1.5" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                
+                <p class="text-stone-600 font-light text-sm mb-10">Tell us about your project. We call back within the hour to align with your schedule.</p>
+                
+                <form class="space-y-6 flex-grow" id="floating-quote-form" onsubmit="event.preventDefault(); document.getElementById('floating-submit-btn').innerHTML = '<i data-lucide=\'check-circle\' class=\'w-4 h-4 mr-2 inline\'></i> Sent'; document.getElementById('floating-submit-btn').classList.add('bg-green-700', 'hover:bg-green-800'); lucide.createIcons(); setTimeout(() => { this.reset(); closeFloatingForm(); }, 2000);">
+                    <div class="space-y-2">
+                        <input type="text" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Name *">
+                    </div>
+                    <div class="space-y-2">
+                        <input type="text" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Company Name *">
+                    </div>
+                    <div class="space-y-2">
+                        <input type="tel" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Phone *">
+                    </div>
+                    <div class="space-y-2">
+                        <input type="email" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Email Address">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-6">
+                        <div class="relative">
+                            <select class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-400 uppercase tracking-widest text-sm font-light focus:outline-none focus:border-stone-900 transition-colors cursor-pointer rounded-none">
+                                <option value="" disabled selected>Service</option>
+                                <option value="post-construction" class="text-stone-900 uppercase tracking-normal">Post-Construction</option>
+                                <option value="final-clean" class="text-stone-900 uppercase tracking-normal">Final Clean</option>
+                                <option value="commercial" class="text-stone-900 uppercase tracking-normal">Commercial</option>
+                            </select>
+                            <i data-lucide="chevron-down" stroke-width="1.5" class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"></i>
+                        </div>
+                        <div class="relative">
+                            <select class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-400 uppercase tracking-widest text-sm font-light focus:outline-none focus:border-stone-900 transition-colors cursor-pointer rounded-none">
+                                <option value="" disabled selected>Timeline</option>
+                                <option value="immediate" class="text-stone-900 uppercase tracking-normal">Immediate</option>
+                                <option value="week" class="text-stone-900 uppercase tracking-normal">This Week</option>
+                                <option value="month" class="text-stone-900 uppercase tracking-normal">This Month</option>
+                            </select>
+                            <i data-lucide="chevron-down" stroke-width="1.5" class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <textarea rows="2" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest resize-none" placeholder="Project Description"></textarea>
+                    </div>
+
+                    <div class="pt-6 mt-auto">
+                        <button type="submit" id="floating-submit-btn" class="w-full bg-stone-900 text-stone-50 font-medium text-xs py-4 rounded-sm uppercase tracking-widest hover:bg-stone-800 transition-all duration-300">
+                            Request a Quote
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="mt-8 pt-8 border-t border-stone-200 text-center">
+                    <p class="text-[10px] text-stone-500 uppercase tracking-widest mb-2">Or Call Us Directly</p>
+                    <a href="tel:5125550199" class="text-stone-900 font-medium hover:text-stone-600 transition-colors inline-flex items-center gap-2">
+                        <i data-lucide="phone" stroke-width="1.5" class="w-4 h-4"></i> (512) 555-0199
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Scroll Reveal Animations
+        const revealElements = document.querySelectorAll('.slide-in-left, .slide-in-right, .fade-in-left, .fade-in-right, .fade-in-up-scroll');
+        const revealObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { rootMargin: '0px 0px -100px 0px', threshold: 0.1 });
+
+        revealElements.forEach(el => revealObserver.observe(el));
+
+        // Additional Parallax Logic for Services & Break
+        window.addEventListener('scroll', () => {
+            const parallaxFast = document.querySelectorAll('.parallax-bg-fast');
+            parallaxFast.forEach(bg => {
+                const scrolled = window.pageYOffset;
+                const rect = bg.parentElement.getBoundingClientRect();
+                if(rect.top < window.innerHeight && rect.bottom > 0) {
+                    bg.style.transform = `translateY(${(rect.top) * 0.15}px) scale(1.1)`;
+                }
+            });
+            
+            document.querySelectorAll('.parallax-img').forEach(bg => {
+                const rect = bg.parentElement.getBoundingClientRect();
+                if(rect.top < window.innerHeight && rect.bottom > 0) {
+                    bg.style.transform = `translateY(${(rect.top) * 0.05}px) scale(1.05)`;
+                }
+            });
+        });
+
+        // Before/After Slider Logic
+        const sliderContainer = document.getElementById('ba-slider-container');
+        const beforeImage = document.getElementById('ba-before-image');
+        const baInnerImg = document.querySelector('.ba-inner-image');
+        const divider = document.getElementById('ba-divider');
+        const labelBefore = document.getElementById('ba-label-before');
+        const labelAfter = document.getElementById('ba-label-after');
+        
+        if (sliderContainer) {
+            const setImgWidth = () => {
+                if(baInnerImg) {
+                    baInnerImg.style.width = `${sliderContainer.offsetWidth}px`;
+                }
+            };
+            window.addEventListener('resize', setImgWidth);
+            setImgWidth();
+
+            let isDragging = false;
+
+            const updateSlider = (clientX) => {
+                const rect = sliderContainer.getBoundingClientRect();
+                let x = clientX - rect.left;
+                x = Math.max(0, Math.min(x, rect.width));
+                
+                const percentage = (x / rect.width) * 100;
+                beforeImage.style.width = `${percentage}%`;
+                divider.style.left = `${percentage}%`;
+
+                if (percentage < 15) labelBefore.style.opacity = '0';
+                else labelBefore.style.opacity = '1';
+                
+                if (percentage > 85) labelAfter.style.opacity = '0';
+                else labelAfter.style.opacity = '1';
+            };
+
+            const onMouseMove = (e) => {
+                if (!isDragging) return;
+                updateSlider(e.clientX || (e.touches && e.touches[0].clientX));
+            };
+
+            const onMouseUp = () => {
+                isDragging = false;
+                document.body.style.userSelect = '';
+            };
+
+            divider.addEventListener('mousedown', () => {
+                isDragging = true;
+                document.body.style.userSelect = 'none';
+            });
+            
+            divider.addEventListener('touchstart', () => {
+                isDragging = true;
+                document.body.style.userSelect = 'none';
+            }, {passive: true});
+
+            window.addEventListener('mousemove', onMouseMove);
+            window.addEventListener('touchmove', onMouseMove, {passive: true});
+            window.addEventListener('mouseup', onMouseUp);
+            window.addEventListener('touchend', onMouseUp);
+        }
+
+        // Module T2: Testimonial Logic
+        const slides = document.querySelectorAll('.testimonial-slide');
+        let currentSlide = 0;
+        
+        // Wrap words for reveal animation
+        slides.forEach(slide => {
+            const textEl = slide.querySelector('.testimonial-text');
+            const words = textEl.innerText.split(' ');
+            textEl.innerHTML = '';
+            words.forEach((word, idx) => {
+                const span = document.createElement('span');
+                span.innerText = word;
+                span.className = 'testimonial-word delay-[' + (idx * 50) + 'ms]';
+                span.style.transitionDelay = `${idx * 0.05}s`;
+                textEl.appendChild(span);
+                textEl.appendChild(document.createTextNode(' '));
+            });
+        });
+
+        const revealTestimonial = (slide) => {
+            const words = slide.querySelectorAll('.testimonial-word');
+            words.forEach(w => w.classList.add('visible'));
+            
+            const authorInfo = slide.querySelector('.author-info');
+            authorInfo.classList.remove('opacity-0');
+            authorInfo.querySelector('.gold-line').classList.add('is-visible');
+        };
+
+        const hideTestimonial = (slide) => {
+            const words = slide.querySelectorAll('.testimonial-word');
+            words.forEach(w => w.classList.remove('visible'));
+            
+            const authorInfo = slide.querySelector('.author-info');
+            authorInfo.classList.add('opacity-0');
+            authorInfo.querySelector('.gold-line').classList.remove('is-visible');
+        };
+
+        // Scroll observer for testimonials
+        const testimonialObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    revealTestimonial(slides[currentSlide]);
+                    
+                    // Start rotation only when visible
+                    if(!window.testimonialInterval) {
+                        window.testimonialInterval = setInterval(() => {
+                            hideTestimonial(slides[currentSlide]);
+                            slides[currentSlide].classList.remove('active');
+                            
+                            currentSlide = (currentSlide + 1) % slides.length;
+                            
+                            slides[currentSlide].classList.add('active');
+                            setTimeout(() => { revealTestimonial(slides[currentSlide]); }, 100);
+                        }, 6000);
+                    }
+                } else {
+                    clearInterval(window.testimonialInterval);
+                    window.testimonialInterval = null;
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        if(slides.length > 0) testimonialObserver.observe(slides[0].parentElement);
+
+        // Module P1: Timeline Scroll Logic
+        const timelineContainer = document.getElementById('timeline-container');
+        const progressLine = document.getElementById('timeline-progress');
+        const progressLineMobile = document.getElementById('timeline-progress-mobile');
+        const timelineSteps = document.querySelectorAll('.timeline-step');
+
+        if(timelineContainer) {
+            window.addEventListener('scroll', () => {
+                const containerRect = timelineContainer.getBoundingClientRect();
+                const containerTop = containerRect.top + window.scrollY;
+                const containerHeight = containerRect.height;
+                const windowCenter = window.scrollY + window.innerHeight / 2;
+                
+                let progress = (windowCenter - containerTop) / containerHeight;
+                progress = Math.max(0, Math.min(progress, 1));
+                
+                if(progressLine) progressLine.style.height = `${progress * 100}%`;
+                if(progressLineMobile) progressLineMobile.style.height = `${progress * 100}%`;
+
+                timelineSteps.forEach((step, index) => {
+                    const stepRect = step.getBoundingClientRect();
+                    const stepCenter = stepRect.top + window.scrollY + (stepRect.height / 2);
+                    
+                    // Activate step when the scroll reaches its center
+                    if(windowCenter > stepCenter - 100) {
+                        step.classList.add('is-active');
+                    } else {
+                        step.classList.remove('is-active');
+                    }
+                });
+            });
+        }
+
+        // Module Q2: Floating Form Logic
+        const overlay = document.getElementById('floating-form-overlay');
+        const panel = document.getElementById('floating-form-panel');
+        const openBtns = document.querySelectorAll('.open-floating-form');
+        const closeBtn = document.getElementById('close-floating-form');
+
+        const openFloatingForm = () => {
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            panel.classList.remove('translate-x-full');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        };
+
+        const closeFloatingForm = () => {
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            panel.classList.add('translate-x-full');
+            document.body.style.overflow = '';
+        };
+
+        openBtns.forEach(btn => btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openFloatingForm();
+        }));
+        
+        closeBtn.addEventListener('click', closeFloatingForm);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeFloatingForm();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !overlay.classList.contains('pointer-events-none')) closeFloatingForm();
+        });
+    </script>
+</body>
+</html>
