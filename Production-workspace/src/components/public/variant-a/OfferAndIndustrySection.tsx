@@ -1,67 +1,28 @@
-type OfferTier = {
-  title: string;
-  bestFor: string;
-  response: string;
-  includes: string[];
-};
-
 type IndustryBlock = {
   title: string;
+  eyebrow: string;
   painPoint: string;
   outcome: string;
 };
 
-const tiers: OfferTier[] = [
-  {
-    title: "Standard",
-    bestFor: "Routine project closeout and recurring maintenance",
-    response: "Scheduling confirmation target: same day",
-    includes: [
-      "Scope-aligned cleaning crew",
-      "Completion photo upload",
-      "Issue reporting with notes",
-      "Basic completion summary",
-    ],
-  },
-  {
-    title: "Priority Turnaround",
-    bestFor: "Compressed construction timelines and urgent handoffs",
-    response: "Callback target: within 1 hour during business hours",
-    includes: [
-      "Priority dispatch sequencing",
-      "Enhanced QA checklist workflow",
-      "Escalation-ready issue visibility",
-      "Completion report with checklist + photos",
-    ],
-  },
-  {
-    title: "Enterprise / Portfolio",
-    bestFor: "Multi-site property portfolios and recurring GC programs",
-    response: "Dedicated operating cadence and recurring review rhythm",
-    includes: [
-      "Portfolio-level service planning",
-      "Standardized checklist templates",
-      "Operational message threads by job",
-      "Client-ready reporting structure",
-    ],
-  },
-];
-
 const industries: IndustryBlock[] = [
   {
     title: "General Contractors",
-    painPoint: "Punch-list pressure and inconsistent final-clean quality across trades.",
-    outcome: "Delivery-ready closeouts with documented completion records before walkthrough.",
+    eyebrow: "Walkthrough-ready closeouts",
+    painPoint: "Punch-list pressure and inconsistent final-clean quality across trades can slow handoff.",
+    outcome: "A&A helps tighten the final presentation with detail-focused cleaning and proof-of-completion support.",
   },
   {
     title: "Property Managers",
-    painPoint: "Slow unit turns and unclear cleaning handoff communication.",
-    outcome: "Faster turnover velocity with proof-of-completion photos and checklist traceability.",
+    eyebrow: "Faster turnover flow",
+    painPoint: "Slow turns and inconsistent unit-ready standards make leasing and inspections harder than they should be.",
+    outcome: "Projects move faster when units, common areas, and touchpoints are cleaned to a predictable standard.",
   },
   {
-    title: "Office Operations",
-    painPoint: "Cleaning interruptions that disrupt active business hours.",
-    outcome: "Flexible scheduling and consistent standards that protect daily operations.",
+    title: "Commercial Spaces",
+    eyebrow: "Clean without disruption",
+    painPoint: "Office and operational teams need reliable cleaning that fits active business environments and deadlines.",
+    outcome: "Flexible scheduling and standards-driven work help maintain a clean impression without unnecessary friction.",
   },
 ];
 
@@ -71,53 +32,39 @@ type OfferAndIndustrySectionProps = {
 
 export function OfferAndIndustrySection({ onOpenQuote }: OfferAndIndustrySectionProps) {
   return (
-    <section className="bg-white px-6 py-16 md:px-10 lg:px-16">
+    <section id="industries" className="scroll-mt-32 bg-white px-6 py-16 md:scroll-mt-36 md:px-10 lg:px-16">
       <div className="mx-auto max-w-6xl">
         <div className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563EB]">Service Packages</p>
-            <h2 className="mt-2 font-serif text-3xl uppercase tracking-tight text-[#0A1628] md:text-4xl">Choose the Right Delivery Tier</h2>
-            <p className="mt-3 max-w-3xl text-sm text-slate-600 md:text-base">
-              Built for construction pace, property turnover, and operational continuity with clear scope ownership.
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563EB]">Who We Serve</p>
+            <h2 className="mt-2 font-serif text-3xl uppercase tracking-tight text-[#0A1628] md:text-4xl">Built for Demanding Spaces</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-relaxed text-slate-600 md:text-base">
+              The work changes by project type. The standard does not. A&A supports closeout schedules, turnover pace, and polished day-to-day environments.
             </p>
           </div>
           <button
             type="button"
             onClick={onOpenQuote}
-            className="w-fit rounded-sm bg-[#0A1628] px-4 py-2 text-xs uppercase tracking-[0.18em] text-white transition hover:bg-[#2563EB]"
+            className="w-fit rounded-md bg-[#0A1628] px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:bg-[#1E293B]"
           >
-            Get a Package Quote
+            Talk Through Your Scope
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          {tiers.map((tier) => (
-            <article key={tier.title} className="rounded border border-slate-200 bg-slate-50 p-5">
-              <h3 className="font-serif text-2xl uppercase tracking-tight text-[#0A1628]">{tier.title}</h3>
-              <p className="mt-2 text-sm font-medium text-slate-700">Best for: {tier.bestFor}</p>
-              <p className="mt-1 text-xs uppercase tracking-wide text-[#2563EB]">{tier.response}</p>
-              <ul className="mt-4 space-y-1 text-sm text-slate-700">
-                {tier.includes.map((item) => (
-                  <li key={item}>• {item}</li>
-                ))}
-              </ul>
+        <div className="grid gap-6 md:grid-cols-3">
+          {industries.map((industry) => (
+            <article key={industry.title} className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-300 hover:border-slate-300 hover:shadow-md">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#2563EB]">{industry.eyebrow}</p>
+                <h3 className="mt-3 font-serif text-2xl tracking-tight text-[#0A1628]">{industry.title}</h3>
+                <p className="mt-4 text-sm leading-relaxed text-slate-600">{industry.painPoint}</p>
+              </div>
+              <div className="mt-8 rounded-xl bg-slate-50 p-5 ring-1 ring-inset ring-slate-900/5 transition-colors group-hover:bg-slate-100/80">
+                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">Why it works</p>
+                <p className="mt-2 text-sm font-medium leading-relaxed text-slate-800">{industry.outcome}</p>
+              </div>
             </article>
           ))}
-        </div>
-
-        <div className="mt-14">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#2563EB]">Who We Serve</p>
-          <h3 className="mt-2 font-serif text-3xl uppercase tracking-tight text-[#0A1628] md:text-4xl">Industry-Focused Execution</h3>
-
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {industries.map((industry) => (
-              <article key={industry.title} className="rounded border border-slate-200 bg-white p-5">
-                <h4 className="text-lg font-semibold text-[#0A1628]">{industry.title}</h4>
-                <p className="mt-2 text-sm text-slate-600">Pain point: {industry.painPoint}</p>
-                <p className="mt-2 text-sm font-medium text-slate-800">Outcome: {industry.outcome}</p>
-              </article>
-            ))}
-          </div>
         </div>
       </div>
     </section>

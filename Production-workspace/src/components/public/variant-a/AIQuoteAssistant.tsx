@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type ChatMessage = {
   role: "assistant" | "user";
@@ -19,6 +19,41 @@ export function AIQuoteAssistant() {
       text: "Hi — I can help you with a fast quote. Tell me your service type, project address, size, and target date.",
     },
   ]);
+  const assistantRef = useRef<HTMLElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node | null;
+      if (!target) {
+        return;
+      }
+
+      if (assistantRef.current?.contains(target) || triggerRef.current?.contains(target)) {
+        return;
+      }
+
+      setIsOpen(false);
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen]);
 
   const sendMessage = async () => {
     const prompt = input.trim();
@@ -69,15 +104,16 @@ export function AIQuoteAssistant() {
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="fixed bottom-24 right-6 z-50 rounded-full bg-[#1D4ED8] px-4 py-2 text-xs font-medium uppercase tracking-[0.16em] text-white shadow-lg md:bottom-8"
+        className="fixed bottom-8 right-6 z-50 hidden rounded-full bg-[#1D4ED8] px-4 py-2 text-xs font-medium uppercase tracking-[0.16em] text-white shadow-lg md:inline-flex"
       >
         {isOpen ? "Close Assistant" : "AI Quote Assist"}
       </button>
 
       {isOpen ? (
-        <aside className="fixed bottom-40 right-6 z-50 flex h-[28rem] w-[22rem] flex-col overflow-hidden rounded border border-slate-300 bg-white shadow-xl md:bottom-20">
+        <aside ref={assistantRef} role="dialog" aria-label="AI quote assistant" className="fixed bottom-20 right-6 z-50 hidden h-[28rem] w-[22rem] flex-col overflow-hidden rounded border border-slate-300 bg-white shadow-xl md:flex">
           <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
             <p className="text-sm font-semibold text-slate-800">Quote Assistant</p>
             <div className="flex gap-1">

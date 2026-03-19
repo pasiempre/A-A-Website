@@ -1,0 +1,245 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+
+import { trackConversionEvent } from "@/lib/analytics";
+import { COMPANY_PHONE, COMPANY_PHONE_E164, COMPANY_SHORT_NAME } from "@/lib/company";
+
+type PublicHeaderProps = {
+  onOpenQuote: () => void;
+};
+
+const serviceLinks = [
+  { href: "/#service-post-construction", label: "Post-Construction", desc: "Rough and final cleans for turnovers." },
+  { href: "/#service-final-clean", label: "Final Clean", desc: "Detail-level move-in readiness." },
+  { href: "/#service-commercial", label: "Commercial", desc: "Ongoing facility care and maintenance." },
+  { href: "/#service-move", label: "Move-In / Move-Out", desc: "Fast vacant unit turnovers." },
+  { href: "/#service-windows", label: "Windows & Power Wash", desc: "Exterior polishing and details." },
+];
+
+const industryLinks = [
+  { href: "/#industries", label: "General Contractors", desc: "Walkthrough-ready closeouts." },
+  { href: "/#industries", label: "Property Managers", desc: "Fast leasing turnovers." },
+  { href: "/#industries", label: "Commercial Offices", desc: "Zero-disruption active site cleaning." },
+];
+
+const primaryLinks = [
+  { href: "/#services", label: "Services" },
+  { href: "/#industries", label: "Industries" },
+  { href: "/#about", label: "About" },
+  { href: "/#service-area", label: "Service Area" },
+  { href: "/#careers", label: "Careers" },
+];
+
+export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      const threshold = Math.max(120, window.innerHeight * 0.5);
+      setIsScrolled(window.scrollY > threshold);
+    };
+
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileMenuOpen]);
+
+  const navShellClass = isScrolled || isMobileMenuOpen
+    ? "border-[#183556] bg-[#0f2746] shadow-[0_22px_70px_rgba(2,6,23,0.42)] backdrop-blur-md"
+    : "border-transparent bg-[#07101d]/22 shadow-[0_18px_60px_rgba(2,6,23,0.16)] backdrop-blur-xl";
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  return (
+    <header className="fixed inset-x-0 top-0 z-50 text-white">
+      {/* Floating Header Shell */}
+      <div className={`transition-all duration-300 ${isScrolled ? "pt-2" : "pt-4 md:pt-6"}`}>
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className={`flex h-16 items-center justify-between gap-4 rounded-xl border px-5 md:h-[4.5rem] md:px-6 transition duration-300 ${navShellClass}`}>
+            
+            {/* Logo */}
+            <Link href="/" className="min-w-0">
+              <p className="font-serif text-2xl tracking-tight text-white md:text-3xl">{COMPANY_SHORT_NAME}</p>
+              <p className="hidden text-[9px] uppercase tracking-[0.24em] text-slate-300 md:block">
+                Construction-Ready Cleaning
+              </p>
+            </Link>
+
+            <nav className="hidden items-center gap-7 lg:flex">
+              <div className="group relative">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 text-sm text-slate-100 transition hover:text-white"
+                >
+                  Services
+                  <span className="text-[9px] text-slate-400 transition-transform group-hover:rotate-180">▼</span>
+                </button>
+                <div className="pointer-events-none absolute left-0 top-full hidden pt-4 group-hover:block group-focus-within:block">
+                  <div className="pointer-events-auto min-w-[20rem] rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5">
+                    {serviceLinks.map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        className="block rounded-lg p-3 transition hover:bg-slate-50"
+                      >
+                        <p className="text-sm font-semibold text-slate-900">{link.label}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{link.desc}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="group relative">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-2 text-sm text-slate-100 transition hover:text-white"
+                >
+                  Industries
+                  <span className="text-[9px] text-slate-400 transition-transform group-hover:rotate-180">▼</span>
+                </button>
+                <div className="pointer-events-none absolute left-0 top-full hidden pt-4 group-hover:block group-focus-within:block">
+                  <div className="pointer-events-auto min-w-[19rem] rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5">
+                    {industryLinks.map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        className="block rounded-lg p-3 transition hover:bg-slate-50"
+                      >
+                        <p className="text-sm font-semibold text-slate-900">{link.label}</p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-slate-500">{link.desc}</p>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {primaryLinks.slice(2).map((link) => (
+                <a key={link.label} href={link.href} className="text-sm text-slate-100 transition hover:text-white">
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+
+            {/* Desktop CTAs */}
+            <div className="hidden items-center gap-3 md:flex">
+              <a
+                href={`tel:${COMPANY_PHONE_E164}`}
+                className="hidden rounded-md border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:border-white/35 hover:bg-white/8 lg:inline-flex"
+                onClick={() => {
+                  void trackConversionEvent({ eventName: "call_click", source: "header_nav" });
+                }}
+              >
+                Call
+              </a>
+              <button
+                type="button"
+                onClick={onOpenQuote}
+                className="rounded-md bg-white px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100"
+              >
+                Get a Quote
+              </button>
+            </div>
+
+            {/* Mobile Nav Toggle */}
+            <div className="flex items-center gap-2 md:hidden">
+              <button
+                type="button"
+                onClick={onOpenQuote}
+                className="rounded-md bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm"
+              >
+                Quote
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/6"
+                aria-expanded={isMobileMenuOpen}
+                aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              >
+                <span className="text-lg">{isMobileMenuOpen ? "×" : "☰"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Menu Panel */}
+      <div
+        className={`md:hidden ${isMobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} transition duration-300`}
+      >
+        <div className={`absolute inset-x-4 transition-all duration-300 ${isScrolled ? "top-[4.8rem]" : "top-[5.8rem]"} rounded-2xl border border-white/10 bg-[#0A1628] p-5 shadow-2xl`}>
+          <div className="space-y-3">
+            <a
+              href={`tel:${COMPANY_PHONE_E164}`}
+              className="block rounded-2xl bg-white/6 px-4 py-3 text-sm uppercase tracking-[0.18em] text-white"
+              onClick={() => {
+                closeMobileMenu();
+                void trackConversionEvent({ eventName: "call_click", source: "header_mobile" });
+              }}
+            >
+              Call {COMPANY_PHONE}
+            </a>
+
+            <details className="rounded-2xl border border-white/10 bg-white/4">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm uppercase tracking-[0.18em] text-white">
+                Services
+              </summary>
+              <div className="space-y-1 px-3 pb-3">
+                {serviceLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={closeMobileMenu}
+                    className="block rounded-xl px-3 py-2 text-sm text-slate-200 transition hover:bg-white/6 hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </details>
+
+            <details className="rounded-2xl border border-white/10 bg-white/4">
+              <summary className="cursor-pointer list-none px-4 py-3 text-sm uppercase tracking-[0.18em] text-white">
+                Industries
+              </summary>
+              <div className="space-y-1 px-3 pb-3">
+                {industryLinks.map((link) => (
+                  <a
+                    key={link.label}
+                    href={link.href}
+                    onClick={closeMobileMenu}
+                    className="block rounded-xl px-3 py-2 text-sm text-slate-200 transition hover:bg-white/6 hover:text-white"
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </details>
+
+            {primaryLinks.slice(2).map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={closeMobileMenu}
+                className="block rounded-2xl border border-white/10 px-4 py-3 text-sm uppercase tracking-[0.18em] text-white"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
