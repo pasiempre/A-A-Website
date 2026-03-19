@@ -1,0 +1,19 @@
+import { EmployeeInventoryClient } from "@/components/employee/EmployeeInventoryClient";
+import { AuthSignOutButton } from "@/components/ui/AuthSignOutButton";
+import { EmployeeTicketsClient } from "@/components/employee/EmployeeTicketsClient";
+
+export default function EmployeeHomePage() {
+  return (
+    <main className="min-h-screen bg-slate-50 px-4 py-8 md:px-10 md:py-12">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">Portal Empleado</h1>
+          <p className="mt-1 text-sm text-slate-600">Mis trabajos, estados, y reporte de problemas desde el teléfono.</p>
+        </div>
+        <AuthSignOutButton redirectTo="/auth/employee" />
+      </div>
+      <EmployeeTicketsClient />
+      <EmployeeInventoryClient />
+    </main>
+  );
+}

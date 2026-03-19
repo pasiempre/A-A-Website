@@ -3,22 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A&A Cleaning Services | Architectural Narrative</title>
-    <meta name="description" content="Standards-driven facility care for construction pros. Professional cleaning across the Austin metro.">
+    <title>A&A Cleaning Services | Professional Construction & Commercial Cleaning | Austin, TX</title>
+    <meta name="description" content="Standards-driven post-construction and commercial cleaning for construction professionals across the Austin metro area. Licensed, insured, bilingual crews.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="A&A Cleaning Services | Austin, TX">
+    <meta property="og:description" content="Post-construction & commercial cleaning for construction pros. Licensed & insured. Bilingual crews. Austin metro.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1200&auto=format&fit=crop">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%231c1917'/%3E%3Ctext x='16' y='21' text-anchor='middle' font-family='serif' font-size='13' font-weight='500' fill='%23C9A94E'%3EAA%3C/text%3E%3C/svg%3E">
+
+    <!-- Preload Hero Image -->
+    <link rel="preload" as="image" href="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2700&auto=format&fit=crop">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@200;300;400&display=swap" rel="stylesheet">
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "A&A Cleaning Services",
+        "description": "Professional post-construction and commercial cleaning services in Austin, TX",
+        "telephone": "(512) 555-0199",
+        "email": "AAcleaningservices@outlook.com",
+        "areaServed": ["Austin", "Round Rock", "Georgetown", "Kyle", "Buda", "Pflugerville", "Hutto", "San Marcos"],
+        "serviceType": ["Post-Construction Cleaning", "Final Clean", "Commercial Cleaning", "Move-In/Move-Out Cleaning", "Window Cleaning", "Power Washing"],
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "5",
+            "reviewCount": "50"
+        }
+    }
+    </script>
+
     <style>
         body { font-family: 'Inter', sans-serif; }
         h1, h2, h3, h4, h5, h6, .serif { font-family: 'Cormorant Garamond', serif; }
-        
+
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #fafaf9; }
         ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
-        
+
         /* Module H1: Animations */
         .fade-in-up {
             animation: fadeInUp 1s ease-out forwards;
@@ -32,6 +65,8 @@
         .delay-200 { animation-delay: 0.2s; }
         .delay-500 { animation-delay: 0.5s; }
         .delay-800 { animation-delay: 0.8s; }
+        .delay-1000 { animation-delay: 1.0s; }
+        .delay-1200 { animation-delay: 1.2s; }
 
         .ken-burns {
             animation: kenBurns 15s ease-out forwards;
@@ -41,11 +76,27 @@
             to { transform: scale(1.05); }
         }
 
-        /* Module N2: Disappearing Nav */
-        .nav-hidden {
-            transform: translateY(-100%);
+        /* Scroll-Down Indicator */
+        @keyframes bounceSubtle {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(6px); }
         }
-        
+        .animate-bounce-subtle { animation: bounceSubtle 2s ease-in-out infinite; }
+
+        /* Module N2: Disappearing Nav */
+        .nav-hidden { transform: translateY(-100%); }
+
+        /* Active Nav Link */
+        .nav-link-active { color: #2563EB !important; }
+        .nav-link-active::after {
+            content: '';
+            display: block;
+            width: 100%;
+            height: 1px;
+            background: #2563EB;
+            margin-top: 4px;
+        }
+
         select, input, textarea {
             -webkit-appearance: none;
             -moz-appearance: none;
@@ -58,13 +109,21 @@
         .fade-in-right { opacity: 0; transform: translateX(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
         .fade-in-left { opacity: 0; transform: translateX(-30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
         .fade-in-up-scroll { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
-        
+
         .is-visible { opacity: 1; transform: translate(0, 0); }
-        
+
+        /* Service Image Hover Zoom */
+        .service-img-zoom {
+            transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .service-spread:hover .service-img-zoom {
+            transform: scale(1.03);
+        }
+
         /* Module P1: Timeline Styles */
         .timeline-line {
             width: 2px;
-            background: #e7e5e4; /* stone-200 */
+            background: #e7e5e4;
             position: absolute;
             top: 0;
             bottom: 0;
@@ -73,7 +132,7 @@
         }
         .timeline-progress {
             width: 100%;
-            background: #1c1917; /* stone-900 */
+            background: #1c1917;
             height: 0%;
         }
         @media (max-width: 768px) {
@@ -81,7 +140,7 @@
                 left: 2rem;
             }
         }
-        
+
         /* Module T2: Testimonial Styles */
         .testimonial-slide {
             opacity: 0;
@@ -90,7 +149,7 @@
             transition: opacity 1s ease-in-out;
             pointer-events: none;
             display: flex;
-            flex-col;
+            flex-direction: column;
             align-items: center;
         }
         .testimonial-slide.active {
@@ -113,14 +172,176 @@
             height: 1px;
             background-color: #C9A94E;
             transition: width 1s ease-out 0.5s;
-            margin: 2rem auto;
+            margin: 1.5rem auto;
         }
         .gold-line.is-visible {
             width: 60px;
         }
+
+        /* Testimonial Avatar */
+        .testimonial-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 16px;
+            font-weight: 500;
+            border: 1px solid rgba(201, 169, 78, 0.4);
+            transition: transform 0.3s ease, opacity 0.5s ease;
+        }
+
+        /* Testimonial Dots */
+        .testimonial-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #57534e;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+        .testimonial-dot.active {
+            background: #C9A94E;
+            transform: scale(1.3);
+        }
+
+        /* BA Gallery Dots */
+        .ba-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+        .ba-dot.active {
+            background: #1c1917 !important;
+            transform: scale(1.3);
+        }
+
+        /* Floating Label Form Fields */
+        .float-field {
+            position: relative;
+        }
+        .float-field input,
+        .float-field textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #d6d3d1;
+            padding: 20px 0 8px;
+            color: #1c1917;
+            font-size: 14px;
+            font-weight: 300;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .float-field input:focus,
+        .float-field textarea:focus {
+            border-bottom-color: #1c1917;
+        }
+        .float-field label {
+            position: absolute;
+            left: 0;
+            top: 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #57534e;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            font-weight: 300;
+        }
+        .float-field input:focus ~ label,
+        .float-field input:not(:placeholder-shown) ~ label,
+        .float-field textarea:focus ~ label,
+        .float-field textarea:not(:placeholder-shown) ~ label {
+            top: 2px;
+            font-size: 9px;
+            color: #334155;
+        }
+
+        /* Mobile Nav Overlay */
+        .mobile-nav-open {
+            transform: translateY(0) !important;
+        }
+
+        /* Button press micro-interaction */
+        button:active:not(.testimonial-dot):not(.ba-dot) {
+            transform: scale(0.97);
+            transition: transform 0.1s ease;
+        }
+
+        /* Notification toast */
+        .notification-toast {
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .notification-toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* BA slider crossfade */
+        #ba-slider-container {
+            transition: opacity 0.3s ease;
+            touch-action: pan-y;
+        }
+
+        /* Shimmer for drag hint */
+        @keyframes shimmer {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .ba-hint-shimmer {
+            animation: shimmer 2.5s ease-in-out infinite;
+        }
+
+        /* Branded focus states */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 2px solid #C9A94E;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.7), 0 0 0 4px rgba(201, 169, 78, 0.55);
+        }
+
+        /* Brand palette alignment for Variant A */
+        .bg-stone-900 { background-color: #0A1628 !important; }
+        .text-stone-900 { color: #0A1628 !important; }
+        .border-stone-900 { border-color: #0A1628 !important; }
+        .hover\:bg-stone-800:hover { background-color: #2563EB !important; }
+        .hover\:text-stone-500:hover { color: #2563EB !important; }
+        .focus\:border-stone-900:focus { border-color: #0A1628 !important; }
+
+        /* Respect reduced motion preferences */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto !important; }
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+                transform: none !important;
+            }
+        }
     </style>
 </head>
 <body class="bg-stone-50 text-stone-900 antialiased selection:bg-stone-200 selection:text-stone-900 overflow-x-hidden">
+
+    <!-- Skip to Content (Accessibility) -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[200] focus:bg-stone-900 focus:text-white focus:px-6 focus:py-3 focus:rounded-sm focus:text-sm focus:uppercase focus:tracking-widest">
+        Skip to content
+    </a>
+
+    <!-- Scroll Progress Indicator -->
+    <div id="scroll-progress" class="fixed top-0 left-0 h-[2px] bg-[#C9A94E] z-[100]" style="width: 0%"></div>
 
     <!-- MODULE N2: Disappearing Nav -->
     <header id="main-nav" class="fixed top-0 left-0 w-full z-50 bg-stone-50/80 backdrop-blur-md border-b border-stone-200/50 transition-transform duration-300">
@@ -130,37 +351,53 @@
                 <span class="hidden sm:block w-px h-4 bg-stone-300"></span>
                 <span class="hidden sm:block uppercase tracking-[0.2em] text-xs font-medium text-stone-500 group-hover:text-stone-400 transition-colors">Cleaning Services</span>
             </a>
-            
+
             <nav class="hidden md:flex gap-10 items-center">
-                <a href="#services" class="text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors">Services</a>
-                <a href="#about" class="text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors">About</a>
-                <a href="#careers" class="text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors">Careers</a>
+                <a href="#services" class="nav-link text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors" data-section="services">Services</a>
+                <a href="#about" class="nav-link text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors" data-section="about">About</a>
+                <a href="#careers" class="nav-link text-xs uppercase tracking-widest font-medium text-stone-600 hover:text-stone-900 transition-colors" data-section="careers">Careers</a>
             </nav>
 
             <div class="flex items-center gap-6">
-                <!-- Phone icon for mobile, text for desktop -->
                 <a href="tel:5125550199" class="text-stone-600 hover:text-stone-900 transition-colors flex items-center gap-2">
                     <i data-lucide="phone" stroke-width="1.5" class="w-5 h-5"></i>
                     <span class="hidden lg:inline text-sm tracking-wide">(512) 555-0199</span>
                 </a>
-                <!-- Opens Q2 Floating Form -->
                 <button class="hidden sm:inline-flex px-6 py-2.5 bg-stone-900 text-stone-50 text-xs uppercase tracking-widest font-medium rounded-sm hover:bg-stone-800 transition-colors duration-300 open-floating-form">
                     Get a Quote
                 </button>
-                <button class="md:hidden text-stone-900">
+                <button id="open-mobile-nav" class="md:hidden text-stone-900">
                     <i data-lucide="menu" stroke-width="1.5" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
     </header>
 
+    <!-- Mobile Nav Panel -->
+    <div id="mobile-nav" class="fixed inset-0 z-[55] bg-stone-50 transform -translate-y-full transition-transform duration-500 ease-in-out flex flex-col items-center justify-center md:hidden">
+        <button id="close-mobile-nav" class="absolute top-6 right-6 text-stone-900 p-2">
+            <i data-lucide="x" stroke-width="1.5" class="w-7 h-7"></i>
+        </button>
+        <nav class="flex flex-col gap-8 items-center">
+            <a href="#services" class="text-3xl font-serif text-stone-900 tracking-tight hover:text-stone-500 transition-colors mobile-nav-link">Services</a>
+            <a href="#about" class="text-3xl font-serif text-stone-900 tracking-tight hover:text-stone-500 transition-colors mobile-nav-link">About</a>
+            <a href="#careers" class="text-3xl font-serif text-stone-900 tracking-tight hover:text-stone-500 transition-colors mobile-nav-link">Careers</a>
+            <div class="w-12 h-px bg-stone-300 my-4"></div>
+            <a href="tel:5125550199" class="flex items-center gap-3 text-stone-600 hover:text-stone-900 transition-colors">
+                <i data-lucide="phone" stroke-width="1.5" class="w-5 h-5"></i>
+                <span class="tracking-wide text-lg">(512) 555-0199</span>
+            </a>
+            <button class="mt-2 px-10 py-3.5 bg-stone-900 text-stone-50 text-xs uppercase tracking-widest font-medium rounded-sm hover:bg-stone-800 transition-colors open-floating-form mobile-nav-link">
+                Get a Quote
+            </button>
+        </nav>
+    </div>
+
     <!-- MODULE H1: Cinematic Immersion Hero -->
-    <section class="relative h-screen w-full flex flex-col justify-end overflow-hidden">
-        <!-- Background Image with Ken Burns & Parallax -->
+    <section id="main-content" class="relative h-screen w-full flex flex-col justify-end overflow-hidden">
         <div class="absolute inset-0 z-0">
             <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2700&auto=format&fit=crop" alt="Modern glass-walled office lobby" class="w-full h-full object-cover object-center ken-burns parallax-bg">
             <div class="absolute inset-0 bg-stone-900/30"></div>
-            <!-- Gradient fading up from bottom to make text readable -->
             <div class="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/40 to-transparent"></div>
         </div>
 
@@ -171,11 +408,11 @@
                     Every Detail.<br>
                     <span class="italic text-stone-300">Every Time.</span>
                 </h1>
-                
+
                 <p class="text-stone-200 text-lg md:text-xl font-light leading-relaxed mb-10 max-w-2xl mx-auto">
                     Post-construction & commercial cleaning across the Austin metro area.
                 </p>
-                
+
                 <div class="flex flex-col sm:flex-row items-center justify-center gap-6 mb-12">
                     <button class="w-full sm:w-auto inline-flex items-center justify-center h-14 px-10 bg-white text-stone-900 text-xs uppercase tracking-widest font-medium hover:bg-stone-100 transition-colors rounded-sm open-floating-form">
                         Request a Quote
@@ -185,6 +422,14 @@
                         <span class="tracking-wide">Call: (512) 555-0199</span>
                     </a>
                 </div>
+            </div>
+        </div>
+
+        <!-- Scroll-Down Indicator -->
+        <div class="absolute bottom-[68px] left-1/2 -translate-x-1/2 z-30 fade-in-up delay-1200">
+            <div class="flex flex-col items-center gap-1 text-white/50 animate-bounce-subtle">
+                <span class="text-[8px] uppercase tracking-[0.3em] font-medium">Scroll</span>
+                <i data-lucide="chevron-down" stroke-width="1" class="w-4 h-4"></i>
             </div>
         </div>
 
@@ -226,6 +471,14 @@
                     <div class="text-[10px] text-stone-500 font-medium uppercase tracking-widest">On-Time</div>
                 </div>
             </div>
+
+            <!-- Social Proof Micro-Badge -->
+            <div class="text-center mt-12 pt-8 border-t border-stone-100 fade-in-up-scroll">
+                <div class="inline-flex items-center gap-3 text-sm text-stone-500 font-light">
+                    <span class="text-[#C9A94E] text-base tracking-wider">★★★★★</span>
+                    <span>Trusted by 50+ Austin General Contractors</span>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -235,7 +488,7 @@
         // Disappearing Nav Logic
         let lastScrollY = window.scrollY;
         const nav = document.getElementById('main-nav');
-        
+
         window.addEventListener('scroll', () => {
             if (window.scrollY > 100) {
                 if (window.scrollY > lastScrollY) {
@@ -267,7 +520,7 @@
 
         // Counter Animation for T1 Authority Bar
         const counters = document.querySelectorAll('.counter');
-        const speed = 200; // The lower the slower
+        const speed = 200;
 
         const observerOptions = {
             root: null,
@@ -284,7 +537,6 @@
                                 const target = +counter.getAttribute('data-target');
                                 const count = +counter.innerText;
                                 const inc = target / speed;
-
                                 if (count < target) {
                                     counter.innerText = Math.ceil(count + inc);
                                     setTimeout(updateCount, 10);
@@ -293,7 +545,7 @@
                                 }
                             };
                             updateCount();
-                        }, index * 200); // Stagger by 0.2s
+                        }, index * 200);
                     });
                     observer.unobserve(entry.target);
                 }
@@ -310,12 +562,14 @@
     <section id="services" class="bg-white overflow-hidden border-b border-stone-200">
         <!-- Service 1: Post-Construction (Photo Left) -->
         <div class="flex flex-col md:flex-row w-full min-h-[60vh] service-spread group">
-            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
-                <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2662&auto=format&fit=crop" alt="Freshly completed commercial space" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            <div class="w-full md:w-[56%] lg:w-[58%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
+                <div class="absolute inset-0 service-img-zoom">
+                    <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2662&auto=format&fit=crop" alt="Freshly completed commercial space" class="w-full h-full object-cover parallax-img" loading="lazy">
+                </div>
             </div>
-            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-white fade-in-right">
-                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
-                    <h2 class="text-4xl md:text-5xl xl:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Post-<br>Construction<br>Clean</h2>
+            <div class="w-full md:w-[44%] lg:w-[42%] flex items-center bg-white fade-in-right">
+                <div class="p-10 md:p-12 lg:p-14 xl:p-20 max-w-xl">
+                    <h2 class="text-4xl md:text-4xl lg:text-5xl xl:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Post-<br>Construction<br>Clean</h2>
                     <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
                         Rough and final clean for new construction projects. We handle the debris, dust, and detail work so the space is move-in ready.
                     </p>
@@ -324,7 +578,7 @@
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Commercial offices</li>
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Schools & institutional</li>
                     </ul>
-                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                    <a href="#" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500 open-floating-form">
                         Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -333,11 +587,13 @@
 
         <!-- Service 2: Final Clean (Photo Right) -->
         <div class="flex flex-col md:flex-row-reverse w-full min-h-[60vh] service-spread group">
-            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-right">
-                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2670&auto=format&fit=crop" alt="Pristine apartment unit" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            <div class="w-full md:w-[56%] lg:w-[58%] relative overflow-hidden h-[40vh] md:h-auto slide-in-right">
+                <div class="absolute inset-0 service-img-zoom">
+                    <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=2670&auto=format&fit=crop" alt="Pristine apartment interior" class="w-full h-full object-cover parallax-img" loading="lazy">
+                </div>
             </div>
-            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-stone-50 fade-in-left">
-                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+            <div class="w-full md:w-[44%] lg:w-[42%] flex items-center bg-stone-50 fade-in-left">
+                <div class="p-10 md:p-12 lg:p-14 xl:p-20 max-w-xl">
                     <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Final<br>Clean</h2>
                     <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
                         Detail-level cleaning for move-in readiness. First final and second final cleans — ensuring every surface is inspected to standard.
@@ -347,7 +603,7 @@
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Fixtures & appliances</li>
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Complete dust removal</li>
                     </ul>
-                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                    <a href="#" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500 open-floating-form">
                         Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -356,11 +612,13 @@
 
         <!-- Service 3: Commercial (Photo Left) -->
         <div class="flex flex-col md:flex-row w-full min-h-[60vh] service-spread group">
-            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
-                <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=2669&auto=format&fit=crop" alt="Modern commercial office" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            <div class="w-full md:w-[56%] lg:w-[58%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
+                <div class="absolute inset-0 service-img-zoom">
+                    <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=2669&auto=format&fit=crop" alt="Modern commercial office" class="w-full h-full object-cover parallax-img" loading="lazy">
+                </div>
             </div>
-            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-white fade-in-right">
-                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+            <div class="w-full md:w-[44%] lg:w-[42%] flex items-center bg-white fade-in-right">
+                <div class="p-10 md:p-12 lg:p-14 xl:p-20 max-w-xl">
                     <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Commercial<br>Cleaning</h2>
                     <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
                         Ongoing and one-time cleaning for offices, retail spaces, and commercial facilities. Consistent quality that works around your operations.
@@ -370,7 +628,7 @@
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Retail environments</li>
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Regular maintenance</li>
                     </ul>
-                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                    <a href="#" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500 open-floating-form">
                         Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -379,11 +637,13 @@
 
         <!-- Service 4: Move-In/Move-Out (Photo Right) -->
         <div class="flex flex-col md:flex-row-reverse w-full min-h-[60vh] service-spread group">
-            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-right">
-                <img src="https://images.unsplash.com/photo-1556912173-3bb406ef7e77?q=80&w=2670&auto=format&fit=crop" alt="Empty luxury apartment" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            <div class="w-full md:w-[56%] lg:w-[58%] relative overflow-hidden h-[40vh] md:h-auto slide-in-right">
+                <div class="absolute inset-0 service-img-zoom">
+                    <img src="https://images.unsplash.com/photo-1556912173-3bb406ef7e77?q=80&w=2670&auto=format&fit=crop" alt="Empty luxury apartment" class="w-full h-full object-cover parallax-img" loading="lazy">
+                </div>
             </div>
-            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-stone-50 fade-in-left">
-                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+            <div class="w-full md:w-[44%] lg:w-[42%] flex items-center bg-stone-50 fade-in-left">
+                <div class="p-10 md:p-12 lg:p-14 xl:p-20 max-w-xl">
                     <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Move-In<br>Move-Out</h2>
                     <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
                         Vacant unit turnover cleaning for property managers. Fast turnaround — same-day available. Every unit left inspection-ready.
@@ -393,7 +653,7 @@
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Deep sanitation</li>
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Property management support</li>
                     </ul>
-                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                    <a href="#" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500 open-floating-form">
                         Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -402,11 +662,13 @@
 
         <!-- Service 5: Windows & Power Wash (Photo Left) -->
         <div class="flex flex-col md:flex-row w-full min-h-[60vh] service-spread group">
-            <div class="w-full md:w-[60%] lg:w-[65%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
-                <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2670&auto=format&fit=crop" alt="Gleaming glass storefront" class="absolute inset-0 w-full h-full object-cover parallax-img">
+            <div class="w-full md:w-[56%] lg:w-[58%] relative overflow-hidden h-[40vh] md:h-auto slide-in-left">
+                <div class="absolute inset-0 service-img-zoom">
+                    <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2670&auto=format&fit=crop" alt="Gleaming glass storefront" class="w-full h-full object-cover parallax-img" loading="lazy">
+                </div>
             </div>
-            <div class="w-full md:w-[40%] lg:w-[35%] flex items-center bg-white fade-in-right">
-                <div class="p-12 md:p-16 lg:p-20 xl:p-24 max-w-xl">
+            <div class="w-full md:w-[44%] lg:w-[42%] flex items-center bg-white fade-in-right">
+                <div class="p-10 md:p-12 lg:p-14 xl:p-20 max-w-xl">
                     <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-stone-900 leading-[1.1] tracking-tight mb-6 uppercase">Windows &<br>Power Wash</h2>
                     <p class="text-stone-600 font-light text-lg leading-relaxed mb-8">
                         Interior and exterior window cleaning, plus power washing for building exteriors, walkways, and parking structures.
@@ -416,7 +678,7 @@
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> High-reach windows</li>
                         <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-stone-400 rounded-full"></span> Concrete & walkways</li>
                     </ul>
-                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
+                    <a href="#" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500 open-floating-form">
                         Get a Quote <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
                     </a>
                 </div>
@@ -424,12 +686,25 @@
         </div>
     </section>
 
-    <!-- MODULE X1: Full-Bleed Photo Break -->
-    <section class="w-full h-[60vh] md:h-[70vh] relative overflow-hidden bg-stone-900">
-        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600&auto=format&fit=crop" alt="Pristine luxury interior" class="w-full h-full object-cover opacity-90 parallax-bg-fast">
+    <!-- MODULE X1: Cinematic Stat Callout -->
+    <section class="w-full h-[60vh] md:h-[70vh] relative overflow-hidden bg-stone-900 flex items-center justify-center">
+        <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2600&auto=format&fit=crop" alt="Luxury finished interior" class="absolute inset-0 w-full h-full object-cover opacity-40 parallax-bg-fast" loading="lazy">
+        <div class="absolute inset-0 bg-gradient-to-r from-stone-900/80 via-stone-900/50 to-stone-900/80"></div>
+        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto fade-in-up-scroll">
+            <span class="block text-[#C9A94E] text-xs uppercase tracking-[0.3em] mb-6 font-medium">The A&A Track Record</span>
+            <div class="text-5xl md:text-7xl lg:text-8xl font-serif text-white tracking-tight mb-4 leading-none">
+                500+ Projects.<br>
+                <span class="italic text-stone-300">Zero Callbacks.</span>
+            </div>
+            <p class="text-stone-300 font-light text-lg md:text-xl mt-6 mb-10 max-w-2xl mx-auto">On time, on budget, every surface inspected before handoff.</p>
+            <button class="inline-flex items-center gap-3 px-10 py-4 bg-white/10 backdrop-blur-sm text-white text-xs uppercase tracking-widest font-medium rounded-sm border border-white/30 hover:bg-white hover:text-stone-900 transition-all duration-300 open-floating-form">
+                Get Your Free Estimate
+                <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+            </button>
+        </div>
     </section>
 
-    <!-- MODULE BA1: Before/After Comparison Slider -->
+    <!-- MODULE BA1: Before/After Comparison Gallery -->
     <section class="py-24 md:py-32 bg-stone-50 overflow-hidden border-b border-stone-200">
         <div class="max-w-7xl mx-auto px-6">
             <div class="text-center mb-16 fade-in-up-scroll">
@@ -438,63 +713,117 @@
                     See the Difference
                 </h2>
             </div>
-            
+
+            <!-- Gallery Navigation Dots -->
+            <div class="flex justify-center gap-3 mb-8 fade-in-up-scroll">
+                <button class="ba-dot active bg-stone-900" data-pair="0" aria-label="View comparison 1"></button>
+                <button class="ba-dot bg-stone-300" data-pair="1" aria-label="View comparison 2"></button>
+                <button class="ba-dot bg-stone-300" data-pair="2" aria-label="View comparison 3"></button>
+            </div>
+
             <div class="relative max-w-5xl mx-auto rounded-sm overflow-hidden shadow-2xl aspect-[4/3] md:aspect-video select-none fade-in-up-scroll delay-200" id="ba-slider-container">
                 <!-- After Image (Background) -->
-                <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop" alt="Pristine clean office space" class="absolute inset-0 w-full h-full object-cover pointer-events-none">
-                
+                <img id="ba-after-img" src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop" alt="Pristine clean office space" class="absolute inset-0 w-full h-full object-cover pointer-events-none" loading="lazy">
+
                 <!-- Before Image (Foreground, clipped) -->
                 <div class="absolute inset-y-0 left-0 overflow-hidden pointer-events-none" id="ba-before-image" style="width: 50%;">
-                    <img src="https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2670&auto=format&fit=crop" alt="Dusty construction site" class="absolute inset-y-0 left-0 h-full object-cover filter grayscale opacity-90 ba-inner-image">
+                    <img id="ba-before-img" src="https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2670&auto=format&fit=crop" alt="Dusty construction site" class="absolute inset-y-0 left-0 h-full object-cover filter grayscale opacity-90 ba-inner-image" loading="lazy">
                 </div>
-                
+
+                <!-- Drag Hint (first visit) -->
+                <div id="ba-hint" class="absolute inset-0 flex items-center justify-center z-10 pointer-events-none transition-opacity duration-500">
+                    <div class="bg-stone-900/70 backdrop-blur-sm text-white text-[10px] uppercase tracking-widest px-4 py-2 rounded-sm flex items-center gap-2 ba-hint-shimmer">
+                        <i data-lucide="move-horizontal" class="w-4 h-4"></i> Drag to Compare
+                    </div>
+                </div>
+
                 <!-- Labels -->
                 <div class="absolute top-6 left-6 bg-stone-900/80 backdrop-blur-sm text-white text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-sm pointer-events-none z-10 transition-opacity" id="ba-label-before">Before</div>
                 <div class="absolute top-6 right-6 bg-stone-900/80 backdrop-blur-sm text-white text-[10px] font-medium uppercase tracking-widest px-3 py-1.5 rounded-sm pointer-events-none z-10 transition-opacity" id="ba-label-after">After</div>
 
                 <!-- Divider & Handle -->
-                <div class="absolute inset-y-0 w-1 bg-white cursor-ew-resize left-1/2 -translate-x-1/2 z-20 flex items-center justify-center hover:bg-stone-200 transition-colors" id="ba-divider">
+                <div class="absolute inset-y-0 w-1 bg-white cursor-ew-resize left-1/2 -translate-x-1/2 z-20 flex items-center justify-center hover:bg-stone-200 transition-colors" id="ba-divider" role="slider" tabindex="0" aria-label="Before and after comparison slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-orientation="horizontal">
                     <div class="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center gap-1 border border-stone-200 text-stone-500">
                         <i data-lucide="chevron-left" class="w-4 h-4 -mr-1.5"></i>
                         <i data-lucide="chevron-right" class="w-4 h-4 -ml-1.5"></i>
                     </div>
                 </div>
             </div>
-            
-            <div class="text-center mt-6 text-stone-500 text-sm font-light fade-in-up-scroll delay-200">
-                Commercial Office Finish • Downtown Austin, TX
+
+            <div class="text-center mt-6 fade-in-up-scroll delay-200">
+                <p id="ba-caption" class="text-stone-500 text-sm font-light">Commercial Office Finish • Downtown Austin, TX</p>
             </div>
         </div>
     </section>
 
-    <!-- MODULE T2: Editorial Testimonial -->
-    <section class="py-32 md:py-48 bg-stone-900 text-stone-50 overflow-hidden text-center relative flex justify-center items-center">
-        <div class="max-w-5xl mx-auto px-6 relative w-full h-[400px] flex items-center justify-center">
-            
+    <!-- MODULE T2: Editorial Testimonial with Avatars -->
+    <section id="testimonial-section" class="py-32 md:py-48 bg-stone-900 text-stone-50 overflow-hidden text-center relative flex flex-col justify-center items-center">
+        <div class="max-w-5xl mx-auto px-6 relative w-full min-h-[420px] flex items-center justify-center">
+
             <!-- Slide 1 -->
-            <div class="testimonial-slide active w-full flex flex-col items-center" id="test-slide-1">
+            <div class="testimonial-slide active w-full flex flex-col items-center" data-avatar-initials="MT" data-avatar-bg="bg-stone-800" data-avatar-text="text-[#C9A94E]">
                 <div class="text-[#C9A94E] font-serif text-8xl leading-none h-10 mb-8 select-none">"</div>
-                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-12 testimonial-text">
+                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-10 testimonial-text">
                     "A&A Cleaning has been our go-to subcontractor for three years. Reliable, detail-oriented, and always on schedule."
                 </blockquote>
-                <div class="opacity-0 transition-opacity duration-1000 delay-1000 author-info">
-                    <p class="text-stone-300 font-light tracking-widest uppercase text-xs">Project Manager, Top-Tier Construction</p>
+                <div class="opacity-0 transition-opacity duration-1000 author-info flex flex-col items-center">
+                    <div class="testimonial-avatar bg-stone-800 text-[#C9A94E] mb-4">MT</div>
+                    <p class="text-stone-200 font-light text-sm mb-1">Marcus Torres</p>
+                    <p class="text-stone-400 font-light tracking-widest uppercase text-[10px]">Project Manager, Top-Tier Construction</p>
                     <div class="gold-line"></div>
                 </div>
             </div>
 
             <!-- Slide 2 -->
-            <div class="testimonial-slide w-full flex flex-col items-center" id="test-slide-2">
+            <div class="testimonial-slide w-full flex flex-col items-center" data-avatar-initials="DC" data-avatar-bg="bg-stone-800" data-avatar-text="text-[#C9A94E]">
                 <div class="text-[#C9A94E] font-serif text-8xl leading-none h-10 mb-8 select-none">"</div>
-                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-12 testimonial-text">
+                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-10 testimonial-text">
                     "They fundamentally understand the demands of commercial builds. We don't worry when they're on the schedule."
                 </blockquote>
-                <div class="opacity-0 transition-opacity duration-1000 delay-1000 author-info">
-                    <p class="text-stone-300 font-light tracking-widest uppercase text-xs">Site Superintendent, BuildCo Partners</p>
+                <div class="opacity-0 transition-opacity duration-1000 author-info flex flex-col items-center">
+                    <div class="testimonial-avatar bg-stone-800 text-[#C9A94E] mb-4">DC</div>
+                    <p class="text-stone-200 font-light text-sm mb-1">David Chen</p>
+                    <p class="text-stone-400 font-light tracking-widest uppercase text-[10px]">Site Superintendent, BuildCo Partners</p>
                     <div class="gold-line"></div>
                 </div>
             </div>
 
+            <!-- Slide 3 -->
+            <div class="testimonial-slide w-full flex flex-col items-center" data-avatar-initials="SM" data-avatar-bg="bg-stone-800" data-avatar-text="text-[#C9A94E]">
+                <div class="text-[#C9A94E] font-serif text-8xl leading-none h-10 mb-8 select-none">"</div>
+                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-10 testimonial-text">
+                    "From rough clean to final walk-through, their attention to detail is unmatched. The best sub we've worked with."
+                </blockquote>
+                <div class="opacity-0 transition-opacity duration-1000 author-info flex flex-col items-center">
+                    <div class="testimonial-avatar bg-stone-800 text-[#C9A94E] mb-4">SM</div>
+                    <p class="text-stone-200 font-light text-sm mb-1">Sarah Mitchell</p>
+                    <p class="text-stone-400 font-light tracking-widest uppercase text-[10px]">General Contractor, Mitchell & Associates</p>
+                    <div class="gold-line"></div>
+                </div>
+            </div>
+
+            <!-- Slide 4 -->
+            <div class="testimonial-slide w-full flex flex-col items-center" data-avatar-initials="JR" data-avatar-bg="bg-stone-800" data-avatar-text="text-[#C9A94E]">
+                <div class="text-[#C9A94E] font-serif text-8xl leading-none h-10 mb-8 select-none">"</div>
+                <blockquote class="text-3xl md:text-4xl lg:text-5xl serif font-normal leading-[1.3] tracking-tight max-w-4xl mx-auto mb-10 testimonial-text">
+                    "Fast turnaround, professional crew, zero punch list items. A&A sets the standard for construction cleaning."
+                </blockquote>
+                <div class="opacity-0 transition-opacity duration-1000 author-info flex flex-col items-center">
+                    <div class="testimonial-avatar bg-stone-800 text-[#C9A94E] mb-4">JR</div>
+                    <p class="text-stone-200 font-light text-sm mb-1">James Rodriguez</p>
+                    <p class="text-stone-400 font-light tracking-widest uppercase text-[10px]">Operations Director, Prestige Developments</p>
+                    <div class="gold-line"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Testimonial Navigation Dots -->
+        <div class="flex justify-center gap-3 mt-8" id="testimonial-dots">
+            <button class="testimonial-dot active" data-slide="0" aria-label="View testimonial 1"></button>
+            <button class="testimonial-dot" data-slide="1" aria-label="View testimonial 2"></button>
+            <button class="testimonial-dot" data-slide="2" aria-label="View testimonial 3"></button>
+            <button class="testimonial-dot" data-slide="3" aria-label="View testimonial 4"></button>
         </div>
     </section>
 
@@ -522,8 +851,8 @@
                         <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0">Request a Quote</h3>
                         <p class="text-stone-600 font-light">Submit our quick form or call us directly. We respond within the hour.</p>
                     </div>
-                    <div class="hidden md:block w-full md:w-1/2 md:pl-16 slide-in-right">
-                        <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2670&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Contacting">
+                    <div class="w-full md:w-1/2 md:pl-16 slide-in-right mt-6 md:mt-0">
+                        <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2670&auto=format&fit=crop" class="w-full h-40 md:h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Contacting" loading="lazy">
                     </div>
                 </div>
 
@@ -534,8 +863,8 @@
                         <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0 z-20">We Assess</h3>
                         <p class="text-stone-600 font-light z-20">We review the scope, visit if needed, and provide a detailed estimate.</p>
                     </div>
-                    <div class="hidden md:block w-full md:w-1/2 md:pr-16 slide-in-left">
-                        <img src="https://images.unsplash.com/photo-1542744094-3a31f272c490?q=80&w=2670&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Assessing">
+                    <div class="w-full md:w-1/2 md:pr-16 slide-in-left mt-6 md:mt-0">
+                        <img src="https://images.unsplash.com/photo-1542744094-3a31f272c490?q=80&w=2670&auto=format&fit=crop" class="w-full h-40 md:h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Assessing" loading="lazy">
                     </div>
                 </div>
 
@@ -546,8 +875,8 @@
                         <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0">We Clean</h3>
                         <p class="text-stone-600 font-light">Our insured, bilingual crew handles every detail with proven standards.</p>
                     </div>
-                    <div class="hidden md:block w-full md:w-1/2 md:pl-16 slide-in-right">
-                        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2670&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Cleaning">
+                    <div class="w-full md:w-1/2 md:pl-16 slide-in-right mt-6 md:mt-0">
+                        <img src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=2670&auto=format&fit=crop" class="w-full h-40 md:h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Cleaning" loading="lazy">
                     </div>
                 </div>
 
@@ -558,8 +887,8 @@
                         <h3 class="text-2xl font-serif text-stone-900 tracking-tight mb-3 mt-4 md:mt-0 z-20">You Walk Through</h3>
                         <p class="text-stone-600 font-light z-20">Final QA review before we hand off the finished space.</p>
                     </div>
-                    <div class="hidden md:block w-full md:w-1/2 md:pr-16 slide-in-left">
-                        <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop" class="w-full h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Walkthrough">
+                    <div class="w-full md:w-1/2 md:pr-16 slide-in-left mt-6 md:mt-0">
+                        <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop" class="w-full h-40 md:h-56 object-cover grayscale opacity-50 group-[.is-active]:grayscale-0 group-[.is-active]:opacity-100 transition-all duration-700" alt="Walkthrough" loading="lazy">
                     </div>
                 </div>
 
@@ -574,28 +903,28 @@
                 <div class="max-w-lg w-full">
                     <span class="block text-[10px] uppercase tracking-[0.2em] mb-6 font-medium text-stone-500">About A&A</span>
                     <h2 class="text-4xl md:text-5xl font-serif text-stone-900 tracking-tight mb-8">Built on Standards</h2>
-                    
+
                     <div class="space-y-6 text-stone-600 font-light text-lg leading-relaxed mb-10">
                         <p>
-                            A&A Cleaning was built on a singular principle: the job isn't done until every detail meets the standard. 
+                            A&A Cleaning was built on a singular principle: the job isn't done until every detail meets the standard.
                         </p>
                         <p>
                             Founded by Areli, we understand that the final clean is the bridge between a chaotic job site and a finished masterpiece. From rough cleans on active construction sites to final walk-throughs on luxury apartments, we bring an unyielding dedication to your timeline.
                         </p>
                     </div>
 
-                    <blockquote class="text-2xl font-serif italic text-stone-900 leading-snug pl-6 border-l-2 border-[#C9A94E] mb-12 opacity-0 transition-opacity duration-1000 delay-500 slide-in-left">
+                    <blockquote class="text-2xl font-serif italic text-stone-900 leading-snug pl-6 border-l-2 border-[#C9A94E] mb-12 slide-in-left">
                         "We don't leave until it's right."
                     </blockquote>
 
-                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors group-hover:gap-4 duration-300 border-b border-stone-900 pb-1 hover:border-stone-500">
-                        Learn More About Us <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                    <a href="#" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-stone-900 hover:text-stone-500 transition-colors duration-300 border-b border-stone-900 pb-1 hover:border-stone-500 open-floating-form">
+                        Work With Us <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
                     </a>
                 </div>
             </div>
-            
+
             <div class="w-full md:w-[45%] relative overflow-hidden h-[50vh] md:h-auto slide-in-right">
-                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2670&auto=format&fit=crop" alt="A&A Cleaning Standards" class="absolute inset-0 w-full h-full object-cover parallax-img">
+                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2670&auto=format&fit=crop" alt="A&A Cleaning Standards" class="absolute inset-0 w-full h-full object-cover parallax-img" loading="lazy">
             </div>
         </div>
     </section>
@@ -604,7 +933,7 @@
     <section class="py-24 md:py-32 bg-stone-50 overflow-hidden text-center border-b border-stone-200">
         <div class="max-w-7xl mx-auto px-6">
             <span class="block text-[10px] uppercase tracking-[0.2em] mb-12 font-medium text-stone-500 fade-in-up-scroll">Where We Work</span>
-            
+
             <div class="flex flex-col items-center justify-center gap-6 md:gap-10">
                 <h3 class="text-6xl md:text-8xl lg:text-9xl font-serif text-stone-900 tracking-tight leading-none hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-100 hover:scale-105 transform">AUSTIN</h3>
                 <div class="flex flex-wrap justify-center gap-x-8 md:gap-x-16 gap-y-4">
@@ -618,21 +947,21 @@
                     <span class="text-2xl md:text-4xl lg:text-5xl font-serif text-stone-500 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-300 hover:scale-105 transform">Hutto</span>
                 </div>
                 <div class="flex flex-wrap justify-center gap-x-8 gap-y-4">
-                    <span class="text-3xl md:text-5xl lg:text-6xl font-serif text-stone-700 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-400 hover:scale-105 transform">San Marcos</span>
+                    <span class="text-3xl md:text-5xl lg:text-6xl font-serif text-stone-700 hover:text-[#C9A94E] transition-colors duration-500 cursor-default fade-in-up-scroll delay-[400ms] hover:scale-105 transform">San Marcos</span>
                 </div>
             </div>
-            
+
             <p class="mt-16 text-stone-500 font-light text-sm uppercase tracking-widest fade-in-up-scroll delay-500">
                 Serving the greater Austin metropolitan area
             </p>
         </div>
     </section>
 
-    <!-- MODULE Q1: Split Conversation (Quote Form) -->
+    <!-- MODULE Q1: Split Conversation (Quote Form) with Floating Labels -->
     <section id="quote" class="bg-white overflow-hidden">
         <div class="flex flex-col md:flex-row w-full min-h-screen">
             <div class="w-full md:w-[50%] relative overflow-hidden h-[40vh] md:h-auto">
-                <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2700&auto=format&fit=crop" alt="Completed luxury apartment" class="absolute inset-0 w-full h-full object-cover">
+                <img src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2700&auto=format&fit=crop" alt="Completed luxury apartment" class="absolute inset-0 w-full h-full object-cover" loading="lazy">
                 <div class="absolute inset-0 bg-stone-900/40"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-transparent"></div>
                 <div class="absolute bottom-12 left-12 right-12 z-10 slide-in-left">
@@ -647,21 +976,25 @@
                 <div class="w-full max-w-lg mx-auto">
                     <h3 class="text-3xl font-serif text-stone-900 tracking-tight mb-2">Request a Quote</h3>
                     <p class="text-stone-600 font-light mb-10">Tell us about your project. We call back within the hour.</p>
-                    
+
                     <form class="space-y-6" id="inline-quote-form" onsubmit="event.preventDefault(); document.getElementById('inline-submit-btn').innerHTML = '<i data-lucide=\'check-circle\' class=\'w-4 h-4 mr-2 inline\'></i> We\'ll call you soon'; document.getElementById('inline-submit-btn').classList.add('bg-green-700', 'hover:bg-green-800'); lucide.createIcons(); setTimeout(() => this.reset(), 3000);">
-                        <div class="space-y-2">
-                            <input type="text" id="q1-name" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Name *">
+                        <div class="float-field">
+                            <input type="text" id="q1-name" required placeholder=" ">
+                            <label for="q1-name">Name *</label>
                         </div>
-                        <div class="space-y-2">
-                            <input type="text" id="q1-company" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Company Name *">
+                        <div class="float-field">
+                            <input type="text" id="q1-company" required placeholder=" ">
+                            <label for="q1-company">Company Name *</label>
                         </div>
-                        <div class="space-y-2">
-                            <input type="tel" id="q1-phone" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Phone *">
+                        <div class="float-field">
+                            <input type="tel" id="q1-phone" required placeholder=" ">
+                            <label for="q1-phone">Phone *</label>
                         </div>
-                        <div class="space-y-2">
-                            <input type="email" id="q1-email" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Email Address">
+                        <div class="float-field">
+                            <input type="email" id="q1-email" placeholder=" ">
+                            <label for="q1-email">Email Address</label>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="relative">
                                 <select id="q1-service" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-400 uppercase tracking-widest text-sm font-light focus:outline-none focus:border-stone-900 transition-colors cursor-pointer rounded-none">
@@ -670,6 +1003,7 @@
                                     <option value="final-clean" class="text-stone-900 uppercase tracking-normal">Final Clean</option>
                                     <option value="commercial" class="text-stone-900 uppercase tracking-normal">Commercial</option>
                                     <option value="move" class="text-stone-900 uppercase tracking-normal">Move-In / Move-Out</option>
+                                    <option value="windows-power" class="text-stone-900 uppercase tracking-normal">Windows & Power Wash</option>
                                 </select>
                                 <i data-lucide="chevron-down" stroke-width="1.5" class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"></i>
                             </div>
@@ -685,8 +1019,9 @@
                             </div>
                         </div>
 
-                        <div class="space-y-2">
-                            <textarea id="q1-description" rows="3" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest resize-none" placeholder="Project Description"></textarea>
+                        <div class="float-field">
+                            <textarea id="q1-description" rows="3" class="resize-none" placeholder=" "></textarea>
+                            <label for="q1-description">Project Description</label>
                         </div>
 
                         <div class="pt-4">
@@ -694,6 +1029,10 @@
                                 Request a Quote
                             </button>
                             <p class="text-center text-[10px] text-stone-400 mt-4 uppercase tracking-widest">We never share your information.</p>
+                            <div class="flex items-center justify-center gap-2 text-[10px] text-stone-500 uppercase tracking-widest mt-3">
+                                <i data-lucide="zap" stroke-width="1.5" class="w-3 h-3 text-[#C9A94E]"></i>
+                                <span>Avg. response: under 1 hour</span>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -703,7 +1042,7 @@
 
     <!-- MODULE E1: Join the Team (Editorial Band) -->
     <section id="careers" class="relative w-full h-[50vh] md:h-[60vh] flex items-center justify-center overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=2669&auto=format&fit=crop" alt="Construction crew at high-end job site" class="absolute inset-0 w-full h-full object-cover parallax-bg-fast">
+        <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?q=80&w=2669&auto=format&fit=crop" alt="Construction crew at high-end job site" class="absolute inset-0 w-full h-full object-cover parallax-bg-fast" loading="lazy">
         <div class="absolute inset-0 bg-stone-900/60"></div>
         <div class="relative z-10 text-center px-6 fade-in-up-scroll">
             <h2 class="text-4xl md:text-5xl lg:text-6xl font-serif text-white tracking-tight mb-4">We're Building a Team</h2>
@@ -720,7 +1059,7 @@
     <footer class="bg-stone-950 text-stone-400 pt-24 pb-12 border-t border-stone-800">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-16 mb-20">
             <!-- Brand -->
-            <div class="md:w-1/3">
+            <div class="md:w-1/4">
                 <a href="#" class="flex items-center gap-3 group mb-6">
                     <span class="font-serif text-3xl font-normal tracking-tight text-stone-50">A&A</span>
                     <span class="w-px h-5 bg-stone-700"></span>
@@ -735,34 +1074,54 @@
             </div>
 
             <!-- Navigation -->
-            <div class="md:w-1/3 flex flex-col sm:flex-row gap-12 sm:gap-24">
-                <div>
-                    <h5 class="text-stone-50 text-[10px] uppercase tracking-widest font-medium mb-6">Quick Links</h5>
-                    <ul class="space-y-4 text-sm font-light">
-                        <li><a href="#services" class="hover:text-white transition-colors">Services</a></li>
-                        <li><a href="#about" class="hover:text-white transition-colors">About Us</a></li>
-                        <li><a href="#careers" class="hover:text-white transition-colors">Careers</a></li>
-                        <li><a href="#quote" class="hover:text-white transition-colors">Request Quote</a></li>
-                    </ul>
-                </div>
+            <div class="md:w-1/4">
+                <h5 class="text-stone-50 text-[10px] uppercase tracking-widest font-medium mb-6">Quick Links</h5>
+                <ul class="space-y-4 text-sm font-light">
+                    <li><a href="#services" class="hover:text-white transition-colors">Services</a></li>
+                    <li><a href="#about" class="hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="#careers" class="hover:text-white transition-colors">Careers</a></li>
+                    <li><a href="#quote" class="hover:text-white transition-colors">Request Quote</a></li>
+                </ul>
+            </div>
+
+            <!-- Hours -->
+            <div class="md:w-1/4">
+                <h5 class="text-stone-50 text-[10px] uppercase tracking-widest font-medium mb-6">Hours</h5>
+                <ul class="space-y-4 text-sm font-light">
+                    <li class="flex justify-between"><span>Mon – Fri</span><span class="text-stone-300">7:00 AM – 6:00 PM</span></li>
+                    <li class="flex justify-between"><span>Saturday</span><span class="text-stone-300">8:00 AM – 4:00 PM</span></li>
+                    <li class="flex justify-between"><span>Sunday</span><span class="text-stone-300">By Appointment</span></li>
+                </ul>
             </div>
 
             <!-- Contact -->
-            <div class="md:w-1/3">
+            <div class="md:w-1/4">
                 <h5 class="text-stone-50 text-[10px] uppercase tracking-widest font-medium mb-6">Contact</h5>
                 <ul class="space-y-4 text-sm font-light mb-8">
                     <li><a href="tel:5125550199" class="hover:text-white transition-colors flex items-center gap-3"><i data-lucide="phone" stroke-width="1.5" class="w-4 h-4"></i> (512) 555-0199</a></li>
                     <li><a href="mailto:AAcleaningservices@outlook.com" class="hover:text-white transition-colors flex items-center gap-3"><i data-lucide="mail" stroke-width="1.5" class="w-4 h-4"></i> AAcleaningservices@outlook.com</a></li>
                 </ul>
-                <div class="text-sm font-light text-stone-500">
+                <div class="text-sm font-light text-stone-500 mb-6">
                     <p class="flex items-start gap-3"><i data-lucide="map-pin" stroke-width="1.5" class="w-4 h-4 mt-0.5"></i> Serving Austin, Round Rock, Georgetown, Kyle, Buda, and surrounding areas.</p>
                 </div>
             </div>
         </div>
 
+        <!-- Footer CTA -->
+        <div class="max-w-7xl mx-auto px-6 pb-16">
+            <div class="py-12 px-8 border border-stone-800 rounded-sm text-center">
+                <p class="text-stone-400 text-xs uppercase tracking-[0.2em] mb-4 font-medium">Ready to Get Started?</p>
+                <h4 class="text-2xl md:text-3xl font-serif text-stone-50 tracking-tight mb-6">Get Your Free Estimate Today</h4>
+                <button class="inline-flex items-center gap-3 px-10 py-4 bg-[#C9A94E] text-stone-900 text-xs uppercase tracking-widest font-medium rounded-sm hover:bg-[#b8993f] transition-colors duration-300 open-floating-form">
+                    Request a Quote
+                    <i data-lucide="arrow-right" stroke-width="1.5" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+
         <!-- Copyright -->
         <div class="max-w-7xl mx-auto px-6 pt-8 border-t border-stone-900 flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest font-medium text-stone-600">
-            <p>© 2026 A&A Cleaning Services.</p>
+            <p>&copy; 2026 A&A Cleaning Services.</p>
             <div class="flex gap-6">
                 <a href="#" class="hover:text-stone-400 transition-colors">Privacy Policy</a>
                 <a href="#" class="hover:text-stone-400 transition-colors">Terms of Service</a>
@@ -780,23 +1139,27 @@
                         <i data-lucide="x" stroke-width="1.5" class="w-6 h-6"></i>
                     </button>
                 </div>
-                
+
                 <p class="text-stone-600 font-light text-sm mb-10">Tell us about your project. We call back within the hour to align with your schedule.</p>
-                
+
                 <form class="space-y-6 flex-grow" id="floating-quote-form" onsubmit="event.preventDefault(); document.getElementById('floating-submit-btn').innerHTML = '<i data-lucide=\'check-circle\' class=\'w-4 h-4 mr-2 inline\'></i> Sent'; document.getElementById('floating-submit-btn').classList.add('bg-green-700', 'hover:bg-green-800'); lucide.createIcons(); setTimeout(() => { this.reset(); closeFloatingForm(); }, 2000);">
-                    <div class="space-y-2">
-                        <input type="text" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Name *">
+                    <div class="float-field">
+                        <input type="text" id="fq-name" required placeholder=" ">
+                        <label for="fq-name">Name *</label>
                     </div>
-                    <div class="space-y-2">
-                        <input type="text" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Company Name *">
+                    <div class="float-field">
+                        <input type="text" id="fq-company" required placeholder=" ">
+                        <label for="fq-company">Company Name *</label>
                     </div>
-                    <div class="space-y-2">
-                        <input type="tel" required class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Phone *">
+                    <div class="float-field">
+                        <input type="tel" id="fq-phone" required placeholder=" ">
+                        <label for="fq-phone">Phone *</label>
                     </div>
-                    <div class="space-y-2">
-                        <input type="email" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest" placeholder="Email Address">
+                    <div class="float-field">
+                        <input type="email" id="fq-email" placeholder=" ">
+                        <label for="fq-email">Email Address</label>
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-6">
                         <div class="relative">
                             <select class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-400 uppercase tracking-widest text-sm font-light focus:outline-none focus:border-stone-900 transition-colors cursor-pointer rounded-none">
@@ -804,6 +1167,8 @@
                                 <option value="post-construction" class="text-stone-900 uppercase tracking-normal">Post-Construction</option>
                                 <option value="final-clean" class="text-stone-900 uppercase tracking-normal">Final Clean</option>
                                 <option value="commercial" class="text-stone-900 uppercase tracking-normal">Commercial</option>
+                                <option value="move" class="text-stone-900 uppercase tracking-normal">Move-In / Move-Out</option>
+                                <option value="windows-power" class="text-stone-900 uppercase tracking-normal">Windows & Power Wash</option>
                             </select>
                             <i data-lucide="chevron-down" stroke-width="1.5" class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"></i>
                         </div>
@@ -813,22 +1178,28 @@
                                 <option value="immediate" class="text-stone-900 uppercase tracking-normal">Immediate</option>
                                 <option value="week" class="text-stone-900 uppercase tracking-normal">This Week</option>
                                 <option value="month" class="text-stone-900 uppercase tracking-normal">This Month</option>
+                                <option value="future" class="text-stone-900 uppercase tracking-normal">Planning</option>
                             </select>
                             <i data-lucide="chevron-down" stroke-width="1.5" class="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none"></i>
                         </div>
                     </div>
 
-                    <div class="space-y-2">
-                        <textarea rows="2" class="w-full bg-transparent border-b border-stone-300 py-3 text-stone-900 text-sm font-light focus:outline-none focus:border-stone-900 transition-colors placeholder:text-stone-400 placeholder:uppercase placeholder:tracking-widest resize-none" placeholder="Project Description"></textarea>
+                    <div class="float-field">
+                        <textarea id="fq-desc" rows="2" class="resize-none" placeholder=" "></textarea>
+                        <label for="fq-desc">Project Description</label>
                     </div>
 
                     <div class="pt-6 mt-auto">
                         <button type="submit" id="floating-submit-btn" class="w-full bg-stone-900 text-stone-50 font-medium text-xs py-4 rounded-sm uppercase tracking-widest hover:bg-stone-800 transition-all duration-300">
                             Request a Quote
                         </button>
+                        <div class="flex items-center justify-center gap-2 text-[10px] text-stone-500 uppercase tracking-widest mt-3">
+                            <i data-lucide="zap" stroke-width="1.5" class="w-3 h-3 text-[#C9A94E]"></i>
+                            <span>Avg. response: under 1 hour</span>
+                        </div>
                     </div>
                 </form>
-                
+
                 <div class="mt-8 pt-8 border-t border-stone-200 text-center">
                     <p class="text-[10px] text-stone-500 uppercase tracking-widest mb-2">Or Call Us Directly</p>
                     <a href="tel:5125550199" class="text-stone-900 font-medium hover:text-stone-600 transition-colors inline-flex items-center gap-2">
@@ -837,6 +1208,35 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Social Proof Notification Toast -->
+    <div id="social-proof-toast" class="notification-toast fixed bottom-28 md:bottom-6 left-6 z-50 bg-white shadow-xl border border-stone-200 rounded-sm px-5 py-4 flex items-center gap-4 max-w-xs">
+        <div class="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center flex-shrink-0">
+            <i data-lucide="hard-hat" stroke-width="1.5" class="w-5 h-5 text-stone-600"></i>
+        </div>
+        <div>
+            <p class="text-sm font-medium text-stone-900">3 new projects booked</p>
+            <p class="text-xs text-stone-500 font-light">Austin metro area — this week</p>
+        </div>
+        <button id="close-toast" class="text-stone-400 hover:text-stone-600 ml-1 flex-shrink-0 p-1">
+            <i data-lucide="x" stroke-width="1.5" class="w-3.5 h-3.5"></i>
+        </button>
+    </div>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="fixed bottom-24 md:bottom-8 right-6 w-12 h-12 bg-stone-900 text-stone-50 rounded-full shadow-lg flex items-center justify-center z-40 opacity-0 pointer-events-none transition-all duration-300 hover:bg-[#C9A94E] hover:text-stone-900" aria-label="Back to top">
+        <i data-lucide="chevron-up" stroke-width="2" class="w-5 h-5"></i>
+    </button>
+
+    <!-- Sticky Mobile CTA Bar -->
+    <div id="mobile-cta" class="fixed bottom-0 left-0 w-full z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 p-3 flex gap-3 md:hidden translate-y-full transition-transform duration-300">
+        <a href="tel:5125550199" class="flex-1 inline-flex items-center justify-center gap-2 py-3 border border-stone-900 text-stone-900 text-xs uppercase tracking-widest font-medium rounded-sm hover:bg-stone-100 transition-colors">
+            <i data-lucide="phone" stroke-width="1.5" class="w-4 h-4"></i> Call
+        </a>
+        <button class="flex-1 py-3 bg-stone-900 text-stone-50 text-xs uppercase tracking-widest font-medium rounded-sm hover:bg-stone-800 transition-colors open-floating-form">
+            Get a Quote
+        </button>
     </div>
 
     <script>
@@ -857,13 +1257,12 @@
         window.addEventListener('scroll', () => {
             const parallaxFast = document.querySelectorAll('.parallax-bg-fast');
             parallaxFast.forEach(bg => {
-                const scrolled = window.pageYOffset;
                 const rect = bg.parentElement.getBoundingClientRect();
                 if(rect.top < window.innerHeight && rect.bottom > 0) {
                     bg.style.transform = `translateY(${(rect.top) * 0.15}px) scale(1.1)`;
                 }
             });
-            
+
             document.querySelectorAll('.parallax-img').forEach(bg => {
                 const rect = bg.parentElement.getBoundingClientRect();
                 if(rect.top < window.innerHeight && rect.bottom > 0) {
@@ -872,14 +1271,159 @@
             });
         });
 
+        // Scroll Progress Indicator
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            document.getElementById('scroll-progress').style.width = `${progress}%`;
+        });
+
+        // Active Nav Highlighting
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('#services, #about, #careers, #quote');
+        const navObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    navLinks.forEach(link => {
+                        if (link.getAttribute('data-section') === id) {
+                            link.classList.add('nav-link-active');
+                        } else {
+                            link.classList.remove('nav-link-active');
+                        }
+                    });
+                }
+            });
+        }, { rootMargin: '-30% 0px -70% 0px', threshold: 0 });
+
+        sections.forEach(section => navObserver.observe(section));
+
+        // Back to Top Button
+        const backToTop = document.getElementById('back-to-top');
+        window.addEventListener('scroll', () => {
+            const halfPage = document.documentElement.scrollHeight * 0.3;
+            if (window.scrollY > halfPage) {
+                backToTop.classList.remove('opacity-0', 'pointer-events-none');
+                backToTop.classList.add('opacity-100');
+            } else {
+                backToTop.classList.add('opacity-0', 'pointer-events-none');
+                backToTop.classList.remove('opacity-100');
+            }
+        });
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Sticky Mobile CTA Bar
+        const mobileCta = document.getElementById('mobile-cta');
+        const heroSection = document.getElementById('main-content');
+        const quoteSection = document.getElementById('quote');
+
+        window.addEventListener('scroll', () => {
+            const heroBottom = heroSection.getBoundingClientRect().bottom;
+            const quoteTop = quoteSection.getBoundingClientRect().top;
+            const windowHeight = window.innerHeight;
+
+            if (heroBottom < 0 && quoteTop > windowHeight * 0.5) {
+                mobileCta.classList.remove('translate-y-full');
+            } else {
+                mobileCta.classList.add('translate-y-full');
+            }
+        });
+
+        // Mobile Nav Logic
+        const mobileNav = document.getElementById('mobile-nav');
+        const openMobileBtn = document.getElementById('open-mobile-nav');
+        const closeMobileBtn = document.getElementById('close-mobile-nav');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+        openMobileBtn.addEventListener('click', () => {
+            mobileNav.classList.add('mobile-nav-open');
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
+        });
+
+        closeMobileBtn.addEventListener('click', () => {
+            mobileNav.classList.remove('mobile-nav-open');
+            document.body.style.overflow = '';
+        });
+
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileNav.classList.remove('mobile-nav-open');
+                document.body.style.overflow = '';
+            });
+        });
+
         // Before/After Slider Logic
+        const baPairs = [
+            {
+                before: "https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2670&auto=format&fit=crop",
+                after: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop",
+                caption: "Commercial Office Finish • Downtown Austin, TX"
+            },
+            {
+                before: "https://images.unsplash.com/photo-1565538810643-b5bdb714032a?q=80&w=2670&auto=format&fit=crop",
+                after: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=2670&auto=format&fit=crop",
+                caption: "Luxury Apartment Turnover • South Congress, Austin"
+            },
+            {
+                before: "https://images.unsplash.com/photo-1517581177682-a085bb7ffb15?q=80&w=2670&auto=format&fit=crop",
+                after: "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600&auto=format&fit=crop",
+                caption: "Post-Construction Final Clean • Round Rock, TX"
+            }
+        ];
+
+        let currentBaPair = 0;
         const sliderContainer = document.getElementById('ba-slider-container');
         const beforeImage = document.getElementById('ba-before-image');
+        const baBeforeImg = document.getElementById('ba-before-img');
+        const baAfterImg = document.getElementById('ba-after-img');
         const baInnerImg = document.querySelector('.ba-inner-image');
         const divider = document.getElementById('ba-divider');
         const labelBefore = document.getElementById('ba-label-before');
         const labelAfter = document.getElementById('ba-label-after');
-        
+        const baCaption = document.getElementById('ba-caption');
+        const baHint = document.getElementById('ba-hint');
+        const baDots = document.querySelectorAll('.ba-dot');
+
+        // Gallery dot navigation with crossfade
+        baDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const pairIdx = parseInt(dot.dataset.pair);
+                if (pairIdx === currentBaPair) return;
+                currentBaPair = pairIdx;
+
+                // Crossfade transition
+                sliderContainer.style.opacity = '0';
+                setTimeout(() => {
+                    // Update images
+                    baBeforeImg.src = baPairs[pairIdx].before;
+                    baAfterImg.src = baPairs[pairIdx].after;
+                    baCaption.textContent = baPairs[pairIdx].caption;
+
+                    // Reset slider position
+                    beforeImage.style.width = '50%';
+                    divider.style.left = '50%';
+                    divider.setAttribute('aria-valuenow', '50');
+                    labelBefore.style.opacity = '1';
+                    labelAfter.style.opacity = '1';
+
+                    // Update inner image width
+                    if(baInnerImg) baInnerImg.style.width = `${sliderContainer.offsetWidth}px`;
+
+                    sliderContainer.style.opacity = '1';
+                }, 300);
+
+                // Update dots
+                baDots.forEach(d => d.classList.remove('active', 'bg-stone-900'));
+                baDots.forEach(d => { if(!d.classList.contains('active')) d.classList.add('bg-stone-300'); });
+                dot.classList.add('active', 'bg-stone-900');
+                dot.classList.remove('bg-stone-300');
+            });
+        });
+
         if (sliderContainer) {
             const setImgWidth = () => {
                 if(baInnerImg) {
@@ -891,20 +1435,26 @@
 
             let isDragging = false;
 
+            const applySliderPercentage = (percentage) => {
+                const clamped = Math.max(0, Math.min(percentage, 100));
+                beforeImage.style.width = `${clamped}%`;
+                divider.style.left = `${clamped}%`;
+                divider.setAttribute('aria-valuenow', `${Math.round(clamped)}`);
+
+                if (clamped < 15) labelBefore.style.opacity = '0';
+                else labelBefore.style.opacity = '1';
+
+                if (clamped > 85) labelAfter.style.opacity = '0';
+                else labelAfter.style.opacity = '1';
+            };
+
             const updateSlider = (clientX) => {
                 const rect = sliderContainer.getBoundingClientRect();
                 let x = clientX - rect.left;
                 x = Math.max(0, Math.min(x, rect.width));
-                
-                const percentage = (x / rect.width) * 100;
-                beforeImage.style.width = `${percentage}%`;
-                divider.style.left = `${percentage}%`;
 
-                if (percentage < 15) labelBefore.style.opacity = '0';
-                else labelBefore.style.opacity = '1';
-                
-                if (percentage > 85) labelAfter.style.opacity = '0';
-                else labelAfter.style.opacity = '1';
+                const percentage = (x / rect.width) * 100;
+                applySliderPercentage(percentage);
             };
 
             const onMouseMove = (e) => {
@@ -920,23 +1470,46 @@
             divider.addEventListener('mousedown', () => {
                 isDragging = true;
                 document.body.style.userSelect = 'none';
+                // Hide hint on first drag
+                if(baHint) baHint.style.opacity = '0';
             });
-            
+
             divider.addEventListener('touchstart', () => {
                 isDragging = true;
                 document.body.style.userSelect = 'none';
+                if(baHint) baHint.style.opacity = '0';
             }, {passive: true});
 
             window.addEventListener('mousemove', onMouseMove);
             window.addEventListener('touchmove', onMouseMove, {passive: true});
             window.addEventListener('mouseup', onMouseUp);
             window.addEventListener('touchend', onMouseUp);
+
+            divider.addEventListener('keydown', (e) => {
+                const current = parseFloat(divider.getAttribute('aria-valuenow') || '50');
+                let next = current;
+
+                if (e.key === 'ArrowLeft') next = current - 5;
+                if (e.key === 'ArrowRight') next = current + 5;
+                if (e.key === 'Home') next = 0;
+                if (e.key === 'End') next = 100;
+
+                if (next !== current) {
+                    e.preventDefault();
+                    applySliderPercentage(next);
+                    if(baHint) baHint.style.opacity = '0';
+                }
+            });
+
+            applySliderPercentage(50);
         }
 
-        // Module T2: Testimonial Logic
+        // Module T2: Testimonial Logic with Avatars & Dots
         const slides = document.querySelectorAll('.testimonial-slide');
+        const testimonialDots = document.querySelectorAll('.testimonial-dot');
+        const testimonialSection = document.getElementById('testimonial-section');
         let currentSlide = 0;
-        
+
         // Wrap words for reveal animation
         slides.forEach(slide => {
             const textEl = slide.querySelector('.testimonial-text');
@@ -945,7 +1518,7 @@
             words.forEach((word, idx) => {
                 const span = document.createElement('span');
                 span.innerText = word;
-                span.className = 'testimonial-word delay-[' + (idx * 50) + 'ms]';
+                span.className = 'testimonial-word';
                 span.style.transitionDelay = `${idx * 0.05}s`;
                 textEl.appendChild(span);
                 textEl.appendChild(document.createTextNode(' '));
@@ -955,7 +1528,7 @@
         const revealTestimonial = (slide) => {
             const words = slide.querySelectorAll('.testimonial-word');
             words.forEach(w => w.classList.add('visible'));
-            
+
             const authorInfo = slide.querySelector('.author-info');
             authorInfo.classList.remove('opacity-0');
             authorInfo.querySelector('.gold-line').classList.add('is-visible');
@@ -964,10 +1537,63 @@
         const hideTestimonial = (slide) => {
             const words = slide.querySelectorAll('.testimonial-word');
             words.forEach(w => w.classList.remove('visible'));
-            
+
             const authorInfo = slide.querySelector('.author-info');
             authorInfo.classList.add('opacity-0');
             authorInfo.querySelector('.gold-line').classList.remove('is-visible');
+        };
+
+        const goToSlide = (index) => {
+            if (index === currentSlide) return;
+            hideTestimonial(slides[currentSlide]);
+            slides[currentSlide].classList.remove('active');
+
+            currentSlide = index;
+            slides[currentSlide].classList.add('active');
+
+            // Update dots
+            testimonialDots.forEach((d, i) => {
+                d.classList.toggle('active', i === currentSlide);
+            });
+
+            setTimeout(() => { revealTestimonial(slides[currentSlide]); }, 100);
+        };
+
+        // Dot click navigation
+        testimonialDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const idx = parseInt(dot.dataset.slide);
+                goToSlide(idx);
+                // Reset auto-rotation timer
+                if (window.testimonialInterval) {
+                    clearInterval(window.testimonialInterval);
+                    window.testimonialInterval = setInterval(autoRotate, 6000);
+                }
+            });
+        });
+
+        const autoRotate = () => {
+            hideTestimonial(slides[currentSlide]);
+            slides[currentSlide].classList.remove('active');
+
+            currentSlide = (currentSlide + 1) % slides.length;
+
+            slides[currentSlide].classList.add('active');
+            testimonialDots.forEach((d, i) => {
+                d.classList.toggle('active', i === currentSlide);
+            });
+            setTimeout(() => { revealTestimonial(slides[currentSlide]); }, 100);
+        };
+
+        const startTestimonialRotation = () => {
+            if(!window.testimonialInterval) {
+                window.testimonialInterval = setInterval(autoRotate, 6000);
+            }
+        };
+
+        const stopTestimonialRotation = () => {
+            clearInterval(window.testimonialInterval);
+            window.testimonialInterval = null;
         };
 
         // Scroll observer for testimonials
@@ -975,27 +1601,21 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     revealTestimonial(slides[currentSlide]);
-                    
-                    // Start rotation only when visible
-                    if(!window.testimonialInterval) {
-                        window.testimonialInterval = setInterval(() => {
-                            hideTestimonial(slides[currentSlide]);
-                            slides[currentSlide].classList.remove('active');
-                            
-                            currentSlide = (currentSlide + 1) % slides.length;
-                            
-                            slides[currentSlide].classList.add('active');
-                            setTimeout(() => { revealTestimonial(slides[currentSlide]); }, 100);
-                        }, 6000);
-                    }
+                    startTestimonialRotation();
                 } else {
-                    clearInterval(window.testimonialInterval);
-                    window.testimonialInterval = null;
+                    stopTestimonialRotation();
                 }
             });
         }, { threshold: 0.5 });
-        
+
         if(slides.length > 0) testimonialObserver.observe(slides[0].parentElement);
+
+        if (testimonialSection) {
+            testimonialSection.addEventListener('mouseenter', stopTestimonialRotation);
+            testimonialSection.addEventListener('mouseleave', startTestimonialRotation);
+            testimonialSection.addEventListener('focusin', stopTestimonialRotation);
+            testimonialSection.addEventListener('focusout', startTestimonialRotation);
+        }
 
         // Module P1: Timeline Scroll Logic
         const timelineContainer = document.getElementById('timeline-container');
@@ -1009,18 +1629,17 @@
                 const containerTop = containerRect.top + window.scrollY;
                 const containerHeight = containerRect.height;
                 const windowCenter = window.scrollY + window.innerHeight / 2;
-                
+
                 let progress = (windowCenter - containerTop) / containerHeight;
                 progress = Math.max(0, Math.min(progress, 1));
-                
+
                 if(progressLine) progressLine.style.height = `${progress * 100}%`;
                 if(progressLineMobile) progressLineMobile.style.height = `${progress * 100}%`;
 
-                timelineSteps.forEach((step, index) => {
+                timelineSteps.forEach((step) => {
                     const stepRect = step.getBoundingClientRect();
                     const stepCenter = stepRect.top + window.scrollY + (stepRect.height / 2);
-                    
-                    // Activate step when the scroll reaches its center
+
                     if(windowCenter > stepCenter - 100) {
                         step.classList.add('is-active');
                     } else {
@@ -1039,7 +1658,8 @@
         const openFloatingForm = () => {
             overlay.classList.remove('opacity-0', 'pointer-events-none');
             panel.classList.remove('translate-x-full');
-            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            document.body.style.overflow = 'hidden';
+            lucide.createIcons();
         };
 
         const closeFloatingForm = () => {
@@ -1052,7 +1672,7 @@
             e.preventDefault();
             openFloatingForm();
         }));
-        
+
         closeBtn.addEventListener('click', closeFloatingForm);
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) closeFloatingForm();
@@ -1060,6 +1680,27 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && !overlay.classList.contains('pointer-events-none')) closeFloatingForm();
         });
+
+        // Social proof toast notification
+        const socialToast = document.getElementById('social-proof-toast');
+        const closeToastBtn = document.getElementById('close-toast');
+        let toastShown = false;
+        window.addEventListener('scroll', () => {
+            if (!toastShown && window.scrollY > window.innerHeight * 0.8) {
+                toastShown = true;
+                setTimeout(() => {
+                    socialToast.classList.add('show');
+                    lucide.createIcons();
+                }, 500);
+                setTimeout(() => socialToast.classList.remove('show'), 7000);
+            }
+        });
+        if (closeToastBtn) {
+            closeToastBtn.addEventListener('click', () => socialToast.classList.remove('show'));
+        }
+
+        // Re-init Lucide icons for dynamically rendered elements
+        lucide.createIcons();
     </script>
 </body>
 </html>

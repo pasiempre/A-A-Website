@@ -1,0 +1,1 @@
+export { VariantAPublicPage } from "./VariantAPublicPage";

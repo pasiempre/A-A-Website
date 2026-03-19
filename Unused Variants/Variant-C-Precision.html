@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A&A Cleaning Services | Precision & Space</title>
+    <meta name="description" content="Standards-driven facility care. Precision cleaning for construction professionals in Austin.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* Typography System */
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .serif { font-family: 'Cormorant Garamond', serif; }
+
+        /* Custom Colors */
+        :root {
+            --color-navy: #0A1628;
+            --color-slate: #1E293B;
+            --color-royal: #2563EB;
+            --color-gold: #C9A94E;
+            --color-gray: #F1F0EE;
+            --color-white: #FAFAF8;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #FAFAF8; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+        /* Module N2: Disappearing Nav */
+        .nav-hidden {
+            transform: translateY(-100%);
+        }
+        .nav-visible {
+            transform: translateY(0);
+        }
+
+        /* Module H3: Typographic Animations */
+        .char-reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: charReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        @keyframes charReveal {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .gold-line-draw {
+            width: 0;
+            animation: lineDraw 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: 1.0s;
+        }
+
+        @keyframes lineDraw {
+            to { width: 80px; }
+        }
+
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .delay-200 { animation-delay: 0.2s; transition-delay: 0.2s; }
+        .delay-400 { animation-delay: 0.4s; transition-delay: 0.4s; }
+        .delay-600 { animation-delay: 0.6s; transition-delay: 0.6s; }
+        .delay-800 { animation-delay: 0.8s; transition-delay: 0.8s; }
+        .delay-1000 { animation-delay: 1.0s; transition-delay: 1.0s; }
+        .delay-1200 { animation-delay: 1.2s; transition-delay: 1.2s; }
+        .delay-1500 { animation-delay: 1.5s; transition-delay: 1.5s; }
+
+        /* Peek Animation for next section hint */
+        @keyframes peekIn {
+            to { opacity: 0.6; transform: translateY(0); }
+        }
+        
+        /* Scroll Triggered Animations */
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        .animate-on-scroll.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+    </style>
+</head>
+<body class="bg-[#FAFAF8] text-[#1E293B] antialiased selection:bg-[#C9A94E] selection:text-white overflow-x-hidden">
+
+    <!-- MODULE N2: Disappearing Nav -->
+    <header id="navbar" class="fixed top-0 left-0 w-full z-50 bg-[#FAFAF8]/95 backdrop-blur-sm border-b border-stone-100 transition-transform duration-500 ease-in-out">
+        <div class="max-w-[1400px] mx-auto px-6 md:px-12 h-24 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="#" class="flex items-center gap-3 group">
+                <span class="font-serif text-3xl text-[#0A1628] tracking-tight group-hover:text-[#C9A94E] transition-colors">A&A</span>
+            </a>
+
+            <!-- Minimal Nav -->
+            <nav class="hidden md:flex gap-16 items-center">
+                <a href="#services" class="text-[11px] uppercase tracking-[0.25em] font-medium text-[#1E293B] hover:text-[#C9A94E] transition-colors">Services</a>
+                <a href="#about" class="text-[11px] uppercase tracking-[0.25em] font-medium text-[#1E293B] hover:text-[#C9A94E] transition-colors">About</a>
+                <a href="#careers" class="text-[11px] uppercase tracking-[0.25em] font-medium text-[#1E293B] hover:text-[#C9A94E] transition-colors">Careers</a>
+            </nav>
+
+            <!-- CTA -->
+            <div class="flex items-center gap-10">
+                <a href="tel:5125550199" class="hidden lg:block text-sm font-light text-[#1E293B] hover:text-[#C9A94E] transition-colors font-serif italic">
+                    (512) 555-0199
+                </a>
+                <a href="#quote" class="text-[11px] uppercase tracking-[0.25em] font-medium text-[#0A1628] border-b border-[#0A1628] pb-1 hover:text-[#C9A94E] hover:border-[#C9A94E] transition-colors">
+                    Get a Quote
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MODULE H3: Typographic Statement -->
+    <section class="relative w-full min-h-screen flex flex-col justify-center items-center text-center px-6 pt-20 pb-32">
+        
+        <div class="max-w-6xl mx-auto z-10">
+            <!-- Headline -->
+            <h1 class="font-serif text-[#0A1628] leading-[0.85] tracking-tight mb-16">
+                <div class="overflow-hidden">
+                    <span class="block text-[13vw] md:text-[160px] char-reveal" style="animation-delay: 0.1s;">Every</span>
+                </div>
+                <div class="overflow-hidden">
+                    <span class="block text-[13vw] md:text-[160px] char-reveal" style="animation-delay: 0.3s;">Surface.</span>
+                </div>
+                <div class="overflow-hidden mt-2 md:mt-6">
+                    <span class="block text-[13vw] md:text-[160px] char-reveal" style="animation-delay: 0.5s;">Every</span>
+                </div>
+                <div class="overflow-hidden">
+                    <span class="block text-[13vw] md:text-[160px] char-reveal italic text-[#1E293B]/80" style="animation-delay: 0.7s;">Detail.</span>
+                </div>
+            </h1>
+
+            <!-- Gold Line -->
+            <div class="h-[2px] bg-[#C9A94E] mx-auto gold-line-draw mb-12"></div>
+
+            <!-- Supporting Copy -->
+            <p class="text-[#1E293B] text-lg md:text-xl font-light max-w-xl mx-auto mb-16 fade-in-up delay-1200">
+                Post-construction & commercial cleaning across the Austin metro area.
+            </p>
+
+            <!-- CTAs -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-10 fade-in-up delay-1500">
+                <a href="#quote" class="px-10 py-4 bg-[#0A1628] text-white text-xs uppercase tracking-[0.25em] font-medium hover:bg-[#C9A94E] transition-colors duration-500">
+                    Request a Quote
+                </a>
+                <a href="tel:5125550199" class="text-sm font-medium text-[#1E293B] hover:text-[#C9A94E] transition-colors flex items-center gap-3 group">
+                    <i data-lucide="phone" class="w-4 h-4 group-hover:scale-110 transition-transform"></i> Call Now
+                </a>
+            </div>
+        </div>
+
+        <!-- Peek of next section (Photo Break) -->
+        <!-- This simulates the top of the next section peeking in to invite scroll -->
+        <div class="absolute bottom-0 left-0 w-full h-[15vh] z-0 overflow-hidden opacity-0 translate-y-10 animate-[peekIn_1.5s_ease-out_2s_forwards]">
+             <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600&auto=format&fit=crop" alt="Peek" class="w-full h-full object-cover object-top">
+             <div class="absolute inset-0 bg-gradient-to-t from-[#FAFAF8] via-[#FAFAF8]/50 to-transparent"></div>
+        </div>
+
+    </section>
+
+    <!-- MODULE S3: Expandable Service List -->
+    <section id="services" class="py-32 bg-[#FAFAF8]">
+        <div class="max-w-6xl mx-auto px-6">
+            <span class="block text-[#C9A94E] text-xs uppercase tracking-[0.25em] mb-16 font-medium">Our Services</span>
+
+            <div class="border-t border-[#1E293B]/20">
+                <!-- Service 1 -->
+                <div class="service-item border-b border-[#1E293B]/20 group">
+                    <button class="w-full py-10 flex items-center justify-between text-left focus:outline-none" onclick="toggleService(0)">
+                        <span class="font-serif text-3xl md:text-5xl text-[#0A1628] group-hover:text-[#C9A94E] transition-colors duration-300">Post-Construction Clean</span>
+                        <div class="flex items-center gap-8">
+                            <span class="hidden md:block text-xs uppercase tracking-widest text-[#1E293B]/60">New Construction</span>
+                            <i data-lucide="arrow-right" class="w-6 h-6 text-[#1E293B] transition-transform duration-300 service-arrow"></i>
+                        </div>
+                    </button>
+                    <div class="service-content grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-out">
+                        <div class="overflow-hidden">
+                            <div class="pb-10 flex flex-col md:flex-row gap-12">
+                                <div class="w-full md:w-1/2 h-[300px] md:h-[400px] overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2662&auto=format&fit=crop" alt="Post Construction" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+                                </div>
+                                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                                    <p class="text-lg font-light text-[#1E293B] mb-8 leading-relaxed">
+                                        Rough and final clean for new construction projects. We handle the debris, dust, and detail work so the space is move-in ready.
+                                    </p>
+                                    <ul class="space-y-3 mb-10 text-sm font-medium text-[#1E293B]/80">
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Multifamily buildings</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Commercial offices</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Schools & institutional</li>
+                                    </ul>
+                                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-[#0A1628] hover:text-[#C9A94E] transition-colors">
+                                        Request a Quote <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="service-item border-b border-[#1E293B]/20 group">
+                    <button class="w-full py-10 flex items-center justify-between text-left focus:outline-none" onclick="toggleService(1)">
+                        <span class="font-serif text-3xl md:text-5xl text-[#0A1628] group-hover:text-[#C9A94E] transition-colors duration-300">Final Clean</span>
+                        <div class="flex items-center gap-8">
+                            <span class="hidden md:block text-xs uppercase tracking-widest text-[#1E293B]/60">Vacant Properties</span>
+                            <i data-lucide="arrow-right" class="w-6 h-6 text-[#1E293B] transition-transform duration-300 service-arrow"></i>
+                        </div>
+                    </button>
+                    <div class="service-content grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-out">
+                        <div class="overflow-hidden">
+                            <div class="pb-10 flex flex-col md:flex-row gap-12">
+                                <div class="w-full md:w-1/2 h-[300px] md:h-[400px] overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=2670&auto=format&fit=crop" alt="Final Clean" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+                                </div>
+                                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                                    <p class="text-lg font-light text-[#1E293B] mb-8 leading-relaxed">
+                                        Detail-level cleaning for move-in readiness. First final and second final cleans — ensuring every surface is inspected to standard.
+                                    </p>
+                                    <ul class="space-y-3 mb-10 text-sm font-medium text-[#1E293B]/80">
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Hardwood floors & tiling</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Fixtures & appliances</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Complete dust removal</li>
+                                    </ul>
+                                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-[#0A1628] hover:text-[#C9A94E] transition-colors">
+                                        Request a Quote <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="service-item border-b border-[#1E293B]/20 group">
+                    <button class="w-full py-10 flex items-center justify-between text-left focus:outline-none" onclick="toggleService(2)">
+                        <span class="font-serif text-3xl md:text-5xl text-[#0A1628] group-hover:text-[#C9A94E] transition-colors duration-300">Commercial Cleaning</span>
+                        <div class="flex items-center gap-8">
+                            <span class="hidden md:block text-xs uppercase tracking-widest text-[#1E293B]/60">Office / Retail</span>
+                            <i data-lucide="arrow-right" class="w-6 h-6 text-[#1E293B] transition-transform duration-300 service-arrow"></i>
+                        </div>
+                    </button>
+                    <div class="service-content grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-out">
+                        <div class="overflow-hidden">
+                            <div class="pb-10 flex flex-col md:flex-row gap-12">
+                                <div class="w-full md:w-1/2 h-[300px] md:h-[400px] overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=2669&auto=format&fit=crop" alt="Commercial Cleaning" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+                                </div>
+                                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                                    <p class="text-lg font-light text-[#1E293B] mb-8 leading-relaxed">
+                                        Ongoing and one-time cleaning for offices, retail spaces, and commercial facilities. Consistent quality that works around your operations.
+                                    </p>
+                                    <ul class="space-y-3 mb-10 text-sm font-medium text-[#1E293B]/80">
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Office complexes</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Retail environments</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Regular maintenance</li>
+                                    </ul>
+                                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-[#0A1628] hover:text-[#C9A94E] transition-colors">
+                                        Request a Quote <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service 4 -->
+                <div class="service-item border-b border-[#1E293B]/20 group">
+                    <button class="w-full py-10 flex items-center justify-between text-left focus:outline-none" onclick="toggleService(3)">
+                        <span class="font-serif text-3xl md:text-5xl text-[#0A1628] group-hover:text-[#C9A94E] transition-colors duration-300">Move-In / Move-Out</span>
+                        <div class="flex items-center gap-8">
+                            <span class="hidden md:block text-xs uppercase tracking-widest text-[#1E293B]/60">Unit Turnover</span>
+                            <i data-lucide="arrow-right" class="w-6 h-6 text-[#1E293B] transition-transform duration-300 service-arrow"></i>
+                        </div>
+                    </button>
+                    <div class="service-content grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-out">
+                        <div class="overflow-hidden">
+                            <div class="pb-10 flex flex-col md:flex-row gap-12">
+                                <div class="w-full md:w-1/2 h-[300px] md:h-[400px] overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1556912173-3bb406ef7e77?q=80&w=2670&auto=format&fit=crop" alt="Move In Out" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+                                </div>
+                                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                                    <p class="text-lg font-light text-[#1E293B] mb-8 leading-relaxed">
+                                        Vacant unit turnover cleaning for property managers. Fast turnaround — same-day available. Every unit left inspection-ready.
+                                    </p>
+                                    <ul class="space-y-3 mb-10 text-sm font-medium text-[#1E293B]/80">
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Apartment turns</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Deep sanitation</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Property management support</li>
+                                    </ul>
+                                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-[#0A1628] hover:text-[#C9A94E] transition-colors">
+                                        Request a Quote <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service 5 -->
+                <div class="service-item border-b border-[#1E293B]/20 group">
+                    <button class="w-full py-10 flex items-center justify-between text-left focus:outline-none" onclick="toggleService(4)">
+                        <span class="font-serif text-3xl md:text-5xl text-[#0A1628] group-hover:text-[#C9A94E] transition-colors duration-300">Windows & Power Wash</span>
+                        <div class="flex items-center gap-8">
+                            <span class="hidden md:block text-xs uppercase tracking-widest text-[#1E293B]/60">Exteriors</span>
+                            <i data-lucide="arrow-right" class="w-6 h-6 text-[#1E293B] transition-transform duration-300 service-arrow"></i>
+                        </div>
+                    </button>
+                    <div class="service-content grid grid-rows-[0fr] transition-[grid-template-rows] duration-500 ease-out">
+                        <div class="overflow-hidden">
+                            <div class="pb-10 flex flex-col md:flex-row gap-12">
+                                <div class="w-full md:w-1/2 h-[300px] md:h-[400px] overflow-hidden">
+                                    <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?q=80&w=2670&auto=format&fit=crop" alt="Windows" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+                                </div>
+                                <div class="w-full md:w-1/2 flex flex-col justify-center">
+                                    <p class="text-lg font-light text-[#1E293B] mb-8 leading-relaxed">
+                                        Interior and exterior window cleaning, plus power washing for building exteriors, walkways, and parking structures.
+                                    </p>
+                                    <ul class="space-y-3 mb-10 text-sm font-medium text-[#1E293B]/80">
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Exterior facades</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> High-reach windows</li>
+                                        <li class="flex items-center gap-3"><span class="w-1.5 h-1.5 bg-[#C9A94E] rounded-full"></span> Concrete & walkways</li>
+                                    </ul>
+                                    <a href="#quote" class="inline-flex items-center gap-3 text-xs uppercase tracking-widest font-medium text-[#0A1628] hover:text-[#C9A94E] transition-colors">
+                                        Request a Quote <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE X1: Full-Bleed Photo Break -->
+    <section class="relative w-full h-[70vh] overflow-hidden bg-[#0A1628]">
+        <div class="absolute inset-0">
+            <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2600&auto=format&fit=crop" alt="Luxury Interior" class="w-full h-[120%] object-cover object-center -translate-y-[10%] parallax-img opacity-90">
+            <div class="absolute inset-0 bg-black/10"></div>
+        </div>
+    </section>
+
+    <!-- MODULE BA1: Before/After Comparison (Curated Single Moment) -->
+    <section class="py-32 bg-[#FAFAF8] overflow-hidden">
+        <div class="max-w-6xl mx-auto px-6">
+            <div class="text-center mb-16 animate-on-scroll">
+                <span class="block text-[#C9A94E] text-xs uppercase tracking-[0.25em] mb-4 font-medium">The A&A Standard</span>
+                <h2 class="font-serif text-4xl md:text-5xl text-[#0A1628]">See the Difference</h2>
+            </div>
+
+            <div class="relative w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden cursor-ew-resize select-none group animate-on-scroll delay-200" id="ba-slider">
+                <!-- After Image (Background) -->
+                <img src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?q=80&w=2669&auto=format&fit=crop" alt="After" class="absolute inset-0 w-full h-full object-cover">
+                
+                <!-- Before Image (Foreground) -->
+                <div class="absolute inset-y-0 left-0 w-1/2 overflow-hidden" id="ba-before">
+                    <img src="https://images.unsplash.com/photo-1541888086425-d81bb19240f5?q=80&w=2670&auto=format&fit=crop" alt="Before" class="absolute inset-0 max-w-none h-full w-full object-cover filter grayscale opacity-90" id="ba-before-img">
+                </div>
+
+                <!-- Handle -->
+                <div class="absolute inset-y-0 left-1/2 w-[2px] bg-white z-20 flex items-center justify-center" id="ba-handle">
+                    <div class="w-8 h-8 bg-white rounded-full shadow-lg flex items-center justify-center text-[#0A1628]">
+                        <i data-lucide="move-horizontal" class="w-4 h-4"></i>
+                    </div>
+                </div>
+                
+                <!-- Labels -->
+                <span class="absolute top-6 left-6 bg-[#0A1628]/80 text-white text-[10px] uppercase tracking-widest px-3 py-1 rounded-sm backdrop-blur-sm">Before</span>
+                <span class="absolute top-6 right-6 bg-[#0A1628]/80 text-white text-[10px] uppercase tracking-widest px-3 py-1 rounded-sm backdrop-blur-sm">After</span>
+            </div>
+            
+            <div class="text-center mt-6 text-[#1E293B]/60 text-sm font-light animate-on-scroll delay-300">
+                Commercial Office Finish • Downtown Austin, TX
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE X2: Pull Quote Interstitial -->
+    <section class="py-32 md:py-48 bg-[#FAFAF8] flex items-center justify-center text-center px-6">
+        <div class="max-w-4xl animate-on-scroll">
+            <blockquote class="text-3xl md:text-5xl font-serif italic text-[#0A1628] leading-tight mb-10">
+                "Reliable, detail-oriented, and always on schedule."
+            </blockquote>
+            <div class="flex flex-col items-center gap-4">
+                <span class="text-sm font-bold uppercase tracking-widest text-[#1E293B]">Project Manager</span>
+                <span class="text-xs text-[#1E293B]/60 uppercase tracking-widest">Top-Tier Construction</span>
+            </div>
+            <div class="w-16 h-[1px] bg-[#C9A94E] mx-auto mt-10"></div>
+        </div>
+    </section>
+
+    <!-- MODULE P3: Sparse Grid Process -->
+    <section class="py-32 bg-[#FAFAF8]">
+        <div class="max-w-7xl mx-auto px-6">
+            <span class="block text-[#C9A94E] text-xs uppercase tracking-[0.25em] mb-24 font-medium text-center md:text-left animate-on-scroll">How It Works</span>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 lg:gap-8">
+                <!-- Step 1 -->
+                <div class="flex flex-col gap-6 animate-on-scroll delay-200">
+                    <span class="font-serif text-7xl md:text-8xl text-[#1E293B]/10 leading-none">1</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-[#0A1628] mb-3">Request a Quote</h3>
+                        <p class="text-[#1E293B]/80 font-light leading-relaxed">Submit our quick form or call us directly. We respond within the hour.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="flex flex-col gap-6 animate-on-scroll delay-400">
+                    <span class="font-serif text-7xl md:text-8xl text-[#1E293B]/10 leading-none">2</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-[#0A1628] mb-3">We Assess</h3>
+                        <p class="text-[#1E293B]/80 font-light leading-relaxed">We review the scope and provide a detailed estimate.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="flex flex-col gap-6 animate-on-scroll delay-600">
+                    <span class="font-serif text-7xl md:text-8xl text-[#1E293B]/10 leading-none">3</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-[#0A1628] mb-3">We Clean</h3>
+                        <p class="text-[#1E293B]/80 font-light leading-relaxed">Our insured crew handles every detail with proven standards.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="flex flex-col gap-6 animate-on-scroll delay-800">
+                    <span class="font-serif text-7xl md:text-8xl text-[#1E293B]/10 leading-none">4</span>
+                    <div>
+                        <h3 class="text-lg font-bold text-[#0A1628] mb-3">You Walk Thru</h3>
+                        <p class="text-[#1E293B]/80 font-light leading-relaxed">Final QA review before we hand off the finished space.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE X3: Stat Callout (Sequential) -->
+    <section class="py-32 bg-[#FAFAF8]">
+        <div class="max-w-4xl mx-auto px-6 space-y-48">
+            <!-- Stat 1 -->
+            <div class="text-center animate-on-scroll">
+                <div class="font-serif text-[15vw] md:text-[160px] leading-none text-[#0A1628] mb-4">
+                    <span class="counter" data-target="15">0</span>+
+                </div>
+                <p class="text-xl md:text-2xl font-light text-[#1E293B] tracking-wide">Years in Austin</p>
+            </div>
+            
+            <!-- Stat 2 -->
+            <div class="text-center animate-on-scroll">
+                <div class="font-serif text-[15vw] md:text-[160px] leading-none text-[#0A1628] mb-4">
+                    <span class="counter" data-target="500">0</span>+
+                </div>
+                <p class="text-xl md:text-2xl font-light text-[#1E293B] tracking-wide">Projects Completed</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULE A2: Oversized Quote Block -->
+    <section id="about" class="py-32 md:py-48 bg-[#FAFAF8] flex items-center justify-center text-center px-6">
+        <div class="max-w-3xl animate-on-scroll">
+            <div class="text-[#C9A94E] text-6xl font-serif mb-8">"</div>
+            <h2 class="text-3xl md:text-5xl font-serif italic text-[#0A1628] leading-tight mb-10">
+                We don't leave until every surface meets the standard.
+            </h2>
+            <div class="flex flex-col items-center gap-4 mb-12">
+                <span class="text-sm font-bold uppercase tracking-widest text-[#1E293B]">Areli</span>
+                <span class="text-xs text-[#1E293B]/60 uppercase tracking-widest">Founder</span>
+            </div>
+            <p class="text-[#1E293B]/80 font-light text-lg leading-relaxed max-w-2xl mx-auto">
+                A&A Cleaning was built on one principle: the job isn't done until every detail is accounted for. From rough cleans on active construction sites to final walk-throughs on luxury apartments, the standard is the same.
+            </p>
+        </div>
+    </section>
+
+    <!-- SERVICE AREA: Single Typographic Line -->
+    <section class="py-32 bg-[#FAFAF8] border-t border-[#1E293B]/10 border-b">
+        <div class="max-w-6xl mx-auto px-6 text-center animate-on-scroll">
+            <p class="font-serif text-2xl md:text-3xl text-[#0A1628] leading-relaxed">
+                Serving Austin • Round Rock • Georgetown • Kyle • Buda • Pflugerville • Hutto • San Marcos
+            </p>
+        </div>
+    </section>
+
+    <!-- MODULE Q3: Minimal Inline Form -->
+    <section id="quote" class="py-32 md:py-48 bg-[#FAFAF8]">
+        <div class="max-w-lg mx-auto px-6 text-center animate-on-scroll">
+            <h2 class="text-5xl md:text-7xl font-serif text-[#0A1628] mb-8">Let's Get Started.</h2>
+            <div class="w-20 h-[2px] bg-[#C9A94E] mx-auto mb-16"></div>
+            
+            <form class="space-y-10 text-left">
+                <div class="group relative">
+                    <input type="text" id="name" required class="peer w-full bg-transparent border-b border-[#1E293B]/20 py-3 text-[#1E293B] focus:outline-none focus:border-[#0A1628] transition-colors placeholder-transparent" placeholder="Name">
+                    <label for="name" class="absolute left-0 -top-3 text-xs text-[#1E293B]/50 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-[#1E293B]/50 peer-placeholder-shown:top-3 peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#0A1628]">Name</label>
+                </div>
+                
+                <div class="group relative">
+                    <input type="tel" id="phone" required class="peer w-full bg-transparent border-b border-[#1E293B]/20 py-3 text-[#1E293B] focus:outline-none focus:border-[#0A1628] transition-colors placeholder-transparent" placeholder="Phone">
+                    <label for="phone" class="absolute left-0 -top-3 text-xs text-[#1E293B]/50 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-[#1E293B]/50 peer-placeholder-shown:top-3 peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#0A1628]">Phone</label>
+                </div>
+
+                <div class="group relative">
+                    <select id="service" class="peer w-full bg-transparent border-b border-[#1E293B]/20 py-3 text-[#1E293B] focus:outline-none focus:border-[#0A1628] transition-colors appearance-none rounded-none">
+                        <option value="" disabled selected class="text-gray-400">Select Service Type</option>
+                        <option value="post-construction">Post-Construction</option>
+                        <option value="commercial">Commercial Cleaning</option>
+                        <option value="final-clean">Final Clean</option>
+                        <option value="move-in-out">Move-In / Move-Out</option>
+                    </select>
+                    <i data-lucide="chevron-down" class="absolute right-0 top-3 w-4 h-4 text-[#1E293B]/50 pointer-events-none"></i>
+                </div>
+
+                <div class="group relative">
+                    <textarea id="description" rows="1" class="peer w-full bg-transparent border-b border-[#1E293B]/20 py-3 text-[#1E293B] focus:outline-none focus:border-[#0A1628] transition-colors placeholder-transparent resize-none" placeholder="Brief Description"></textarea>
+                    <label for="description" class="absolute left-0 -top-3 text-xs text-[#1E293B]/50 transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-[#1E293B]/50 peer-placeholder-shown:top-3 peer-focus:-top-3 peer-focus:text-xs peer-focus:text-[#0A1628]">Brief Description</label>
+                </div>
+
+                <button type="submit" class="w-full py-5 bg-[#0A1628] text-white text-xs uppercase tracking-[0.25em] font-medium hover:bg-[#C9A94E] transition-colors duration-500 mt-12">
+                    Request a Quote
+                </button>
+            </form>
+
+            <div class="mt-12">
+                <a href="tel:5125550199" class="text-sm text-[#1E293B]/60 hover:text-[#0A1628] transition-colors font-serif italic">Or call: (512) 555-0199</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- EMPLOYMENT: Minimal Line -->
+    <section id="careers" class="py-24 bg-[#FAFAF8] text-center">
+        <div class="animate-on-scroll">
+            <p class="text-[#1E293B] mb-6 font-light">We're building a team of professionals.</p>
+            <a href="#" class="inline-flex items-center gap-2 text-xs uppercase tracking-widest font-medium text-[#0A1628] border-b border-[#0A1628] pb-1 hover:text-[#C9A94E] hover:border-[#C9A94E] transition-colors">
+                See Open Positions <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- MODULE F2: Minimal Signature Footer -->
+    <footer class="py-24 bg-[#FAFAF8] text-center border-t border-[#1E293B]/10">
+        <div class="max-w-4xl mx-auto px-6 flex flex-col items-center gap-8">
+            <span class="font-serif text-3xl text-[#0A1628] tracking-tight">A&A</span>
+            
+            <div class="flex flex-col md:flex-row items-center gap-2 md:gap-6 text-sm font-light text-[#1E293B]/60">
+                <a href="tel:5125550199" class="hover:text-[#0A1628] transition-colors">(512) 555-0199</a>
+                <span class="hidden md:inline">•</span>
+                <a href="mailto:AAcleaningservices@outlook.com" class="hover:text-[#0A1628] transition-colors">AAcleaningservices@outlook.com</a>
+                <span class="hidden md:inline">•</span>
+                <span>Austin, TX</span>
+            </div>
+
+            <p class="text-[10px] uppercase tracking-widest text-[#1E293B]/40 mt-8">
+                © 2026 A&A Cleaning Services
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Module N2: Disappearing Nav Logic
+        let lastScrollY = window.scrollY;
+        const navbar = document.getElementById('navbar');
+
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                // Scrolling down & past top
+                navbar.classList.add('nav-hidden');
+                navbar.classList.remove('nav-visible');
+            } else {
+                // Scrolling up or at top
+                navbar.classList.remove('nav-hidden');
+                navbar.classList.add('nav-visible');
+            }
+            
+            lastScrollY = currentScrollY;
+        });
+
+        // Module S3: Accordion Logic
+        function toggleService(index) {
+            const contents = document.querySelectorAll('.service-content');
+            const arrows = document.querySelectorAll('.service-arrow');
+            
+            contents.forEach((content, i) => {
+                if (i === index) {
+                    // Toggle current
+                    const isOpen = content.classList.contains('grid-rows-[1fr]');
+                    content.classList.toggle('grid-rows-[1fr]', !isOpen);
+                    content.classList.toggle('grid-rows-[0fr]', isOpen);
+                    arrows[i].style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+                } else {
+                    // Close others
+                    content.classList.remove('grid-rows-[1fr]');
+                    content.classList.add('grid-rows-[0fr]');
+                    arrows[i].style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+
+        // Module X1: Parallax Logic
+        window.addEventListener('scroll', () => {
+            const parallaxImgs = document.querySelectorAll('.parallax-img');
+            parallaxImgs.forEach(img => {
+                const speed = 0.1;
+                const rect = img.parentElement.getBoundingClientRect();
+                const offset = (window.innerHeight - rect.top) * speed;
+                img.style.transform = `translateY(${offset - 50}px)`;
+            });
+        });
+
+        // Module BA1: Before/After Slider Logic
+        const slider = document.getElementById('ba-slider');
+        const beforeContainer = document.getElementById('ba-before');
+        const beforeImg = document.getElementById('ba-before-img');
+        const handle = document.getElementById('ba-handle');
+
+        if (slider) {
+            const updateSlider = (x) => {
+                const rect = slider.getBoundingClientRect();
+                const position = ((x - rect.left) / rect.width) * 100;
+                const clampedPos = Math.min(Math.max(position, 0), 100);
+                
+                beforeContainer.style.width = `${clampedPos}%`;
+                handle.style.left = `${clampedPos}%`;
+            };
+
+            // Keep inner image full width of container to prevent squashing
+            const syncImageWidth = () => {
+                if(beforeImg) beforeImg.style.width = `${slider.offsetWidth}px`;
+            };
+            window.addEventListener('resize', syncImageWidth);
+            syncImageWidth(); // Initial sync
+
+            slider.addEventListener('mousemove', (e) => updateSlider(e.clientX));
+            slider.addEventListener('touchmove', (e) => updateSlider(e.touches[0].clientX));
+        }
+
+        // Scroll Animation Observer
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Module X3: Counter Animation
+        const statsObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const counters = entry.target.querySelectorAll('.counter');
+                    counters.forEach(counter => {
+                        const target = +counter.getAttribute('data-target');
+                        const duration = 2000; 
+                        const increment = target / (duration / 16); 
+                        
+                        let current = 0;
+                        const updateCounter = () => {
+                            current += increment;
+                            if (current < target) {
+                                counter.innerText = Math.ceil(current);
+                                requestAnimationFrame(updateCounter);
+                            } else {
+                                counter.innerText = target;
+                            }
+                        };
+                        updateCounter();
+                    });
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.counter').forEach(counter => {
+            statsObserver.observe(counter.closest('.animate-on-scroll') || counter.parentElement);
+        });
+    </script>
+</body>
+</html>
