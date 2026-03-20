@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { sendResendEmail } from "@/lib/email";
 import { COMPANY_EMAIL, COMPANY_NAME } from "@/lib/company";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type EmploymentApplicationBody = {
@@ -18,6 +19,15 @@ type EmploymentApplicationBody = {
 };
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const rateLimitResult = checkRateLimit(`apply:${ip}`, { windowMs: 3_600_000, max: 3 });
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   let body: EmploymentApplicationBody;
   try {
     body = (await request.json()) as EmploymentApplicationBody;

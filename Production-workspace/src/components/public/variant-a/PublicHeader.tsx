@@ -1,14 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { trackConversionEvent } from "@/lib/analytics";
 import { COMPANY_PHONE, COMPANY_PHONE_E164, COMPANY_SHORT_NAME } from "@/lib/company";
-
-type PublicHeaderProps = {
-  onOpenQuote: () => void;
-};
+import { QuoteCTA } from "./QuoteCTA";
 
 const serviceLinks = [
   { href: "/#service-post-construction", label: "Post-Construction", desc: "Rough and final cleans for turnovers." },
@@ -29,12 +27,16 @@ const primaryLinks = [
   { href: "/#industries", label: "Industries" },
   { href: "/#about", label: "About" },
   { href: "/#service-area", label: "Service Area" },
+  { href: "/faq", label: "FAQ" },
   { href: "/#careers", label: "Careers" },
 ];
 
-export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
+export function PublicHeader() {
+  const pathname = usePathname();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDesktopMenu, setOpenDesktopMenu] = useState<"services" | "industries" | null>(null);
+  const headerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const onScroll = () => {
@@ -43,7 +45,7 @@ export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
     };
 
     onScroll();
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -54,16 +56,40 @@ export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
     };
   }, [isMobileMenuOpen]);
 
-  const navShellClass = isScrolled || isMobileMenuOpen
-    ? "border-[#183556] bg-[#0f2746] shadow-[0_22px_70px_rgba(2,6,23,0.42)] backdrop-blur-md"
-    : "border-transparent bg-[#07101d]/22 shadow-[0_18px_60px_rgba(2,6,23,0.16)] backdrop-blur-xl";
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) {
+        setOpenDesktopMenu(null);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpenDesktopMenu(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
+  const forceSolidHeader = pathname === "/privacy" || pathname === "/terms" || pathname === "/faq";
+
+  const navShellClass = forceSolidHeader || isScrolled || isMobileMenuOpen
+    ? "border-[#183556] bg-[#0f2746] shadow-[0_22px_70px_rgba(2,6,23,0.42)] md:backdrop-blur-md"
+    : "border-transparent bg-[#07101d]/22 shadow-[0_18px_60px_rgba(2,6,23,0.16)] md:backdrop-blur-xl";
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 text-white">
+    <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 text-white">
       {/* Floating Header Shell */}
-      <div className={`transition-all duration-300 ${isScrolled ? "pt-2" : "pt-4 md:pt-6"}`}>
+      <div className={`transition-all duration-300 ${forceSolidHeader || isScrolled ? "pt-2" : "pt-4 md:pt-6"}`}>
         <div className="mx-auto max-w-7xl px-4 md:px-6">
           <div className={`flex h-16 items-center justify-between gap-4 rounded-xl border px-5 md:h-[4.5rem] md:px-6 transition duration-300 ${navShellClass}`}>
             
@@ -75,21 +101,34 @@ export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
               </p>
             </Link>
 
-            <nav className="hidden items-center gap-7 lg:flex">
-              <div className="group relative">
+            <nav aria-label="Primary navigation" className="hidden items-center gap-7 lg:flex">
+              <div
+                className="relative"
+                onMouseEnter={() => setOpenDesktopMenu("services")}
+                onMouseLeave={() => setOpenDesktopMenu((current) => (current === "services" ? null : current))}
+              >
                 <button
                   type="button"
                   className="inline-flex items-center gap-2 text-sm text-slate-100 transition hover:text-white"
+                  aria-expanded={openDesktopMenu === "services"}
+                  aria-haspopup="true"
+                  onFocus={() => setOpenDesktopMenu("services")}
+                  onClick={() => setOpenDesktopMenu((current) => (current === "services" ? null : "services"))}
                 >
                   Services
-                  <span className="text-[9px] text-slate-400 transition-transform group-hover:rotate-180">▼</span>
+                  <span className={`text-[9px] text-slate-400 transition-transform ${openDesktopMenu === "services" ? "rotate-180" : ""}`}>▼</span>
                 </button>
-                <div className="pointer-events-none absolute left-0 top-full hidden pt-4 group-hover:block group-focus-within:block">
-                  <div className="pointer-events-auto min-w-[20rem] rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5">
+                <div
+                  className={`absolute left-0 top-full pt-3 transition duration-200 ${
+                    openDesktopMenu === "services" ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
+                  }`}
+                >
+                  <div className="min-w-[20rem] rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5">
                     {serviceLinks.map((link) => (
                       <a
                         key={link.label}
                         href={link.href}
+                        onClick={() => setOpenDesktopMenu(null)}
                         className="block rounded-lg p-3 transition hover:bg-slate-50"
                       >
                         <p className="text-sm font-semibold text-slate-900">{link.label}</p>
@@ -100,20 +139,33 @@ export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
                 </div>
               </div>
 
-              <div className="group relative">
+              <div
+                className="relative"
+                onMouseEnter={() => setOpenDesktopMenu("industries")}
+                onMouseLeave={() => setOpenDesktopMenu((current) => (current === "industries" ? null : current))}
+              >
                 <button
                   type="button"
                   className="inline-flex items-center gap-2 text-sm text-slate-100 transition hover:text-white"
+                  aria-expanded={openDesktopMenu === "industries"}
+                  aria-haspopup="true"
+                  onFocus={() => setOpenDesktopMenu("industries")}
+                  onClick={() => setOpenDesktopMenu((current) => (current === "industries" ? null : "industries"))}
                 >
                   Industries
-                  <span className="text-[9px] text-slate-400 transition-transform group-hover:rotate-180">▼</span>
+                  <span className={`text-[9px] text-slate-400 transition-transform ${openDesktopMenu === "industries" ? "rotate-180" : ""}`}>▼</span>
                 </button>
-                <div className="pointer-events-none absolute left-0 top-full hidden pt-4 group-hover:block group-focus-within:block">
-                  <div className="pointer-events-auto min-w-[19rem] rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5">
+                <div
+                  className={`absolute left-0 top-full pt-3 transition duration-200 ${
+                    openDesktopMenu === "industries" ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none -translate-y-2 opacity-0"
+                  }`}
+                >
+                  <div className="min-w-[19rem] rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] ring-1 ring-slate-900/5">
                     {industryLinks.map((link) => (
                       <a
                         key={link.label}
                         href={link.href}
+                        onClick={() => setOpenDesktopMenu(null)}
                         className="block rounded-lg p-3 transition hover:bg-slate-50"
                       >
                         <p className="text-sm font-semibold text-slate-900">{link.label}</p>
@@ -142,32 +194,25 @@ export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
               >
                 Call
               </a>
-              <button
-                type="button"
-                onClick={onOpenQuote}
-                className="rounded-md bg-white px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100"
-              >
-                Get a Quote
-              </button>
+              <QuoteCTA className="rounded-md bg-white px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100">
+                Free Quote
+              </QuoteCTA>
             </div>
 
             {/* Mobile Nav Toggle */}
             <div className="flex items-center gap-2 md:hidden">
-              <button
-                type="button"
-                onClick={onOpenQuote}
-                className="rounded-md bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm"
-              >
+              <QuoteCTA className="rounded-md bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm">
                 Quote
-              </button>
+              </QuoteCTA>
               <button
                 type="button"
                 onClick={() => setIsMobileMenuOpen((prev) => !prev)}
                 className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/6"
                 aria-expanded={isMobileMenuOpen}
+                aria-controls="mobile-nav-panel"
                 aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
               >
-                <span className="text-lg">{isMobileMenuOpen ? "×" : "☰"}</span>
+                <span className="text-lg" aria-hidden="true">{isMobileMenuOpen ? "×" : "☰"}</span>
               </button>
             </div>
           </div>
@@ -176,6 +221,9 @@ export function PublicHeader({ onOpenQuote }: PublicHeaderProps) {
 
       {/* Mobile Menu Panel */}
       <div
+        id="mobile-nav-panel"
+        role="region"
+        aria-label="Mobile navigation"
         className={`md:hidden ${isMobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} transition duration-300`}
       >
         <div className={`absolute inset-x-4 transition-all duration-300 ${isScrolled ? "top-[4.8rem]" : "top-[5.8rem]"} rounded-2xl border border-white/10 bg-[#0A1628] p-5 shadow-2xl`}>

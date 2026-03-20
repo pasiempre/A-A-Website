@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type AssistantBody = {
@@ -76,6 +77,15 @@ async function callAnthropic(message: string, locale: "en" | "es") {
 }
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const rateLimitResult = checkRateLimit(`ai:${ip}`, { windowMs: 3_600_000, max: 20 });
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   let body: AssistantBody;
   try {
     body = (await request.json()) as AssistantBody;

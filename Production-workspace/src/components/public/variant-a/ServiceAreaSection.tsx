@@ -1,57 +1,306 @@
 "use client";
 
+import { useState } from "react";
+import { QuoteCTA } from "./QuoteCTA";
 import { useInViewOnce } from "./useInViewOnce";
 
-const majorCities = ["Austin", "Round Rock", "Georgetown"];
-const supportingCities = ["Kyle", "Buda", "Pflugerville", "Hutto", "San Marcos"];
+type AreaData = {
+  name: string;
+  distance: string;
+  region: "north" | "central" | "south";
+  x: number;
+  y: number;
+};
+
+const areas: AreaData[] = [
+  { name: "Georgetown", distance: "30 mi", x: 58, y: 8, region: "north" },
+  { name: "Hutto", distance: "25 mi", x: 72, y: 18, region: "north" },
+  { name: "Round Rock", distance: "20 mi", x: 52, y: 24, region: "north" },
+  { name: "Pflugerville", distance: "15 mi", x: 60, y: 36, region: "north" },
+  { name: "Austin", distance: "HQ", x: 44, y: 50, region: "central" },
+  { name: "Buda", distance: "12 mi", x: 40, y: 65, region: "south" },
+  { name: "Kyle", distance: "18 mi", x: 36, y: 76, region: "south" },
+  { name: "San Marcos", distance: "28 mi", x: 32, y: 90, region: "south" },
+];
+
+const regionMeta: Record<
+  AreaData["region"],
+  { dot: string; ring: string; label: string }
+> = {
+  north: { dot: "#3b82f6", ring: "rgba(59,130,246,0.2)", label: "North" },
+  central: { dot: "#ffffff", ring: "rgba(255,255,255,0.15)", label: "Central" },
+  south: { dot: "#C9A94E", ring: "rgba(201,169,78,0.2)", label: "South" },
+};
 
 export function ServiceAreaSection() {
-  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+  const { ref, isVisible } = useInViewOnce<HTMLElement>(0.2);
+  const [hoveredArea, setHoveredArea] = useState<string | null>(null);
+
+  const austin = areas.find((a) => a.name === "Austin")!;
 
   return (
-    <section ref={ref} id="service-area" className="scroll-mt-32 overflow-hidden border-b border-slate-200 bg-[#F1F0EE] py-24 text-center md:scroll-mt-36 md:py-32">
-      <div className="mx-auto max-w-7xl px-6">
-        <span className={`mb-12 block text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500 transition duration-1000 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
-          Where We Work
-        </span>
+    <section
+      ref={ref}
+      id="service-area"
+      aria-labelledby="service-area-heading"
+      className="relative scroll-mt-32 overflow-hidden bg-[#0A1628] md:scroll-mt-36"
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        aria-hidden="true"
+      >
+        <div
+          className="h-full w-full"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+      </div>
 
-        <div className="flex flex-col items-center justify-center gap-6 md:gap-10">
-          <h3 className={`font-serif text-6xl leading-none tracking-tight text-[#0A1628] transition duration-1000 hover:scale-105 hover:text-[#C9A94E] md:text-8xl lg:text-9xl ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
-            {majorCities[0].toUpperCase()}
-          </h3>
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.15]"
+        style={{
+          background:
+            "radial-gradient(ellipse, rgba(201,169,78,0.35) 0%, transparent 70%)",
+        }}
+        aria-hidden="true"
+      />
 
-          <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 md:gap-x-16">
-            {majorCities.slice(1).map((city, index) => (
-              <span
-                key={city}
-                className={`cursor-default font-serif text-3xl tracking-tight text-slate-700 transition duration-1000 hover:scale-105 hover:text-[#C9A94E] md:text-5xl lg:text-6xl ${
-                  isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-                }`}
-                style={{ transitionDelay: `${index * 120 + 120}ms` }}
+      <div className="relative mx-auto max-w-7xl px-6 py-20 md:py-24">
+        <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-20">
+          <div
+            className={`relative w-full max-w-md flex-shrink-0 transition-all duration-700 ease-out lg:w-[420px] ${
+              isVisible
+                ? "translate-x-0 opacity-100"
+                : "-translate-x-10 opacity-0"
+            }`}
+          >
+            <div className="relative aspect-[3/4]">
+              <div className="absolute inset-0 rounded-3xl border border-white/[0.06] bg-white/[0.02]" />
+
+              <svg
+                viewBox="0 0 100 100"
+                className="absolute inset-0 h-full w-full"
+                aria-hidden="true"
               >
-                {city}
-              </span>
-            ))}
+                <ellipse
+                  cx="48"
+                  cy="50"
+                  rx="30"
+                  ry="46"
+                  fill="none"
+                  stroke="rgba(201,169,78,0.1)"
+                  strokeWidth="0.6"
+                  strokeDasharray="2 3"
+                />
+
+                {areas
+                  .filter((a) => a.name !== "Austin")
+                  .map((area) => {
+                    const isHovered = hoveredArea === area.name;
+                    return (
+                      <line
+                        key={area.name}
+                        x1={austin.x}
+                        y1={austin.y}
+                        x2={area.x}
+                        y2={area.y}
+                        stroke={isHovered ? "#C9A94E" : "rgba(255,255,255,0.06)"}
+                        strokeWidth={isHovered ? "0.8" : "0.4"}
+                        strokeDasharray={isHovered ? "none" : "1.5 3"}
+                        className="transition-all duration-300"
+                      />
+                    );
+                  })}
+              </svg>
+
+              {areas.map((area, i) => {
+                const meta = regionMeta[area.region];
+                const isHQ = area.name === "Austin";
+                const isHovered = hoveredArea === area.name;
+
+                return (
+                  <div
+                    key={area.name}
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 transition-all duration-500 ${
+                      isVisible
+                        ? "scale-100 opacity-100"
+                        : "scale-0 opacity-0"
+                    }`}
+                    style={{
+                      left: `${area.x}%`,
+                      top: `${area.y}%`,
+                      transitionDelay: isVisible
+                        ? `${300 + i * 70}ms`
+                        : "0ms",
+                      zIndex: isHovered ? 20 : isHQ ? 15 : 10,
+                    }}
+                    onMouseEnter={() => setHoveredArea(area.name)}
+                    onMouseLeave={() => setHoveredArea(null)}
+                  >
+                    {isHQ && (
+                      <span
+                        className="absolute left-1/2 top-1/2 h-8 w-8 -translate-x-1/2 -translate-y-1/2 animate-ping rounded-full bg-white/10"
+                        aria-hidden="true"
+                      />
+                    )}
+
+                    <span
+                      className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-300 ${
+                        isHQ ? "h-9 w-9" : "h-6 w-6"
+                      } ${isHovered ? "scale-[1.4]" : ""}`}
+                      style={{ backgroundColor: meta.ring }}
+                      aria-hidden="true"
+                    />
+
+                    <span
+                      className={`relative block rounded-full transition-all duration-300 ${
+                        isHQ ? "h-3.5 w-3.5" : "h-2 w-2"
+                      } ${isHovered ? "scale-[1.6]" : ""}`}
+                      style={{ backgroundColor: meta.dot }}
+                    />
+
+                    <span
+                      className={`pointer-events-none absolute left-full ml-2.5 whitespace-nowrap rounded-lg text-[11px] font-semibold transition-all duration-200 ${
+                        isHovered
+                          ? "bg-white px-3 py-1.5 text-[#0A1628] shadow-xl shadow-black/20"
+                          : isHQ
+                          ? "px-0 py-0 text-sm font-bold text-white"
+                          : "px-0 py-0 text-slate-500"
+                      }`}
+                    >
+                      {area.name}
+                      {isHovered && !isHQ && (
+                        <span className="ml-1.5 font-normal text-slate-400">
+                          {area.distance}
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 md:gap-x-12">
-            {supportingCities.map((city, index) => (
+          <div
+            className={`flex-1 transition-all duration-700 ease-out ${
+              isVisible
+                ? "translate-x-0 opacity-100"
+                : "translate-x-10 opacity-0"
+            }`}
+            style={{ transitionDelay: "200ms" }}
+          >
+            <div className="flex items-center gap-3">
               <span
-                key={city}
-                className={`cursor-default font-serif text-2xl tracking-tight text-slate-500 transition duration-1000 hover:scale-105 hover:text-[#C9A94E] md:text-4xl lg:text-5xl ${
-                  isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
-                }`}
-                style={{ transitionDelay: `${index * 100 + 260}ms` }}
-              >
-                {city}
+                className="h-px w-8 bg-[#C9A94E]"
+                aria-hidden="true"
+              />
+              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C9A94E]">
+                Where We Work
               </span>
-            ))}
+            </div>
+
+            <h2
+              id="service-area-heading"
+              className="mt-4 font-serif text-3xl tracking-tight text-white sm:text-4xl lg:text-[2.75rem]"
+            >
+              Greater Austin Metro
+            </h2>
+
+            <p className="mt-4 max-w-md text-base leading-relaxed text-slate-400">
+              Georgetown to San Marcos — same standards,
+              every&nbsp;location.
+            </p>
+
+            <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+              {areas.map((area, i) => {
+                const meta = regionMeta[area.region];
+                const isHQ = area.name === "Austin";
+                const isHovered = hoveredArea === area.name;
+
+                return (
+                  <div
+                    key={area.name}
+                    className={`flex items-center gap-2.5 rounded-xl border px-3.5 py-3 transition-all duration-300 ${
+                      isHovered
+                        ? "border-[#C9A94E]/30 bg-white/[0.08]"
+                        : "border-white/[0.05] bg-white/[0.02]"
+                    } ${
+                      isVisible
+                        ? "translate-y-0 opacity-100"
+                        : "translate-y-4 opacity-0"
+                    }`}
+                    style={{
+                      transitionDelay: isVisible
+                        ? `${400 + i * 50}ms`
+                        : "0ms",
+                    }}
+                    onMouseEnter={() => setHoveredArea(area.name)}
+                    onMouseLeave={() => setHoveredArea(null)}
+                  >
+                    <span
+                      className={`h-2 w-2 shrink-0 rounded-full ${
+                        isHQ ? "ring-1 ring-white/30" : ""
+                      }`}
+                      style={{ backgroundColor: meta.dot }}
+                    />
+                    <div className="min-w-0">
+                      <p
+                        className={`truncate text-xs font-semibold ${
+                          isHQ ? "text-white" : "text-slate-300"
+                        }`}
+                      >
+                        {area.name}
+                      </p>
+                      <p className="text-[10px] text-slate-500">
+                        {area.distance}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 flex items-center gap-5">
+              {Object.entries(regionMeta).map(([key, meta]) => (
+                <div key={key} className="flex items-center gap-1.5">
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      key === "central" ? "ring-1 ring-white/30" : ""
+                    }`}
+                    style={{ backgroundColor: meta.dot }}
+                  />
+                  <span className="text-[10px] text-slate-500">
+                    {meta.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <QuoteCTA className="inline-flex items-center gap-2 rounded-lg bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#0A1628] transition-all duration-300 hover:bg-[#d4b85e] hover:shadow-lg hover:shadow-[#C9A94E]/20">
+                Check Availability in Your Area
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 10h12M12 6l4 4-4 4" />
+                </svg>
+              </QuoteCTA>
+              <span className="text-xs text-slate-500">
+                Don&apos;t see your area? We may still cover it.
+              </span>
+            </div>
           </div>
         </div>
-
-        <p className={`mt-16 text-sm font-light uppercase tracking-[0.2em] text-slate-500 transition duration-1000 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`} style={{ transitionDelay: "520ms" }}>
-          Serving the greater Austin metropolitan area
-        </p>
       </div>
     </section>
   );

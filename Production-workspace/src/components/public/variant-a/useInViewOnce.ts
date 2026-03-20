@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function useInViewOnce<T extends HTMLElement>(options?: IntersectionObserverInit) {
+export function useInViewOnce<T extends HTMLElement>(threshold: number = 0.25) {
   const ref = useRef<T | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -21,14 +21,13 @@ export function useInViewOnce<T extends HTMLElement>(options?: IntersectionObser
         observer.disconnect();
       },
       {
-        threshold: 0.25,
-        ...options,
+        threshold,
       },
     );
 
     observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [isVisible, options]);
+  }, [isVisible, threshold]);
 
   return { ref, isVisible };
 }

@@ -8,7 +8,7 @@ export async function trackConversionEvent(payload: ConversionPayload) {
   try {
     const pagePath = typeof window !== "undefined" ? window.location.pathname : undefined;
 
-    await fetch("/api/conversion-event", {
+    const response = await fetch("/api/conversion-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -21,7 +21,15 @@ export async function trackConversionEvent(payload: ConversionPayload) {
       }),
       keepalive: true,
     });
-  } catch {
-    // Non-blocking analytics
+
+    if (!response.ok && process.env.NODE_ENV === "development") {
+      console.warn(
+        `[analytics] Failed to track "${payload.eventName}": ${response.status} ${response.statusText}`,
+      );
+    }
+  } catch (error) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn(`[analytics] Error tracking "${payload.eventName}":`, error);
+    }
   }
 }

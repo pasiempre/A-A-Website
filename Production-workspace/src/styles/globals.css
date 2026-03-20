@@ -20,6 +20,103 @@ body {
   outline-offset: 2px;
 }
 
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@keyframes heroFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroKenBurns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes heroBounceSubtle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+.hero-bounce-subtle {
+  animation: heroBounceSubtle 2s ease-in-out infinite;
+}
+
+@layer components {
+  .cta-primary {
+    @apply inline-flex items-center justify-center rounded-md bg-[#0A1628] px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm transition duration-300 hover:bg-[#162742] hover:-translate-y-0.5;
+  }
+
+  .cta-light {
+    @apply inline-flex items-center justify-center rounded-md border border-white/30 bg-white bg-opacity-10 px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur transition duration-300 hover:bg-white hover:text-[#0A1628] hover:-translate-y-0.5;
+  }
+
+  .cta-gold {
+    @apply inline-flex items-center justify-center rounded-md bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition duration-300 hover:bg-[#d4b666] hover:-translate-y-0.5;
+  }
+
+  .cta-outline-dark {
+    @apply inline-flex items-center justify-center rounded-md border border-slate-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 shadow-sm transition duration-300 hover:border-[#0A1628] hover:bg-white hover:text-[#0A1628] hover:-translate-y-0.5;
+  }
+
+  .section-kicker {
+    @apply text-[10px] font-bold uppercase tracking-[0.24em] text-[#2563EB];
+  }
+
+  .surface-panel {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .surface-panel-soft {
+    @apply rounded-2xl border border-slate-200/80 bg-white/80 shadow-sm backdrop-blur;
+  }
+
+  .dark-surface-panel {
+    @apply rounded-2xl border border-white/10 bg-white bg-opacity-5 shadow-[0_24px_80px_rgba(2,6,23,0.26)] backdrop-blur;
+  }
+
+  .info-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600 backdrop-blur;
+  }
+
+  .info-chip-dark {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/10 bg-white bg-opacity-10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-100 backdrop-blur;
+  }
+
+  .icon-tile {
+    @apply inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white text-[#0A1628] shadow-sm;
+  }
+
+  .signal-line {
+    @apply inline-flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .signal-line::before {
+    content: "";
+    @apply block h-px w-12 bg-gradient-to-r from-[#C9A94E] via-[#2563EB]/45 to-transparent;
+  }
+
+  .ghost-index {
+    @apply pointer-events-none select-none font-serif text-[4.25rem] leading-none tracking-tight text-slate-200/80 md:text-[5.5rem];
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto;

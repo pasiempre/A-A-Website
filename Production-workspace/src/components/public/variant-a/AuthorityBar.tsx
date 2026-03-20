@@ -1,23 +1,57 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
 
 type AnimatedStat = {
   target: number;
   suffix: string;
   label: string;
+  detail: string;
+  icon: "years" | "projects" | "timing";
 };
 
 const animatedStats: AnimatedStat[] = [
-  { target: 15, suffix: "+", label: "Years" },
-  { target: 500, suffix: "+", label: "Projects" },
-  { target: 100, suffix: "%", label: "On-Time" },
+  { target: 15, suffix: "+", label: "Years", detail: "field experience", icon: "years" },
+  { target: 500, suffix: "+", label: "Projects", detail: "spaces delivered", icon: "projects" },
+  { target: 100, suffix: "%", label: "On-Time", detail: "handoff focus", icon: "timing" },
 ];
 
 const staticStat = {
   title: "Licensed",
   subtitle: "& Insured",
+  detail: "ready for commercial and site work",
 };
+
+const dividerCellClass = "relative lg:px-6 lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:h-24 lg:after:w-px lg:after:-translate-y-1/2 lg:after:bg-slate-200";
+
+function MetricIcon({ icon }: { icon: AnimatedStat["icon"] }) {
+  if (icon === "years") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="M12 5v7l4 2.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+
+  if (icon === "projects") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="M5 19.5V7l7-2 7 2v12.5H5Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        <path d="M9 10.5h6M9 14h6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+      <path d="M6.5 12.5 10 16l7.5-8.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
 
 function useCountUp(target: number, start: boolean) {
   const [value, setValue] = useState(0);
@@ -27,89 +61,97 @@ function useCountUp(target: number, start: boolean) {
       return;
     }
 
-    let frame = 0;
-    const totalFrames = 70;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      const frame = window.requestAnimationFrame(() => setValue(target));
+      return () => window.cancelAnimationFrame(frame);
+    }
 
-    const interval = window.setInterval(() => {
-      frame += 1;
-      const progress = Math.min(frame / totalFrames, 1);
+    let animationFrame = 0;
+    const startTime = performance.now();
+    const duration = 1200;
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
       const eased = 1 - (1 - progress) * (1 - progress) * (1 - progress);
       setValue(Math.round(target * eased));
 
-      if (progress >= 1) {
-        window.clearInterval(interval);
+      if (progress < 1) {
+        animationFrame = window.requestAnimationFrame(tick);
       }
-    }, 16);
+    };
 
-    return () => window.clearInterval(interval);
+    animationFrame = window.requestAnimationFrame(tick);
+    return () => window.cancelAnimationFrame(animationFrame);
   }, [start, target]);
 
   return value;
 }
 
-function AnimatedMetric({ target, suffix, label, start }: AnimatedStat & { start: boolean }) {
+function AnimatedMetric({ target, suffix, label, detail, icon, start }: AnimatedStat & { start: boolean }) {
   const value = useCountUp(target, start);
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <div className="mb-2 font-serif text-5xl tracking-tight text-[#0A1628] md:text-6xl lg:text-[5.25rem]">
-        <span>{value}</span>
-        <span className="text-[#94A3B8]">{suffix}</span>
+    <div className="flex h-full flex-col items-center justify-center px-5 py-4 text-center">
+      <div className="icon-tile mb-5">
+        <MetricIcon icon={icon} />
       </div>
-      <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-500">{label}</div>
+      <div className="mb-2 font-serif text-5xl tracking-tight text-[#0A1628] md:text-6xl lg:text-[5.25rem]" aria-label={`${target}${suffix} ${label}`}>
+        <span aria-hidden="true">{value}</span>
+        <span className="text-[#94A3B8]" aria-hidden="true">{suffix}</span>
+      </div>
+      <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-600">{label}</div>
+      <div className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">{detail}</div>
     </div>
   );
 }
 
 export function AuthorityBar() {
-  const [startCounters, setStartCounters] = useState(false);
-  const sectionRef = useRef<HTMLElement | null>(null);
-
-  useEffect(() => {
-    const node = sectionRef.current;
-    if (!node) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (!entry?.isIntersecting) {
-          return;
-        }
-
-        setStartCounters(true);
-        observer.disconnect();
-      },
-      { threshold: 0.35 },
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+  const { ref, isVisible } = useInViewOnce<HTMLElement>(0.35);
+  const startCounters = isVisible;
 
   return (
-    <section ref={sectionRef} className="border-b border-slate-200 bg-[#FAFAF8] py-24">
+    <section ref={ref} aria-labelledby="authority-heading" className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-24 md:py-28">
+      <div className="pointer-events-none absolute inset-0 opacity-50">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(201,169,78,0.12),transparent_34%)]" />
+      </div>
       <div className="mx-auto max-w-7xl px-6">
-        <div className="grid grid-cols-2 gap-x-8 gap-y-12 text-center md:grid-cols-4 md:gap-x-6">
-          <AnimatedMetric {...animatedStats[0]} start={startCounters} />
-          <AnimatedMetric {...animatedStats[1]} start={startCounters} />
+        <div className="mb-10 text-center">
+          <p className="section-kicker">Track Record</p>
+          <h2 id="authority-heading" className="mt-3 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl">Our Numbers Speak</h2>
+        </div>
 
-          <div className="flex flex-col items-center justify-center">
-            <div className="mb-2 font-serif text-3xl leading-[0.95] tracking-tight text-[#0A1628] md:text-4xl lg:text-[3.75rem]">
-              {staticStat.title}
-              <br />
-              {staticStat.subtitle}
-            </div>
-            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-500">Austin Standards</div>
+        <div className="grid grid-cols-1 gap-y-10 text-center sm:grid-cols-2 lg:grid-cols-4 lg:gap-y-0">
+          <div className={dividerCellClass}>
+            <AnimatedMetric {...animatedStats[0]} start={startCounters} />
+          </div>
+          <div className={dividerCellClass}>
+            <AnimatedMetric {...animatedStats[1]} start={startCounters} />
           </div>
 
-          <AnimatedMetric {...animatedStats[2]} start={startCounters} />
+          <div className={`${dividerCellClass} flex flex-col items-center justify-center px-5 py-4 text-center`}>
+            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#C9A94E]/30 bg-[#C9A94E]/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a6a1c]">
+              Key credential
+            </div>
+            <div className="mb-3 font-serif text-[2.6rem] leading-[1.04] tracking-tight text-[#0A1628] md:text-[3.2rem]">
+              {staticStat.title}
+              <br />
+              <span className="inline-block pt-1">{staticStat.subtitle}</span>
+            </div>
+            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-600">Austin Standards</div>
+            <div className="mt-3 max-w-[14rem] text-xs uppercase tracking-[0.16em] text-slate-500">{staticStat.detail}</div>
+          </div>
+
+          <div className="lg:px-6">
+            <AnimatedMetric {...animatedStats[2]} start={startCounters} />
+          </div>
         </div>
 
         <div className="mt-12 border-t border-slate-200 pt-8 text-center">
-          <div className="inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-slate-200 bg-white px-5 py-3 text-sm text-slate-600 shadow-sm">
-            <span className="text-base tracking-[0.22em] text-[#C9A94E]">★★★★★</span>
+          <div className="surface-panel-soft inline-flex flex-wrap items-center justify-center gap-3 px-5 py-3 text-sm text-slate-600">
+            <span className="text-base tracking-[0.22em] text-[#C9A94E]" aria-hidden="true">★★★★★</span>
+            <span className="sr-only">Rated 5 out of 5 stars</span>
             <span className="font-light">Trusted across Austin-area job sites, office spaces, and turnover projects.</span>
           </div>
         </div>

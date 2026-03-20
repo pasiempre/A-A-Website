@@ -5,12 +5,11 @@ import { useEffect, useState } from "react";
 
 import { trackConversionEvent } from "@/lib/analytics";
 import { COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
-
-type HeroSectionProps = {
-  onOpenQuote: () => void;
-};
+import { QuoteCTA } from "./QuoteCTA";
 
 type TrustIcon = "shield" | "clock" | "message";
+
+const SERVICE_SIGNALS = ["Final Clean", "Turnovers"];
 
 function TrustGlyph({ icon }: { icon: TrustIcon }) {
   if (icon === "shield") {
@@ -54,14 +53,14 @@ function TrustGlyph({ icon }: { icon: TrustIcon }) {
 
 function TrustItem({ icon, label }: { icon: TrustIcon; label: string }) {
   return (
-    <div className="flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.2em] text-slate-200">
+    <div className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/6 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-100 md:backdrop-blur-md">
       <TrustGlyph icon={icon} />
       <span>{label}</span>
     </div>
   );
 }
 
-export function HeroSection({ onOpenQuote }: HeroSectionProps) {
+export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -81,29 +80,30 @@ export function HeroSection({ onOpenQuote }: HeroSectionProps) {
       : undefined;
 
   return (
-    <section id="main-content" className="relative min-h-[100svh] overflow-hidden">
+    <section id="hero" aria-labelledby="hero-heading" className="relative min-h-[100svh] overflow-hidden">
       <Image
-        src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2700&auto=format&fit=crop"
+        src="/images/variant-a/hero.jpg"
         alt="Modern glass-walled office lobby"
         fill
         priority
+        quality={68}
         sizes="100vw"
         className="object-cover"
         style={isVisible ? { animation: "heroKenBurns 15s ease-out forwards" } : undefined}
       />
-      <div className="absolute inset-0 bg-[#0A1628]/34" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/92 via-[#0A1628]/42 to-transparent" />
+      <div className="absolute inset-0 bg-[#0A1628]/34" aria-hidden="true" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/92 via-[#0A1628]/42 to-transparent" aria-hidden="true" />
 
       <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col items-center justify-center px-6 pb-36 pt-28 text-center md:justify-end md:pb-32 md:pt-40">
         <div className="max-w-4xl">
           <p
-            className="mb-5 inline-flex rounded-full border border-white/15 bg-white/8 px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-slate-100 opacity-0 backdrop-blur"
+            className="mb-5 inline-flex rounded-full border border-white/15 bg-white/8 px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-slate-100 opacity-0 md:backdrop-blur"
             style={fadeUp(220, 820)}
           >
             Austin Metro • Post-Construction • Commercial
           </p>
 
-          <h1 className="font-serif text-[clamp(3.8rem,14vw,6.8rem)] leading-[0.94] tracking-tight text-white sm:text-[clamp(4.4rem,11vw,7.2rem)] md:text-[clamp(5rem,9vw,8rem)]">
+          <h1 id="hero-heading" className="font-serif text-[clamp(3.8rem,14vw,6.8rem)] leading-[0.94] tracking-tight text-white sm:text-[clamp(4.4rem,11vw,7.2rem)] md:text-[clamp(5rem,9vw,8rem)]">
             {[
               { text: "Every Surface.", delay: 760 },
               { text: "Every Detail.", delay: 980 },
@@ -126,20 +126,28 @@ export function HeroSection({ onOpenQuote }: HeroSectionProps) {
             Post-construction & commercial cleaning across the Austin metro area.
           </p>
 
+          <ul
+            className="mt-5 flex flex-wrap items-center justify-center gap-2 opacity-0"
+            style={fadeUp(1520, 900)}
+            aria-label="Service highlights"
+          >
+            {SERVICE_SIGNALS.map((signal) => (
+              <li key={signal} className="info-chip-dark">
+                {signal}
+              </li>
+            ))}
+          </ul>
+
           <div
             className="mt-10 flex w-full max-w-xl flex-col gap-4 opacity-0 sm:mx-auto sm:flex-row sm:justify-center"
             style={fadeUp(1640, 920)}
           >
-            <button
-              type="button"
-              onClick={onOpenQuote}
-              className="w-full rounded-md bg-white px-8 py-4 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100 sm:w-auto"
-            >
-              Request a Quote
-            </button>
+            <QuoteCTA className="cta-primary w-full bg-white px-8 py-4 text-[#0A1628] hover:bg-slate-100 sm:w-auto">
+              Get Your Free Quote
+            </QuoteCTA>
             <a
               href={`tel:${COMPANY_PHONE_E164}`}
-              className="inline-flex w-full items-center justify-center rounded-md border border-white/30 bg-white/8 px-8 py-4 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm transition hover:bg-white hover:text-[#0A1628] sm:w-auto"
+              className="cta-light w-full px-8 py-4 sm:w-auto"
               onClick={() => {
                 void trackConversionEvent({ eventName: "call_click", source: "hero" });
               }}
@@ -159,51 +167,14 @@ export function HeroSection({ onOpenQuote }: HeroSectionProps) {
         </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 z-20 w-full border-t border-white/20 bg-[#07101d]/45 opacity-0 backdrop-blur-md" style={fadeUp(1760, 900)}>
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-8 gap-y-4 px-6 py-4 md:justify-between">
+      <div className="absolute bottom-0 left-0 z-20 w-full border-t border-white/20 bg-[#07101d]/45 opacity-0 md:backdrop-blur-md" style={fadeUp(1760, 900)}>
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-3 px-6 py-4 md:justify-between md:gap-4">
           <TrustItem icon="shield" label="Licensed & Insured" />
-          <div className="hidden h-1 w-1 rounded-full bg-white/25 sm:block" />
           <TrustItem icon="clock" label="Response Within 1 Hour" />
-          <div className="hidden h-1 w-1 rounded-full bg-white/25 md:block" />
-          <TrustItem icon="message" label="Se Habla Espanol" />
+          <TrustItem icon="message" label="Se Habla Español" />
         </div>
       </div>
 
-      <style jsx global>{`
-        @keyframes heroFadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes heroKenBurns {
-          from {
-            transform: scale(1);
-          }
-          to {
-            transform: scale(1.05);
-          }
-        }
-
-        @keyframes heroBounceSubtle {
-          0%,
-          100% {
-            transform: translateY(0);
-          }
-          50% {
-            transform: translateY(6px);
-          }
-        }
-
-        .hero-bounce-subtle {
-          animation: heroBounceSubtle 2s ease-in-out infinite;
-        }
-      `}</style>
     </section>
   );
 }

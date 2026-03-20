@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { dispatchSmsWithQuietHours, sendSms } from "@/lib/notifications";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type QuoteRequestBody = {
@@ -11,9 +12,24 @@ type QuoteRequestBody = {
   serviceType?: string;
   description?: string;
   timeline?: string;
+  website?: string;
 };
 
 export async function POST(request: Request) {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded?.split(",")[0]?.trim() ?? "unknown";
+  const { allowed } = checkRateLimit(`quote:${ip}`, {
+    windowMs: 3_600_000,
+    max: 5,
+  });
+
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      { status: 429 },
+    );
+  }
+
   let body: QuoteRequestBody;
 
   try {
@@ -22,12 +38,29 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
   }
 
+  if (body.website) {
+    return NextResponse.json({ success: true, leadId: "ok" }, { status: 201 });
+  }
+
   const name = body.name?.trim() ?? "";
   const phone = body.phone?.trim() ?? "";
 
   if (!name || !phone) {
     return NextResponse.json({ error: "Name and phone are required." }, { status: 400 });
   }
+
+  const phoneDigits = phone.replace(/\D/g, "");
+  if (phoneDigits.length < 10) {
+    return NextResponse.json(
+      { error: "Please provide a valid 10-digit phone number." },
+      { status: 400 },
+    );
+  }
+
+  const sanitize = (value: string) => value.replace(/[<>&"']/g, "");
+  const safeName = sanitize(name);
+  const safeCompany = sanitize(body.companyName?.trim() || "Unknown company");
+  const safeServiceType = sanitize(body.serviceType?.trim() || "General inquiry");
 
   try {
     const supabase = createAdminClient();
@@ -62,9 +95,7 @@ export async function POST(request: Request) {
     const adminAlertPhone = process.env.ADMIN_ALERT_PHONE || adminProfile?.phone;
 
     if (adminAlertPhone) {
-      const serviceText = insertedLead.service_type ?? "service inquiry";
-      const company = insertedLead.company_name ?? "Unknown company";
-      const message = `New lead: ${insertedLead.name} from ${company}. ${serviceText}. Call ${insertedLead.phone}.`;
+      const message = `New lead: ${safeName} from ${safeCompany}. ${safeServiceType}. Call ${phone}.`;
 
       const smsResult = await dispatchSmsWithQuietHours({
         supabase,
@@ -104,11 +135,11 @@ export async function POST(request: Request) {
           to: [recipientEmail],
           subject: "A&A Cleaning quote request received",
           html: `
-            <p>Hi ${name},</p>
-            <p>Thanks for requesting a quote from A&A Cleaning.</p>
+            <p>Hi ${safeName},</p>
+            <p>Thanks for requesting a quote from A&amp;A Cleaning.</p>
             <p>We will call you within the hour during business hours to confirm scope and next steps.</p>
-            <p><strong>Request summary:</strong> ${body.serviceType?.trim() || "General inquiry"}</p>
-            <p>Best,<br />A&A Cleaning</p>
+            <p><strong>Request summary:</strong> ${safeServiceType}</p>
+            <p>Best,<br />A&amp;A Cleaning</p>
           `,
         }),
       });

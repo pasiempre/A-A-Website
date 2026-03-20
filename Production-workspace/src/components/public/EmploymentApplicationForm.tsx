@@ -1,8 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+
+import { formatPhoneInput } from "@/components/public/variant-a/useQuoteForm";
 
 export function EmploymentApplicationForm() {
+  const formId = useId();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -43,6 +46,11 @@ export function EmploymentApplicationForm() {
 
       const payload = (await response.json().catch(() => null)) as { error?: string } | null;
       if (!response.ok) {
+        if (response.status === 429) {
+          setErrorText("Too many submissions. Please try again in an hour.");
+          return;
+        }
+
         setErrorText(payload?.error ?? `Unable to submit application (${response.status}).`);
         return;
       }
@@ -61,41 +69,60 @@ export function EmploymentApplicationForm() {
   };
 
   return (
-    <form className="space-y-4 rounded-lg border border-slate-200 bg-white p-6 shadow-sm" onSubmit={(event) => void submitApplication(event)}>
+    <form
+      className="surface-panel space-y-4 p-8"
+      aria-busy={isSubmitting}
+      onSubmit={(event) => void submitApplication(event)}
+    >
+      <p className="section-kicker">Apply Today</p>
+      <h3 className="text-2xl font-semibold tracking-tight text-[#0A1628]">Employment Application</h3>
+
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-sm text-slate-700">
+        <div>
+          <label htmlFor={`${formId}-fullName`} className="text-sm text-slate-700">
           Nombre completo / Full name
+          </label>
           <input
+            id={`${formId}-fullName`}
             required
             className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
             value={fullName}
             onChange={(event) => setFullName(event.target.value)}
           />
-        </label>
-        <label className="text-sm text-slate-700">
+        </div>
+        <div>
+          <label htmlFor={`${formId}-phone`} className="text-sm text-slate-700">
           Teléfono / Phone
+          </label>
           <input
+            id={`${formId}-phone`}
             required
             className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
             value={phone}
-            onChange={(event) => setPhone(event.target.value)}
+            onChange={(event) => setPhone(formatPhoneInput(event.target.value))}
           />
-        </label>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="text-sm text-slate-700">
+        <div>
+          <label htmlFor={`${formId}-email`} className="text-sm text-slate-700">
           Correo / Email
+          </label>
           <input
+            id={`${formId}-email`}
             type="email"
             className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
           />
-        </label>
-        <label className="text-sm text-slate-700">
+        </div>
+        <div>
+          <label htmlFor={`${formId}-preferredLanguage`} className="text-sm text-slate-700">
           Idioma preferido / Preferred language
+          </label>
           <select
+            id={`${formId}-preferredLanguage`}
             className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
             value={preferredLanguage}
             onChange={(event) => setPreferredLanguage(event.target.value as "es" | "en")}
@@ -103,60 +130,74 @@ export function EmploymentApplicationForm() {
             <option value="es">Español</option>
             <option value="en">English</option>
           </select>
-        </label>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <label className="text-sm text-slate-700">
+        <div>
+          <label htmlFor={`${formId}-city`} className="text-sm text-slate-700">
           City
-          <input className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={city} onChange={(event) => setCity(event.target.value)} />
-        </label>
-        <label className="text-sm text-slate-700">
+          </label>
+          <input id={`${formId}-city`} className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={city} onChange={(event) => setCity(event.target.value)} />
+        </div>
+        <div>
+          <label htmlFor={`${formId}-experienceYears`} className="text-sm text-slate-700">
           Experience (years)
+          </label>
           <input
+            id={`${formId}-experienceYears`}
             type="number"
             min="0"
             className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
             value={experienceYears}
             onChange={(event) => setExperienceYears(event.target.value)}
           />
-        </label>
-        <label className="text-sm text-slate-700">
+        </div>
+        <div>
+          <label htmlFor={`${formId}-hasTransportation`} className="text-sm text-slate-700">
           Transportation
-          <select className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={hasTransportation} onChange={(event) => setHasTransportation(event.target.value)}>
+          </label>
+          <select id={`${formId}-hasTransportation`} className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={hasTransportation} onChange={(event) => setHasTransportation(event.target.value)}>
             <option value="yes">Yes / Sí</option>
             <option value="no">No</option>
           </select>
-        </label>
+        </div>
       </div>
 
-      <label className="block text-sm text-slate-700">
+      <div>
+        <label htmlFor={`${formId}-isEligibleToWork`} className="block text-sm text-slate-700">
         Eligible to work in the U.S. / Elegible para trabajar en EE.UU.
-        <select className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={isEligibleToWork} onChange={(event) => setIsEligibleToWork(event.target.value)}>
+        </label>
+        <select id={`${formId}-isEligibleToWork`} className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={isEligibleToWork} onChange={(event) => setIsEligibleToWork(event.target.value)}>
           <option value="yes">Yes / Sí</option>
           <option value="no">No</option>
         </select>
-      </label>
+      </div>
 
-      <label className="block text-sm text-slate-700">
+      <div>
+        <label htmlFor={`${formId}-availabilityText`} className="block text-sm text-slate-700">
         Availability / Disponibilidad
+        </label>
         <textarea
+          id={`${formId}-availabilityText`}
           rows={3}
           className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
           value={availabilityText}
           onChange={(event) => setAvailabilityText(event.target.value)}
         />
-      </label>
+      </div>
 
-      <label className="block text-sm text-slate-700">
+      <div>
+        <label htmlFor={`${formId}-notes`} className="block text-sm text-slate-700">
         Notes / Notas
-        <textarea rows={3} className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={notes} onChange={(event) => setNotes(event.target.value)} />
-      </label>
+        </label>
+        <textarea id={`${formId}-notes`} rows={3} className="mt-1 w-full rounded border border-slate-300 px-3 py-2" value={notes} onChange={(event) => setNotes(event.target.value)} />
+      </div>
 
-      {statusText ? <p className="text-sm text-emerald-700">{statusText}</p> : null}
-      {errorText ? <p className="text-sm text-rose-600">{errorText}</p> : null}
+      {statusText ? <p aria-live="polite" className="text-sm text-emerald-700">{statusText}</p> : null}
+      {errorText ? <p aria-live="polite" className="text-sm text-rose-600">{errorText}</p> : null}
 
-      <button type="submit" disabled={isSubmitting} className="rounded bg-slate-900 px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60">
+      <button type="submit" disabled={isSubmitting} className="cta-primary w-full disabled:opacity-60">
         {isSubmitting ? "Submitting..." : preferredLanguage === "es" ? "Enviar solicitud" : "Submit application"}
       </button>
     </form>

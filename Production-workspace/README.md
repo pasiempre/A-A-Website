@@ -91,5 +91,16 @@ Copy `.env.example` to `.env.local` and fill in keys for Supabase, Twilio, Resen
 - `src/app/(admin)`
 - `src/app/(employee)`
 
+## Dev Preview Mode (No Supabase/Auth Required)
+To preview `/admin` and `/employee` layout shells without configuring Supabase yet:
+
+1. Set `NEXT_PUBLIC_DEV_PREVIEW_MODE=true` in `.env.local`
+2. Run `npm run dev`
+3. Visit `/admin` and `/employee`
+
+Notes:
+- Preview mode is guarded to non-production environments only.
+- This mode shows module layout and structure only (no live data, no auth, no writes).
+
 ## Notes
 This workspace is intentionally scaffolded for Phase 1 MVP delivery and componentization of Variant A.

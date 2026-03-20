@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { EmploymentApplicationForm } from "@/components/public/EmploymentApplicationForm";
+
+export const metadata: Metadata = {
+  title: "Careers",
+  description:
+    "Apply to join A&A Cleaning. We hire for reliable, detail-focused cleaning work across active construction and turnover projects.",
+  alternates: {
+    canonical: "/careers",
+  },
+};
 
 export default function CareersPage() {
   return (

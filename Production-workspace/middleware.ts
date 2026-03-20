@@ -6,6 +6,10 @@ const EMPLOYEE_PREFIX = "/employee";
 const AUTH_ADMIN = "/auth/admin";
 const AUTH_EMPLOYEE = "/auth/employee";
 
+function isDevPreviewEnabled() {
+  return process.env.NODE_ENV !== "production" && process.env.NEXT_PUBLIC_DEV_PREVIEW_MODE === "true";
+}
+
 function getRole(user: {
   app_metadata?: Record<string, unknown> | null;
   user_metadata?: Record<string, unknown> | null;
@@ -26,6 +30,10 @@ function getRole(user: {
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
+
+  if (isDevPreviewEnabled()) {
+    return response;
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

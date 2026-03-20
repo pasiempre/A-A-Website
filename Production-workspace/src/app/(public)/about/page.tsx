@@ -1,6 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { COMPANY_CITY, COMPANY_NAME, COMPANY_PHONE } from "@/lib/company";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "Learn how A&A Cleaning supports contractors, property teams, and commercial operators with standards-driven cleaning across Austin.",
+  alternates: {
+    canonical: "/about",
+  },
+};
 
 export default function AboutPage() {
   return (

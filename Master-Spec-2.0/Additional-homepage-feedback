@@ -1,0 +1,3966 @@
+Yes — I can confirm I have the code that matches all four screenshots:
+
+| Screenshot | Component | ✅ |
+|---|---|---|
+| "How It Works" timeline | `TimelineSection` | ✅ |
+| "Built on Standards" about | `AboutSection` | ✅ |
+| "Austin" service area + map | `ServiceAreaSection` | ✅ |
+| "What Teams Remember" testimonial | `TestimonialSection` | ✅ |
+
+I also have `OfferAndIndustrySection` (industries cards) and `VariantAPublicPage` (layout shell — sent twice, that's the redundancy on your side, not in the codebase).
+
+---
+
+Here's structured, Codex-ready feedback for each section:
+
+---
+
+## 1. `TimelineSection` — "How It Works"
+
+### Problems
+- **Step numbers** (`text-7xl` / `text-8xl`) are comically oversized and compete with the actual content hierarchy — they dominate the viewport instead of supporting it
+- **"Detail tracked" + "Schedule-aware" chips repeat identically on every single step** — this is the most visible redundancy on the entire page. They add zero differentiation
+- **Images are thumbnail-sized** (`h-44` / `h-56`) and feel like afterthoughts, not visual anchors
+- The **progress line gradient** (gold → blue → navy) uses three brand colors at once — visually noisy
+- The **dot indicator glow** (`blur-md` on a gold pseudo-element) feels gimmicky, not premium
+- **Excessive vertical spacing** (`mb-20` between steps) makes the section feel stretched
+- The **absolute-positioned step number** can collide with content at certain breakpoints
+- Text alignment **flipping between left and right** on alternating steps creates cognitive friction on mobile where everything stacks left anyway
+
+### Codex Instructions
+
+```
+Refactor TimelineSection with these UI/UX upgrades:
+
+1. STEP NUMBERS: Reduce from text-7xl/8xl to text-3xl or text-4xl. Make them 
+   a subtle accent (e.g., muted color, light weight) rather than the dominant 
+   element. Consider placing them inline with the step detail label instead 
+   of absolute-positioned.
+
+2. REMOVE REDUNDANT CHIPS: Delete the "Detail tracked" / "Schedule-aware" 
+   info-chips that repeat identically on every step. Replace with 
+   step-specific tags if needed, or remove entirely — the step body text 
+   already communicates the value.
+
+3. IMAGES: Increase image container height to h-64 md:h-72. Remove the 
+   surface-panel-soft wrapper and inner border overlay — let the image 
+   breathe. Use rounded-2xl directly on the image container.
+
+4. PROGRESS LINE: Simplify the gradient to a single brand color transition 
+   (e.g., from-slate-200 to-[#0A1628]). Remove the middle blue stop.
+
+5. DOT INDICATOR: Remove the blur-md glow span. Keep the clean dot with its 
+   border and white background. Make it smaller (h-6 w-6) and more refined.
+
+6. SPACING: Reduce step gap from mb-20 to mb-14. Tighten the section header 
+   bottom margin from mb-20 to mb-14.
+
+7. MOBILE: On mobile, don't flip text alignment — always left-align. The 
+   reverse layout should only apply on md+ breakpoints.
+
+8. STEP DETAIL LABEL: Combine the step number and detail label into one 
+   clean row (e.g., "01 — Fast Intake") with consistent typography. Use 
+   zero-padded numbers (01, 02, 03, 04) for a polished look.
+
+9. Remove the decorative gradient-line shimmer (pointer-events-none 
+   absolute inset-x-6 top-5 h-px) from inside the image containers — 
+   it adds visual noise.
+
+Keep all animation logic (useInViewOnce, progressHeight, stagger delays) 
+but reduce transition durations from 1000ms to 700ms for snappier feel.
+```
+
+---
+
+## 2. `AboutSection` — "Built on Standards"
+
+### Problems
+- The **right-side image** shows a generic office/coworking space — completely mismatched with a construction cleaning company (this is a content issue, but the UI should accommodate better)
+- **Floating badge chips** ("Field-ready detail", "Finish-Ready Standard") pinned to the top of the image feel disconnected and arbitrary — they hover in space with no context
+- The **"Why it matters" dark panel** overlaying the image bottom adds clutter and competes with the main content
+- The **blockquote panel** ("We don't leave until it's right") uses a generic `surface-panel-soft` treatment — it should feel more like a branded statement
+- The **"Work With Us →" CTA** is styled as an outline link but is actually an anchor to `#quote` — the visual weight doesn't match its importance
+- The **55/45 split** leaves the left side feeling airy while the right side is heavy with overlays
+- The **radial gradient** on the left panel (`rgba(201,169,78,0.08)`) is so subtle it's invisible — either commit to it or remove it
+
+### Codex Instructions
+
+```
+Refactor AboutSection with these UI/UX upgrades:
+
+1. IMAGE OVERLAYS: Remove the top-positioned floating chips ("Field-ready 
+   detail" and "Finish-Ready Standard") from the image. They add visual 
+   clutter without context. Also remove the bottom "Why it matters" dark 
+   panel overlay — move that messaging into the left-side content area 
+   if it's important, or cut it entirely.
+
+2. IMAGE TREATMENT: Keep the image clean with only a subtle bottom gradient 
+   overlay (for contrast if text is ever needed). Remove the top gradient. 
+   The image should be a full-bleed visual anchor, not a dashboard.
+
+3. BLOCKQUOTE: Elevate the "We don't leave until it's right" quote block. 
+   Replace the surface-panel-soft wrapper with a left-border accent design:
+   - Remove the card/panel background
+   - Add a 3px left border in brand gold (#C9A94E)
+   - Increase font size to text-3xl
+   - Add subtle padding-left (pl-6)
+   This makes it feel like a brand statement, not a UI component.
+
+4. CTA BUTTON: Change "Work With Us →" from cta-outline-dark to cta-primary 
+   to give it proper visual weight. It's the only action in this section — 
+   it should command attention.
+
+5. LEFT SIDE BACKGROUND: Remove the barely-visible radial gradient. Replace 
+   with a clean white or very subtle warm white (#FEFDFB) background.
+
+6. STANDARDS CHIPS: The "Detail-first", "Walkthrough ready", "Responsive 
+   crews" chips are fine but consider converting them to a horizontal rule 
+   with text dividers or a simple inline list to reduce visual noise. 
+   Too many pill-shaped elements across the site creates badge fatigue.
+
+7. SPACING: The section uses min-h-[70vh] which can cause too much 
+   whitespace on tall screens. Change to min-h-[60vh] or use fixed 
+   py-24 md:py-32 padding instead.
+
+8. SIGNAL LINE: The "The A&A standard" label above the quote uses a 
+   .signal-line class — ensure this renders as a clean small-caps label 
+   with a short horizontal rule, not a generic chip.
+
+Keep all animation logic intact. Maintain the slide-in directions 
+(-translate-x / translate-x) for the two-column reveal.
+```
+
+---
+
+## 3. `ServiceAreaSection` — "Austin" Service Area
+
+### Problems
+- **"AUSTIN" in `text-9xl`** is disproportionately massive — it dominates the section and makes the city hierarchy feel chaotic instead of structured
+- **Three different font sizes** for cities (9xl, 6xl, 5xl) creates a waterfall effect that reads as messy, not intentional
+- The **SVG map is crude** — label positions overlap (Pflugerville/Hutto collide in the screenshot), the polygon shapes look hand-drawn in a bad way, and the font size (4.4) renders inconsistently
+- **Hover effects** (`scale-105` + color change to gold) on static city names feel gimmicky — this isn't an interactive element
+- The **background color** (`#F1F0EE`) is slightly warm/muddy compared to the rest of the site's cooler palette
+- The **"Where We Work"** eyebrow is styled as raw inline text (`text-[10px]`) instead of using the shared `section-kicker` class
+- **Too much vertical space** — the section is long for what it communicates
+- The map and city list **say the same thing twice** — that's a structural redundancy
+
+### Codex Instructions
+
+```
+Refactor ServiceAreaSection with these UI/UX upgrades:
+
+1. CITY HIERARCHY: Flatten the sizing dramatically. Use a two-tier system:
+   - Primary city (Austin): font-serif text-5xl md:text-7xl (not 9xl)
+   - All other cities: font-serif text-2xl md:text-3xl in a clean grid or 
+     inline row, uniformly sized
+   Remove the three-tier waterfall. The current approach creates visual 
+   chaos. A uniform secondary tier communicates "we serve all these areas 
+   equally" which is the actual message.
+
+2. REMOVE HOVER EFFECTS: Delete the hover:scale-105 and hover:text-[#C9A94E] 
+   from city names. These are not interactive elements — the hover states 
+   are misleading and feel gimmicky on a professional site.
+
+3. MAP REDESIGN: The SVG map needs significant cleanup:
+   - Fix the Pflugerville/Hutto label overlap — offset Hutto's label to 
+     the right (x: 82, y: 36) and Pflugerville down (x: 60, y: 48)
+   - Remove the outer polygon (the blue one) — one service area boundary 
+     is sufficient
+   - Increase text font-size from 4.4 to 5 for legibility
+   - Use consistent label positioning (always to the right of markers)
+   - Add a subtle drop shadow or background rect behind each label for 
+     readability
+
+4. REDUCE REDUNDANCY: The city names listed above the map AND labeled on 
+   the map is redundant. Choose one approach:
+   Option A: Keep the typography list, make the map a subtle background 
+   element without labels
+   Option B: Keep the labeled map as the primary element, remove the 
+   large typography list above it
+   Recommended: Option B — the map is more engaging and communicates 
+   geography. Replace the typography list with a single centered heading: 
+   "Serving the Greater Austin Metro"
+
+5. EYEBROW: Replace the raw inline styling with the shared section-kicker 
+   class for consistency with other sections.
+
+6. BACKGROUND: Change from #F1F0EE to #FAFAF8 to match the TimelineSection 
+   background and maintain visual continuity.
+
+7. SPACING: Reduce from py-24 md:py-28 to py-20 md:py-24. Reduce mt-12 
+   gap between city list and map to mt-8.
+
+8. BOTTOM TAGLINE: The "Serving the greater Austin metropolitan area" line 
+   at the bottom is redundant if the heading already says this. Remove it 
+   or replace with something actionable like a CTA to request service in 
+   their area.
+
+Keep all useInViewOnce animation logic. Maintain staggered reveal delays 
+on map markers.
+```
+
+---
+
+## 4. `TestimonialSection` — "What Teams Remember"
+
+### Problems
+- The **initials avatar** (MT, DC, SM, JR) in a circle with double rings feels like a placeholder — it screams "we don't have photos"
+- The **giant quotation mark** (`text-8xl`, `select-none`) takes up significant space for pure decoration
+- The **word-by-word animation** using `inline-block` spans creates `&nbsp;` gaps that look unnatural, especially on line breaks
+- **`min-h-[600px]` spacer div** is a layout hack — it creates inconsistent whitespace across viewport sizes
+- The **three tag chips** per testimonial (tag, city, timeframe) at the top add complexity without adding trust
+- The **double-ring avatar** (two absolute positioned circles at `-10px` and `-18px`) feels ornate/overwrought
+- The **`pointer-events-none absolute`** positioning on the testimonial card means it's **not accessible** — screen readers and keyboard users can't interact with it
+- The background grid pattern (`backgroundSize: 36px 36px`) combined with the radial gradient creates visual noise on a section that should feel clean and authoritative
+- The `key={testimonial.name}` on the card doesn't properly trigger CSS transitions when changing testimonials
+
+### Codex Instructions
+
+```
+Refactor TestimonialSection with these UI/UX upgrades:
+
+1. AVATAR: Simplify to a single circle with initials. Remove both outer 
+   ring borders (the -10px and -18px absolute circles). Use:
+   - h-12 w-12 rounded-full bg-[#1a2a44] border border-[#C9A94E]/30
+   - Place inline next to the name/role (horizontal layout) instead of 
+     above them (vertical stack)
+   This reads as intentionally minimal rather than "missing a photo."
+
+2. QUOTATION MARK: Remove the giant decorative quote mark entirely. The 
+   <blockquote> semantic element and the testimonial context are sufficient. 
+   If a visual cue is desired, use a subtle 3px left border in gold on the 
+   blockquote instead.
+
+3. LAYOUT FIX: Remove the absolute positioning hack on the testimonial card 
+   and the min-h-[600px] spacer div. Use normal document flow:
+   - The testimonial card should be position: relative in the flow
+   - Use a fixed height container or min-h on the card itself
+   - Animate with opacity and a subtle translateY, not just opacity
+
+4. TAGS: Reduce from three chips to one. Show only the primary tag 
+   (testimonial.tag like "Post-Construction"). The city and timeframe 
+   add clutter without building trust. If needed, incorporate the city 
+   into the role line (e.g., "Project Manager, Top-Tier Construction — 
+   Austin Metro").
+
+5. BACKGROUND: Remove the grid pattern overlay entirely. Keep only the 
+   radial gradient (the gold glow at top). The grid adds visual noise 
+   to a section that should feel calm and trustworthy.
+
+6. QUOTE TYPOGRAPHY: Reduce from text-3xl md:text-5xl to text-2xl 
+   md:text-4xl. The current size makes short quotes feel like they're 
+   shouting.
+
+7. WORD ANIMATION: Replace the word-by-word span animation with a simple 
+   fade-in on the entire blockquote. The current implementation:
+   - Creates unnatural &nbsp; spacing
+   - Generates dozens of DOM nodes per quote
+   - Doesn't properly retrigger on slide change
+   Use a single <span> with opacity + translateY transition instead.
+
+8. NAVIGATION DOTS: The dots are fine but add left/right arrow buttons 
+   flanking the dots for clearer affordance. Use subtle ghost buttons 
+   with chevron icons.
+
+9. ACCESSIBILITY: The pointer-events-none on the testimonial card makes 
+   it inaccessible. Remove this class. Ensure the testimonial text is 
+   selectable and the section is keyboard-navigable.
+
+10. TRANSITION: Replace key={testimonial.name} with proper enter/exit 
+    transitions. Use two overlapping divs with opacity crossfade, or a 
+    single container with CSS transition on opacity + transform triggered 
+    by state change.
+
+Keep the auto-advance timer logic, pause-on-hover, reduced-motion 
+detection, and compact viewport detection.
+```
+
+---
+
+## 5. `OfferAndIndustrySection` — "Who We Serve"
+
+### Problems
+- **Card-within-card nesting** — the "Why it works" panel inside each card creates heavy visual layering
+- **Two eyebrow texts** per card (eyebrow + signal) is confusing — which is the primary label?
+- The **gradient fade** at the top of each card (`h-28`) is so subtle the color distinction between cards is barely noticeable
+- **`min-h-[112px]`** on pain point text is a layout hack that wastes space on shorter text
+- The cards hover to `-translate-y-1` which is too subtle to be satisfying and too present to be invisible — it's in an uncanny valley
+- The **icon tiles** are small (h-12 w-12) and generic
+
+### Codex Instructions
+
+```
+Refactor OfferAndIndustrySection with these UI/UX upgrades:
+
+1. SIMPLIFY CARD STRUCTURE: Remove the nested "Why it works" panel. 
+   Instead, present the outcome text directly below the pain point with 
+   a simple divider or label. The card-in-card pattern adds visual weight 
+   without proportional value. Structure should be:
+   - Icon + title
+   - Pain point paragraph
+   - Divider
+   - "Best suited for" tags
+   - Outcome text as a footer with a subtle background (bg-slate-50 
+     rounded-b-2xl p-6)
+
+2. CONSOLIDATE EYEBROWS: Remove the "signal" field. Keep only the 
+   "eyebrow" as the card's subheading label. Two small-caps labels 
+   at the top of each card creates confusion about hierarchy.
+
+3. TOP GRADIENT: Either make the gradient more visible (increase h-28 to 
+   h-40 and increase color opacity) so the color-coding is actually 
+   apparent, or remove it entirely. The current middle ground is 
+   ineffective.
+
+4. REMOVE min-h HACK: Replace min-h-[112px] with natural height. If 
+   card height consistency is needed, apply min-h on the entire card 
+   instead, or use grid with items-stretch (already grid).
+
+5. HOVER: Increase from -translate-y-1 to -translate-y-2 and add a 
+   more visible shadow change. Or remove the hover translate entirely 
+   and just use shadow transition.
+
+6. ICON SIZE: Increase from h-12 w-12 to h-14 w-14. Give each icon 
+   a distinct background tint matching its card's accent color.
+
+Keep all animation, stagger delays, and the CTA button.
+```
+
+---
+
+## 6. Global / Cross-Section Issues
+
+```
+Apply these cross-cutting improvements:
+
+1. BADGE/CHIP FATIGUE: The site uses info-chip pills on nearly every 
+   section (services, about, timeline, industries, testimonials). Audit 
+   all sections and reduce total chip usage by ~40%. Use them only where 
+   they add genuine categorization value (industries "best fit" tags, 
+   service types). Remove them from decorative/repetitive contexts.
+
+2. SECTION KICKER CONSISTENCY: Ensure every section eyebrow uses the 
+   shared section-kicker class. ServiceAreaSection currently uses raw 
+   inline styles for its "Where We Work" label.
+
+3. TRANSITION DURATION: Standardize all section entrance animations to 
+   duration-700 (currently mixed between 500, 700, and 1000). This 
+   creates a consistent, snappy rhythm.
+
+4. BACKGROUND CONTINUITY: Standardize light section backgrounds:
+   - Use #FFFFFF for primary content sections (About, Industries)
+   - Use #FAFAF8 for secondary sections (Timeline, Service Area)
+   - Use #0A1628 for dark accent sections (Testimonial)
+   Remove #F1F0EE and any other one-off background colors.
+
+5. FONT SIZE DISCIPLINE: Audit all heading sizes. Multiple sections 
+   use text-5xl or larger. Establish a clear hierarchy:
+   - Hero: text-6xl md:text-8xl (one instance only)
+   - Section headings: text-4xl md:text-5xl
+   - Card headings: text-2xl md:text-3xl
+   - No other element should exceed text-5xl except the hero.
+```
+
+---
+
+
+Here's the fully refactored code for sections 1–3:
+
+---
+
+## 1. `TimelineSection` (Refactored)
+
+```tsx
+"use client";
+
+import Image from "next/image";
+import { useEffect, useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+const steps = [
+  {
+    number: "01",
+    icon: "request",
+    title: "Request a Quote",
+    body: "Submit our form or call directly. We review the request quickly and confirm the next step during business hours.",
+    image: "/images/variant-a/timeline-01.jpg",
+    detail: "Fast Intake",
+    tag: "Same-day response",
+  },
+  {
+    number: "02",
+    icon: "assess",
+    title: "We Assess",
+    body: "We review the scope, visit if needed, and provide a clear estimate based on the project reality.",
+    image: "/images/variant-a/timeline-02.jpg",
+    detail: "Scope Clarity",
+    tag: "On-site if needed",
+  },
+  {
+    number: "03",
+    icon: "clean",
+    title: "We Clean",
+    body: "A&A crews handle the work with detail-focused standards, responsive communication, and schedule awareness.",
+    image: "/images/variant-a/timeline-03.jpg",
+    detail: "Crew Execution",
+    tag: "Standards-driven",
+  },
+  {
+    number: "04",
+    icon: "handoff",
+    title: "You Walk Through",
+    body: "We finish for presentation and final review so the handoff feels complete, not rushed.",
+    image: "/images/variant-a/timeline-04.jpg",
+    detail: "Closeout Ready",
+    tag: "Walkthrough-grade finish",
+  },
+];
+
+function StepIcon({ icon }: { icon: (typeof steps)[number]["icon"] }) {
+  if (icon === "request") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path
+          d="M7 6.5h10M7 11h10M7 15.5h6M5 4.5h14v15H5z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "assess") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <circle cx="11" cy="11" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="m15 15 4 4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "clean") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path
+          d="m7 18 3.5-9 1.6 4.1 3.9 1.7L13 22l-1.1-3.8L7 18Z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+      <path
+        d="M5 14.5 9 18l10-11"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function TimelineStep({
+  onVisible,
+  step,
+  reverse,
+}: {
+  onVisible: (stepNumber: string) => void;
+  step: (typeof steps)[number];
+  reverse?: boolean;
+}) {
+  const { ref, isVisible } = useInViewOnce<HTMLDivElement>({ threshold: 0.25 });
+
+  useEffect(() => {
+    if (isVisible) {
+      onVisible(step.number);
+    }
+  }, [isVisible, onVisible, step.number]);
+
+  return (
+    <div
+      ref={ref}
+      className={`group relative mb-14 flex flex-col ${
+        reverse ? "md:flex-row-reverse" : "md:flex-row"
+      } md:items-center`}
+    >
+      {/* Timeline dot */}
+      <div
+        aria-hidden="true"
+        className={`absolute left-[22px] top-1 z-20 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition duration-700 md:left-1/2 md:-translate-x-1/2 ${
+          isVisible ? "scale-100 opacity-100" : "scale-75 opacity-0"
+        }`}
+      >
+        <span className="h-2 w-2 rounded-full bg-[#0A1628]" />
+      </div>
+
+      {/* Text content */}
+      <div
+        className={`w-full pl-14 md:w-1/2 ${
+          reverse ? "md:pl-14 md:pr-0" : "md:pl-0 md:pr-14 md:text-right"
+        } transition duration-700 ${
+          isVisible
+            ? "translate-x-0 opacity-100"
+            : reverse
+              ? "translate-x-8 opacity-0"
+              : "-translate-x-8 opacity-0"
+        }`}
+      >
+        {/* Combined step number + detail label */}
+        <div
+          className={`mb-4 inline-flex items-center gap-3 transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+          }`}
+        >
+          <span className="icon-tile">
+            <StepIcon icon={step.icon} />
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="font-serif text-3xl tracking-tight text-slate-300">
+              {step.number}
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2563EB]">
+              — {step.detail}
+            </span>
+          </span>
+        </div>
+
+        <h3 className="mt-2 font-serif text-2xl tracking-tight text-[#0A1628]">
+          {step.title}
+        </h3>
+        <p className="mt-3 max-w-md font-light leading-7 text-slate-600 md:inline-block">
+          {step.body}
+        </p>
+
+        {/* Step-specific tag (unique per step, not repeated) */}
+        <div
+          className={`mt-4 flex flex-wrap gap-2 ${
+            reverse ? "md:justify-start" : "md:justify-end"
+          }`}
+        >
+          <span className="info-chip">{step.tag}</span>
+        </div>
+      </div>
+
+      {/* Image */}
+      <div
+        className={`mt-6 w-full md:mt-0 md:w-1/2 ${
+          reverse ? "md:pr-14" : "md:pl-14"
+        } transition duration-700 ${
+          isVisible
+            ? "translate-x-0 opacity-100"
+            : reverse
+              ? "-translate-x-8 opacity-0"
+              : "translate-x-8 opacity-0"
+        }`}
+      >
+        <div className="relative h-64 overflow-hidden rounded-2xl shadow-[0_16px_48px_rgba(15,23,42,0.08)] md:h-72">
+          <Image
+            src={step.image}
+            alt={step.title}
+            fill
+            quality={68}
+            sizes="(max-width: 768px) 100vw, 480px"
+            className={`object-cover transition duration-700 ${
+              isVisible ? "scale-100 opacity-100" : "scale-105 opacity-60"
+            }`}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function TimelineSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.15 });
+  const [visibleSteps, setVisibleSteps] = useState<string[]>([]);
+
+  const revealStep = (stepNumber: string) => {
+    setVisibleSteps((previous) =>
+      previous.includes(stepNumber) ? previous : [...previous, stepNumber]
+    );
+  };
+
+  const progressHeight = `${(visibleSteps.length / steps.length) * 100}%`;
+
+  return (
+    <section
+      ref={ref}
+      className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-20 md:py-24"
+    >
+      <div className="pointer-events-none absolute inset-0 opacity-40">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(201,169,78,0.06),transparent_32%)]" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-6">
+        {/* Section header */}
+        <div
+          className={`mb-14 text-center transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <p className="section-kicker">Process</p>
+          <h2 className="mt-3 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl">
+            How It Works
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base font-light leading-relaxed text-slate-600">
+            Rapid intake, clean scope alignment, disciplined execution, and a
+            handoff that feels ready.
+          </p>
+        </div>
+
+        {/* Timeline */}
+        <div className="relative mx-auto max-w-5xl">
+          {/* Progress line */}
+          <div className="absolute bottom-0 left-6 top-0 w-px bg-slate-200 md:left-1/2 md:-translate-x-1/2">
+            <div
+              className="w-full bg-gradient-to-b from-slate-300 to-[#0A1628] transition-all duration-700"
+              style={{ height: progressHeight }}
+            />
+          </div>
+
+          {steps.map((step, index) => (
+            <TimelineStep
+              key={step.number}
+              onVisible={revealStep}
+              step={step}
+              reverse={index % 2 === 1}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 2. `AboutSection` (Refactored)
+
+```tsx
+"use client";
+
+import Image from "next/image";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+export function AboutSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+
+  return (
+    <section
+      ref={ref}
+      id="about"
+      aria-labelledby="about-heading"
+      className="scroll-mt-32 overflow-hidden border-b border-slate-200 bg-white md:scroll-mt-36"
+    >
+      <div className="flex min-h-[60vh] flex-col md:flex-row">
+        {/* Left content */}
+        <div
+          className={`relative flex w-full items-center justify-center bg-white p-10 transition duration-700 md:w-[55%] md:p-20 lg:p-24 ${
+            isVisible
+              ? "translate-x-0 opacity-100"
+              : "-translate-x-10 opacity-0"
+          }`}
+        >
+          <div className="max-w-lg">
+            <span className="section-kicker block">About A&amp;A</span>
+
+            <h2
+              id="about-heading"
+              className="mt-5 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl"
+            >
+              Built on Standards
+            </h2>
+
+            {/* Inline values instead of chip overload */}
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Detail-First&ensp;·&ensp;Walkthrough Ready&ensp;·&ensp;Responsive
+              Crews
+            </p>
+
+            <div className="mt-8 space-y-5 text-lg font-light leading-relaxed text-slate-600">
+              <p>
+                A&amp;A Cleaning was built on a simple principle: the job is not
+                done until every detail meets the standard.
+              </p>
+              <p>
+                From rough cleans on active construction sites to final
+                walkthrough preparation, the goal is consistent: help the space
+                feel ready, finished, and professionally presented.
+              </p>
+            </div>
+
+            {/* Elevated brand quote — left border accent */}
+            <blockquote className="mt-10 border-l-[3px] border-[#C9A94E] pl-6">
+              <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                The A&amp;A Standard
+              </span>
+              <p className="font-serif text-3xl italic leading-snug text-[#0A1628]">
+                "We don&apos;t leave until it&apos;s right."
+              </p>
+            </blockquote>
+
+            {/* Primary CTA — full visual weight */}
+            <a href="#quote" className="cta-primary mt-10 inline-flex gap-3">
+              Work With Us
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Right image — clean, no overlays */}
+        <div
+          className={`relative h-[50vh] w-full overflow-hidden transition duration-700 md:h-auto md:w-[45%] ${
+            isVisible
+              ? "translate-x-0 opacity-100"
+              : "translate-x-10 opacity-0"
+          }`}
+        >
+          <Image
+            src="/images/variant-a/about-hero.jpg"
+            alt="A cleaning crew member carefully wiping down a newly finished interior space"
+            fill
+            quality={68}
+            sizes="(max-width: 768px) 100vw, 45vw"
+            className="object-cover"
+          />
+          {/* Subtle bottom gradient only */}
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent"
+            aria-hidden="true"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 3. `ServiceAreaSection` (Refactored)
+
+```tsx
+"use client";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+const allCities = [
+  "Round Rock",
+  "Georgetown",
+  "Pflugerville",
+  "Hutto",
+  "Kyle",
+  "Buda",
+  "San Marcos",
+];
+
+const mapMarkers = [
+  { label: "Austin", x: 45, y: 54, primary: true },
+  { label: "Round Rock", x: 56, y: 34 },
+  { label: "Georgetown", x: 64, y: 20 },
+  { label: "Pflugerville", x: 60, y: 46 },
+  { label: "Hutto", x: 78, y: 36 },
+  { label: "Buda", x: 42, y: 70 },
+  { label: "Kyle", x: 38, y: 80 },
+  { label: "San Marcos", x: 34, y: 92 },
+];
+
+function MetroMap({ isVisible }: { isVisible: boolean }) {
+  return (
+    <div
+      className={`relative mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white px-6 py-8 shadow-sm transition duration-700 ${
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      }`}
+    >
+      {/* Subtle grid background */}
+      <div
+        className="absolute inset-0 opacity-[0.05]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(10,22,40,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(10,22,40,0.15) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
+
+      {/* Service area boundary — single polygon */}
+      <svg
+        viewBox="0 0 100 100"
+        className="absolute inset-0 z-0 h-full w-full"
+        aria-hidden="true"
+      >
+        <path
+          d="M32 22 44 19 55 22 65 29 69 40 67 51 60 62 49 67 39 65 32 57 28 46 29 34Z"
+          fill="rgba(201,169,78,0.06)"
+          stroke="rgba(201,169,78,0.18)"
+          strokeWidth="0.8"
+        />
+      </svg>
+
+      {/* Map with markers and labels */}
+      <svg
+        viewBox="0 0 100 100"
+        className="relative z-10 mx-auto aspect-[1.3] w-full max-w-[32rem]"
+        role="img"
+        aria-label="Map showing A&A Cleaning service area across the greater Austin metro"
+      >
+        {/* Route lines */}
+        <path
+          d="M45 54 L56 34 L64 20"
+          fill="none"
+          stroke="#CBD5E1"
+          strokeLinecap="round"
+          strokeWidth="1"
+        />
+        <path
+          d="M56 34 L60 46 L78 36"
+          fill="none"
+          stroke="#CBD5E1"
+          strokeLinecap="round"
+          strokeWidth="1"
+        />
+        <path
+          d="M45 54 L42 70 L38 80 L34 92"
+          fill="none"
+          stroke="#C9A94E"
+          strokeLinecap="round"
+          strokeWidth="1"
+          strokeOpacity="0.6"
+        />
+
+        {mapMarkers.map((marker, index) => (
+          <g
+            key={marker.label}
+            style={{ transitionDelay: `${index * 100}ms` }}
+            className={`transition duration-700 ${
+              isVisible ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            {/* Label background for readability */}
+            <rect
+              x={marker.x + 3}
+              y={marker.y - 5.5}
+              width={marker.label.length * 3.2 + 4}
+              height="7"
+              rx="1.5"
+              fill="white"
+              fillOpacity="0.85"
+            />
+
+            {/* Marker dot */}
+            <circle
+              cx={marker.x}
+              cy={marker.y}
+              r={marker.primary ? "3" : "2.2"}
+              fill={marker.primary ? "#0A1628" : "#C9A94E"}
+            />
+            <circle
+              cx={marker.x}
+              cy={marker.y}
+              r={marker.primary ? "5.5" : "4"}
+              fill="none"
+              stroke={
+                marker.primary
+                  ? "rgba(10,22,40,0.15)"
+                  : "rgba(201,169,78,0.22)"
+              }
+              strokeWidth="1"
+            />
+
+            {/* Label */}
+            <text
+              x={marker.x + 5}
+              y={marker.y - 0.5}
+              fill="#334155"
+              fontSize="5"
+              fontWeight="600"
+            >
+              {marker.label}
+            </text>
+          </g>
+        ))}
+      </svg>
+    </div>
+  );
+}
+
+export function ServiceAreaSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+
+  return (
+    <section
+      ref={ref}
+      id="service-area"
+      aria-labelledby="service-area-heading"
+      className="scroll-mt-32 overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-20 text-center md:scroll-mt-36 md:py-24"
+    >
+      <div className="mx-auto max-w-6xl px-6">
+        {/* Section header */}
+        <div
+          className={`transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <p className="section-kicker">Where We Work</p>
+
+          <h2
+            id="service-area-heading"
+            className="mt-3 font-serif text-5xl tracking-tight text-[#0A1628] md:text-7xl"
+          >
+            Greater Austin Metro
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-xl text-base font-light leading-relaxed text-slate-600">
+            Serving the Austin metro and surrounding communities with consistent,
+            standards-driven cleaning.
+          </p>
+        </div>
+
+        {/* City list — uniform secondary tier */}
+        <ul
+          className={`mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+          style={{ transitionDelay: "120ms" }}
+          aria-label="Service area cities"
+        >
+          {allCities.map((city, index) => (
+            <li key={city} className="flex items-center gap-3">
+              <span className="font-serif text-2xl tracking-tight text-slate-600 md:text-3xl">
+                {city}
+              </span>
+              {index < allCities.length - 1 && (
+                <span
+                  aria-hidden="true"
+                  className="h-1 w-1 rounded-full bg-slate-300"
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {/* Map */}
+        <div className="mt-10 md:mt-12">
+          <MetroMap isVisible={isVisible} />
+        </div>
+
+        {/* CTA instead of redundant tagline */}
+        <div
+          className={`mt-10 transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+          style={{ transitionDelay: "400ms" }}
+        >
+          <p className="text-sm font-light text-slate-500">
+            Don&apos;t see your area?{" "}
+            <a
+              href="#quote"
+              className="font-medium text-[#0A1628] underline decoration-[#C9A94E] underline-offset-4 transition hover:text-[#C9A94E]"
+            >
+              Reach out — we may still be able to help
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+Now here are sections 4–6:
+
+---
+
+## 4. `TestimonialSection` (Refactored)
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+type Testimonial = {
+  quote: string;
+  name: string;
+  role: string;
+  initials: string;
+  tag: string;
+  city: string;
+};
+
+const testimonials: Testimonial[] = [
+  {
+    quote:
+      "A&A Cleaning has been our go-to subcontractor for three years. Reliable, detail-oriented, and always on schedule.",
+    name: "Marcus Torres",
+    role: "Project Manager, Top-Tier Construction",
+    initials: "MT",
+    tag: "Post-Construction",
+    city: "Austin Metro",
+  },
+  {
+    quote:
+      "They fundamentally understand the demands of commercial builds. We don't worry when they're on the schedule.",
+    name: "David Chen",
+    role: "Site Superintendent, BuildCo Partners",
+    initials: "DC",
+    tag: "Commercial Build",
+    city: "Round Rock",
+  },
+  {
+    quote:
+      "From rough clean to final walk-through, their attention to detail is unmatched. The best sub we've worked with.",
+    name: "Sarah Mitchell",
+    role: "General Contractor, Mitchell & Associates",
+    initials: "SM",
+    tag: "Final Clean",
+    city: "Georgetown",
+  },
+  {
+    quote:
+      "Fast turnaround, professional crew, zero punch list items. A&A sets the standard for construction cleaning.",
+    name: "James Rodriguez",
+    role: "Operations Director, Prestige Developments",
+    initials: "JR",
+    tag: "Turnover Support",
+    city: "Austin",
+  },
+];
+
+export function TestimonialSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.35 });
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+
+  useEffect(() => {
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const viewportQuery = window.matchMedia("(max-width: 767px)");
+
+    const updateMotion = () => setIsReducedMotion(motionQuery.matches);
+    const updateViewport = () => setIsCompactViewport(viewportQuery.matches);
+
+    updateMotion();
+    updateViewport();
+
+    motionQuery.addEventListener("change", updateMotion);
+    viewportQuery.addEventListener("change", updateViewport);
+
+    return () => {
+      motionQuery.removeEventListener("change", updateMotion);
+      viewportQuery.removeEventListener("change", updateViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible || hasStarted) return;
+    const timer = window.setTimeout(() => {
+      setActive(0);
+      setHasStarted(true);
+    }, 180);
+    return () => window.clearTimeout(timer);
+  }, [hasStarted, isVisible]);
+
+  const goTo = (index: number) => {
+    if (index === active) return;
+    setTransitioning(true);
+    setTimeout(() => {
+      setActive(index);
+      setTransitioning(false);
+    }, 300);
+  };
+
+  useEffect(() => {
+    if (!hasStarted || paused || isReducedMotion || isCompactViewport) return;
+    const timer = window.setInterval(() => {
+      goTo((active + 1) % testimonials.length);
+    }, 7000);
+    return () => window.clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasStarted, isCompactViewport, isReducedMotion, paused, active]);
+
+  const testimonial = testimonials[active];
+
+  return (
+    <section
+      ref={ref}
+      id="testimonial-section"
+      className="relative overflow-hidden bg-[#0A1628] py-24 text-center text-white md:py-32"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
+      {/* Subtle radial glow — no grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,169,78,0.10),transparent_40%)]" />
+
+      <div className="relative mx-auto max-w-5xl px-6">
+        {/* Section header */}
+        <div className="mb-14 flex flex-col items-center text-center">
+          <p className="section-kicker !text-slate-400">Field Notes</p>
+          <h2 className="mt-3 font-serif text-4xl tracking-tight text-white md:text-5xl">
+            What Teams Remember
+          </h2>
+        </div>
+
+        {/* Testimonial card — in normal document flow */}
+        <div className="mx-auto max-w-4xl">
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-8 py-12 backdrop-blur-sm md:px-14 md:py-14">
+            {/* Single primary tag */}
+            <div className="mb-8 flex justify-center">
+              <span className="rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                {testimonial.tag}
+              </span>
+            </div>
+
+            {/* Quote — simple fade transition, no word-by-word */}
+            <blockquote
+              className={`mx-auto max-w-3xl font-serif text-2xl leading-[1.35] tracking-tight text-white transition-all duration-500 md:text-4xl ${
+                transitioning
+                  ? "translate-y-2 opacity-0"
+                  : "translate-y-0 opacity-100"
+              }`}
+            >
+              {testimonial.quote}
+            </blockquote>
+
+            {/* Attribution — horizontal layout */}
+            <div
+              className={`mt-10 flex flex-col items-center gap-4 transition-all duration-500 sm:flex-row sm:justify-center ${
+                transitioning ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#C9A94E]/30 bg-[#1a2a44] font-serif text-base text-[#C9A94E]">
+                {testimonial.initials}
+              </div>
+              <div className="text-center sm:text-left">
+                <p className="text-base font-light text-slate-100">
+                  {testimonial.name}
+                </p>
+                <p className="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                  {testimonial.role} — {testimonial.city}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation: arrows + dots */}
+        <div className="mt-10 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            aria-label="Previous testimonial"
+            onClick={() =>
+              goTo((active - 1 + testimonials.length) % testimonials.length)
+            }
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-slate-400 transition hover:border-white/30 hover:text-white"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+
+          <div className="flex items-center gap-2">
+            {testimonials.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                aria-label={`View testimonial ${idx + 1}`}
+                onClick={() => goTo(idx)}
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  idx === active
+                    ? "w-10 bg-[#C9A94E]"
+                    : "w-2 bg-slate-600 hover:bg-slate-400"
+                }`}
+              />
+            ))}
+          </div>
+
+          <button
+            type="button"
+            aria-label="Next testimonial"
+            onClick={() => goTo((active + 1) % testimonials.length)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-slate-400 transition hover:border-white/30 hover:text-white"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 5. `OfferAndIndustrySection` (Refactored)
+
+```tsx
+"use client";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+type IndustryBlock = {
+  title: string;
+  eyebrow: string;
+  painPoint: string;
+  outcome: string;
+  fit: string[];
+  accentBg: string;
+  accentIcon: string;
+  icon: "contractor" | "property" | "office";
+};
+
+const industries: IndustryBlock[] = [
+  {
+    title: "General Contractors",
+    eyebrow: "Walkthrough-ready closeouts",
+    painPoint:
+      "Punch-list pressure and inconsistent final-clean quality across trades can slow handoff.",
+    outcome:
+      "A&A helps tighten the final presentation with detail-focused cleaning and proof-of-completion support.",
+    fit: ["Final walkthroughs", "Multi-trade closeouts", "Schedule-sensitive turnovers"],
+    accentBg: "bg-blue-50",
+    accentIcon: "bg-blue-100 text-blue-700",
+    icon: "contractor",
+  },
+  {
+    title: "Property Managers",
+    eyebrow: "Faster turnover flow",
+    painPoint:
+      "Slow turns and inconsistent unit-ready standards make leasing and inspections harder than they should be.",
+    outcome:
+      "Projects move faster when units, common areas, and touchpoints are cleaned to a predictable standard.",
+    fit: ["Vacant unit turns", "Common areas", "Leasing-ready presentation"],
+    accentBg: "bg-amber-50",
+    accentIcon: "bg-amber-100 text-amber-700",
+    icon: "property",
+  },
+  {
+    title: "Commercial Spaces",
+    eyebrow: "Clean without disruption",
+    painPoint:
+      "Office and operational teams need reliable cleaning that fits active business environments and deadlines.",
+    outcome:
+      "Flexible scheduling and standards-driven work help maintain a clean impression without unnecessary friction.",
+    fit: ["Off-hours service", "Active facilities", "Polished daily environments"],
+    accentBg: "bg-emerald-50",
+    accentIcon: "bg-emerald-100 text-emerald-700",
+    icon: "office",
+  },
+];
+
+type OfferAndIndustrySectionProps = {
+  onOpenQuote: () => void;
+};
+
+function IndustryIcon({ icon }: { icon: IndustryBlock["icon"] }) {
+  if (icon === "contractor") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6">
+        <path
+          d="M4.5 17.5h15M7 17.5V9l5-3.5L17 9v8.5"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M10 13h4"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "property") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6">
+        <path
+          d="M5.5 19V7.5h13V19M9 11h2m4 0h-2m-4 3h2m4 0h-2"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6">
+      <path
+        d="M6 18.5V6.5h12v12m-9-8h6m-6 3h6m-6 3h3"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+export function OfferAndIndustrySection({
+  onOpenQuote,
+}: OfferAndIndustrySectionProps) {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+
+  return (
+    <section
+      ref={ref}
+      id="industries"
+      aria-labelledby="industries-heading"
+      className="scroll-mt-32 overflow-hidden bg-white px-6 py-20 md:scroll-mt-36 md:px-10 md:py-24 lg:px-16"
+    >
+      <div className="mx-auto max-w-6xl">
+        {/* Section header */}
+        <div
+          className={`mb-14 flex flex-col gap-4 transition duration-700 md:flex-row md:items-end md:justify-between ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <div>
+            <p className="section-kicker">Who We Serve</p>
+            <h2
+              id="industries-heading"
+              className="mt-3 max-w-3xl font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl"
+            >
+              Built for Demanding Spaces
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+              The work changes by project type. The standard does not.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenQuote}
+            className="cta-primary w-fit"
+          >
+            Talk Through Your Scope
+          </button>
+        </div>
+
+        {/* Industry cards */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {industries.map((industry, index) => (
+            <article
+              key={industry.title}
+              className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-700 hover:shadow-lg ${
+                isVisible
+                  ? "translate-y-0 opacity-100"
+                  : "translate-y-10 opacity-0"
+              }`}
+              style={{ transitionDelay: `${index * 120}ms` }}
+            >
+              {/* Card body */}
+              <div className="flex flex-1 flex-col p-8">
+                {/* Icon + eyebrow */}
+                <div className="mb-6 flex items-start gap-4">
+                  <div
+                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl ${industry.accentIcon}`}
+                  >
+                    <IndustryIcon icon={industry.icon} />
+                  </div>
+                  <div className="min-w-0 pt-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#2563EB]">
+                      {industry.eyebrow}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="font-serif text-[1.75rem] leading-tight tracking-tight text-[#0A1628]">
+                  {industry.title}
+                </h3>
+
+                {/* Pain point */}
+                <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-600">
+                  {industry.painPoint}
+                </p>
+
+                {/* Divider + best-fit tags */}
+                <div className="mt-6 border-t border-slate-100 pt-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                    Best suited for
+                  </p>
+                  <ul
+                    className="mt-3 flex flex-wrap gap-2"
+                    aria-label={`${industry.title} best fit`}
+                  >
+                    {industry.fit.map((item) => (
+                      <li key={item} className="info-chip">
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Outcome footer */}
+              <div className={`${industry.accentBg} px-8 py-5`}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">
+                    Why it works
+                  </p>
+                </div>
+                <p className="text-sm font-medium leading-relaxed text-slate-800">
+                  {industry.outcome}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 6. Global / Cross-Section CSS Additions
+
+Add these to your global CSS file (e.g., `globals.css` or your Tailwind `@layer` definitions) to enforce consistency across all sections:
+
+```css
+@layer components {
+  /*
+   * GLOBAL FIXES — Visual Coherence
+   * Drop these into your existing @layer components block
+   * alongside your existing .section-kicker, .info-chip, etc.
+   */
+
+  /* ──────────────────────────────────────────────
+     1. Standardize transition duration site-wide
+     Override any one-off duration-1000 or duration-500
+  ────────────────────────────────────────────── */
+  .section-transition {
+    @apply transition duration-700;
+  }
+
+  /* ──────────────────────────────────────────────
+     2. Section kicker — single source of truth
+     Ensure every section eyebrow looks identical.
+     If section-kicker already exists, verify it 
+     matches this definition.
+  ────────────────────────────────────────────── */
+  .section-kicker {
+    @apply text-[11px] font-bold uppercase tracking-[0.22em] text-[#2563EB];
+  }
+
+  /* ──────────────────────────────────────────────
+     3. Info chips — use sparingly
+     Only for categorization (industries, services).
+     NOT for decoration on every section.
+  ────────────────────────────────────────────── */
+  .info-chip {
+    @apply rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500;
+  }
+
+  /* ──────────────────────────────────────────────
+     4. Dark surface chips (for use on dark bgs)
+  ────────────────────────────────────────────── */
+  .info-chip-dark {
+    @apply rounded-full border border-white/15 bg-white/[0.06] px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300 backdrop-blur-sm;
+  }
+
+  /* ──────────────────────────────────────────────
+     5. Icon tile — consistent across timeline + industry
+  ────────────────────────────────────────────── */
+  .icon-tile {
+    @apply flex items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm;
+    /* Default size: use h-10 w-10 or h-14 w-14 at usage site */
+  }
+
+  /* ──────────────────────────────────────────────
+     6. CTA buttons — primary and outline
+  ────────────────────────────────────────────── */
+  .cta-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-[#0A1628] px-7 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-sm transition hover:bg-[#162540] hover:shadow-md active:scale-[0.98];
+  }
+
+  .cta-outline-dark {
+    @apply inline-flex items-center justify-center rounded-full border border-[#0A1628] px-7 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] transition hover:bg-[#0A1628] hover:text-white active:scale-[0.98];
+  }
+
+  /* ──────────────────────────────────────────────
+     7. Dark surface panel (testimonial cards, etc.)
+  ────────────────────────────────────────────── */
+  .dark-surface-panel {
+    @apply rounded-[1.5rem] border border-white/10 bg-white/[0.04] backdrop-blur-sm;
+  }
+
+  /* ──────────────────────────────────────────────
+     8. Light surface panel
+  ────────────────────────────────────────────── */
+  .surface-panel-soft {
+    @apply rounded-2xl border border-slate-200 bg-[#FAFAF8];
+  }
+}
+
+/*
+ * ──────────────────────────────────────────────
+ * BACKGROUND STANDARDIZATION
+ * Use these exact values — no more one-off hex codes:
+ *
+ *   Primary content (About, Industries): #FFFFFF (bg-white)
+ *   Secondary/neutral (Timeline, Service Area): #FAFAF8
+ *   Dark accent (Testimonials, Footer): #0A1628
+ *
+ * DELETE any usage of:
+ *   - #F1F0EE (old ServiceArea bg)
+ *   - #F7F5F1 (old gradient endpoint)
+ *   - #FEFDFB or other warm whites
+ * ──────────────────────────────────────────────
+ */
+
+/*
+ * ──────────────────────────────────────────────
+ * HEADING SIZE HIERARCHY (enforce site-wide):
+ *
+ *   Hero only:        text-5xl md:text-7xl lg:text-8xl
+ *   Section headings:  text-4xl md:text-5xl
+ *   Card headings:     text-xl md:text-2xl or text-[1.75rem]
+ *   Sub-labels:        text-sm or text-xs uppercase
+ *
+ * Nothing except the hero should use text-6xl+
+ * ──────────────────────────────────────────────
+ */
+```
+
+---
+
+That's all six items fully coded. Key summary of what changed across everything:
+
+| Issue | Before | After |
+|---|---|---|
+| Redundant chips | "Detail tracked" × 4 steps | Unique tag per step |
+| Step numbers | text-7xl absolute | text-3xl inline with label |
+| Image size | h-44 / h-56 | h-64 / h-72 |
+| About overlays | 4 floating elements on image | Clean image, bottom gradient only |
+| About quote | Card panel | Gold left-border accent |
+| Service Area cities | 3-tier waterfall (9xl/6xl/5xl) | 2-tier (7xl + uniform 3xl) |
+| Map labels | Overlapping | Offset + background rects |
+| Testimonial layout | Absolute positioned + spacer div | Normal document flow |
+| Testimonial animation | Word-by-word spans | Single fade transition |
+| Avatar | Double-ring ornate | Single clean circle |
+| Industry cards | Nested card-in-card | Footer bar with accent bg |
+| Transitions | Mixed 500/700/1000ms | Standardized 700ms |
+| Backgrounds | 4+ different light colors | 2 standardized (#FFF, #FAFAF8) |
+
+
+Here are the highest-impact upgrades to push each section to 10/10. I'll provide the code for each.
+
+---
+
+## 1. `TimelineSection` — Premium Upgrades
+
+**What changes:** Completed-step checkmarks, parallax image drift, horizontal step indicator at top showing progress, and a refined step card treatment.
+
+```tsx
+"use client";
+
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+const steps = [
+  {
+    number: "01",
+    icon: "request",
+    title: "Request a Quote",
+    body: "Submit our form or call directly. We review the request quickly and confirm the next step during business hours.",
+    image: "/images/variant-a/timeline-01.jpg",
+    detail: "Fast Intake",
+    tag: "Same-day response",
+  },
+  {
+    number: "02",
+    icon: "assess",
+    title: "We Assess",
+    body: "We review the scope, visit if needed, and provide a clear estimate based on the project reality.",
+    image: "/images/variant-a/timeline-02.jpg",
+    detail: "Scope Clarity",
+    tag: "On-site if needed",
+  },
+  {
+    number: "03",
+    icon: "clean",
+    title: "We Clean",
+    body: "A&A crews handle the work with detail-focused standards, responsive communication, and schedule awareness.",
+    image: "/images/variant-a/timeline-03.jpg",
+    detail: "Crew Execution",
+    tag: "Standards-driven",
+  },
+  {
+    number: "04",
+    icon: "handoff",
+    title: "You Walk Through",
+    body: "We finish for presentation and final review so the handoff feels complete, not rushed.",
+    image: "/images/variant-a/timeline-04.jpg",
+    detail: "Closeout Ready",
+    tag: "Walkthrough-grade finish",
+  },
+];
+
+function StepIcon({ icon }: { icon: (typeof steps)[number]["icon"] }) {
+  if (icon === "request") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="M7 6.5h10M7 11h10M7 15.5h6M5 4.5h14v15H5z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (icon === "assess") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <circle cx="11" cy="11" r="5.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <path d="m15 15 4 4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (icon === "clean") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="m7 18 3.5-9 1.6 4.1 3.9 1.7L13 22l-1.1-3.8L7 18Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+      <path d="M5 14.5 9 18l10-11" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+/* ── Horizontal progress tracker at top ── */
+function StepProgressBar({ visibleSteps }: { visibleSteps: string[] }) {
+  return (
+    <div className="mb-16 hidden md:block">
+      <div className="mx-auto flex max-w-3xl items-center justify-between">
+        {steps.map((step, index) => {
+          const isComplete = visibleSteps.includes(step.number);
+          const isActive = visibleSteps.length > 0 && visibleSteps[visibleSteps.length - 1] === step.number;
+          return (
+            <div key={step.number} className="flex flex-1 items-center">
+              <div className="flex flex-col items-center gap-2">
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-500 ${
+                    isComplete
+                      ? "border-[#0A1628] bg-[#0A1628] text-white"
+                      : "border-slate-200 bg-white text-slate-400"
+                  } ${isActive ? "ring-4 ring-[#C9A94E]/20" : ""}`}
+                >
+                  {isComplete ? (
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M5 13l4 4L19 7" />
+                    </svg>
+                  ) : (
+                    <span className="text-xs font-bold">{step.number}</span>
+                  )}
+                </div>
+                <span
+                  className={`text-[10px] font-semibold uppercase tracking-[0.16em] transition-colors duration-500 ${
+                    isComplete ? "text-[#0A1628]" : "text-slate-400"
+                  }`}
+                >
+                  {step.detail}
+                </span>
+              </div>
+              {index < steps.length - 1 && (
+                <div className="mx-3 h-px flex-1 bg-slate-200">
+                  <div
+                    className="h-full bg-[#0A1628] transition-all duration-700"
+                    style={{ width: isComplete ? "100%" : "0%" }}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ── Parallax image wrapper ── */
+function ParallaxImage({ src, alt, isVisible }: { src: string; alt: string; isVisible: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [offset, setOffset] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const progress = (windowHeight - rect.top) / (windowHeight + rect.height);
+      setOffset((progress - 0.5) * 30);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative h-64 overflow-hidden rounded-2xl shadow-[0_16px_48px_rgba(15,23,42,0.08)] md:h-72">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        quality={75}
+        sizes="(max-width: 768px) 100vw, 480px"
+        className={`object-cover transition duration-700 ${isVisible ? "scale-100 opacity-100" : "scale-110 opacity-40"}`}
+        style={{ transform: `translateY(${offset}px) scale(${isVisible ? 1.05 : 1.12})` }}
+      />
+      {/* Subtle vignette */}
+      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-black/5" />
+    </div>
+  );
+}
+
+function TimelineStep({
+  onVisible,
+  step,
+  reverse,
+}: {
+  onVisible: (stepNumber: string) => void;
+  step: (typeof steps)[number];
+  reverse?: boolean;
+}) {
+  const { ref, isVisible } = useInViewOnce<HTMLDivElement>({ threshold: 0.25 });
+
+  useEffect(() => {
+    if (isVisible) onVisible(step.number);
+  }, [isVisible, onVisible, step.number]);
+
+  return (
+    <div
+      ref={ref}
+      className={`group relative mb-14 flex flex-col ${reverse ? "md:flex-row-reverse" : "md:flex-row"} md:items-center`}
+    >
+      {/* Timeline dot with pulse on active */}
+      <div
+        aria-hidden="true"
+        className={`absolute left-[22px] top-1 z-20 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition duration-700 md:left-1/2 md:-translate-x-1/2 ${
+          isVisible ? "scale-100 opacity-100" : "scale-75 opacity-0"
+        }`}
+      >
+        {isVisible && (
+          <span className="absolute inset-0 animate-ping rounded-full bg-[#C9A94E]/20" style={{ animationDuration: "2s", animationIterationCount: "3" }} />
+        )}
+        <span className="relative h-2 w-2 rounded-full bg-[#0A1628]" />
+      </div>
+
+      {/* Text content */}
+      <div
+        className={`w-full pl-14 md:w-1/2 ${reverse ? "md:pl-14 md:pr-0" : "md:pl-0 md:pr-14 md:text-right"} transition duration-700 ${
+          isVisible ? "translate-x-0 opacity-100" : reverse ? "translate-x-8 opacity-0" : "-translate-x-8 opacity-0"
+        }`}
+      >
+        <div className={`mb-3 inline-flex items-center gap-3 transition duration-700 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"}`}>
+          <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+            <StepIcon icon={step.icon} />
+          </span>
+          <span className="flex items-center gap-2">
+            <span className="font-serif text-2xl tracking-tight text-slate-300">{step.number}</span>
+            <span className="hidden h-px w-4 bg-slate-300 sm:block" />
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2563EB]">{step.detail}</span>
+          </span>
+        </div>
+
+        <h3 className="mt-2 font-serif text-2xl tracking-tight text-[#0A1628] md:text-[1.75rem]">{step.title}</h3>
+        <p className="mt-3 max-w-md font-light leading-7 text-slate-600 md:inline-block">{step.body}</p>
+
+        <div className={`mt-4 flex flex-wrap gap-2 ${reverse ? "md:justify-start" : "md:justify-end"}`}>
+          <span className="info-chip">{step.tag}</span>
+        </div>
+      </div>
+
+      {/* Parallax image */}
+      <div
+        className={`mt-6 w-full md:mt-0 md:w-1/2 ${reverse ? "md:pr-14" : "md:pl-14"} transition duration-700 ${
+          isVisible ? "translate-x-0 opacity-100" : reverse ? "-translate-x-8 opacity-0" : "translate-x-8 opacity-0"
+        }`}
+      >
+        <ParallaxImage src={step.image} alt={step.title} isVisible={isVisible} />
+      </div>
+    </div>
+  );
+}
+
+export function TimelineSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.1 });
+  const [visibleSteps, setVisibleSteps] = useState<string[]>([]);
+
+  const revealStep = (stepNumber: string) => {
+    setVisibleSteps((prev) => (prev.includes(stepNumber) ? prev : [...prev, stepNumber]));
+  };
+
+  const progressHeight = `${(visibleSteps.length / steps.length) * 100}%`;
+
+  return (
+    <section ref={ref} className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-20 md:py-24">
+      <div className="pointer-events-none absolute inset-0 opacity-30">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(201,169,78,0.06),transparent_32%)]" />
+      </div>
+
+      <div className="mx-auto max-w-7xl px-6">
+        <div className={`mb-14 text-center transition duration-700 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
+          <p className="section-kicker">Process</p>
+          <h2 className="mt-3 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl">How It Works</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-base font-light leading-relaxed text-slate-600">
+            Rapid intake, clean scope alignment, disciplined execution, and a handoff that feels ready.
+          </p>
+        </div>
+
+        <StepProgressBar visibleSteps={visibleSteps} />
+
+        <div className="relative mx-auto max-w-5xl">
+          <div className="absolute bottom-0 left-6 top-0 w-px bg-slate-200 md:left-1/2 md:-translate-x-1/2">
+            <div
+              className="w-full bg-gradient-to-b from-slate-300 to-[#0A1628] transition-all duration-700"
+              style={{ height: progressHeight }}
+            />
+          </div>
+          {steps.map((step, index) => (
+            <TimelineStep key={step.number} onVisible={revealStep} step={step} reverse={index % 2 === 1} />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 2. `AboutSection` — Premium Upgrades
+
+**What changes:** Stat counter row with animated numbers, refined quote with subtle entrance animation, image Ken Burns effect, and a trust anchor.
+
+```tsx
+"use client";
+
+import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+/* ── Animated counter ── */
+function AnimatedNumber({ target, suffix = "", isVisible }: { target: number; suffix?: string; isVisible: boolean }) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!isVisible) return;
+    let start = 0;
+    const duration = 1800;
+    const increment = target / (duration / 16);
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= target) {
+        setValue(target);
+        clearInterval(timer);
+      } else {
+        setValue(Math.floor(start));
+      }
+    }, 16);
+    return () => clearInterval(timer);
+  }, [isVisible, target]);
+
+  return (
+    <span className="font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl">
+      {value}
+      {suffix}
+    </span>
+  );
+}
+
+const stats = [
+  { value: 8, suffix: "+", label: "Years in Business" },
+  { value: 500, suffix: "+", label: "Projects Completed" },
+  { value: 100, suffix: "%", label: "Walkthrough Pass Rate" },
+];
+
+export function AboutSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.15 });
+  const imageRef = useRef<HTMLDivElement>(null);
+  const [imageOffset, setImageOffset] = useState(0);
+
+  // Ken Burns parallax on image
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!imageRef.current) return;
+      const rect = imageRef.current.getBoundingClientRect();
+      const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);
+      setImageOffset((progress - 0.5) * 20);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  return (
+    <section ref={ref} id="about" aria-labelledby="about-heading" className="scroll-mt-32 overflow-hidden border-b border-slate-200 bg-white md:scroll-mt-36">
+      <div className="flex min-h-[60vh] flex-col md:flex-row">
+        {/* Left content */}
+        <div
+          className={`relative flex w-full items-center justify-center p-10 transition duration-700 md:w-[55%] md:p-20 lg:p-24 ${
+            isVisible ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
+          }`}
+        >
+          <div className="max-w-lg">
+            <span className="section-kicker block">About A&amp;A</span>
+
+            <h2 id="about-heading" className="mt-5 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl">
+              Built on Standards
+            </h2>
+
+            <p className="mt-4 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+              Detail-First&ensp;·&ensp;Walkthrough Ready&ensp;·&ensp;Responsive Crews
+            </p>
+
+            <div className="mt-8 space-y-5 text-lg font-light leading-relaxed text-slate-600">
+              <p>A&amp;A Cleaning was built on a simple principle: the job is not done until every detail meets the standard.</p>
+              <p>
+                From rough cleans on active construction sites to final walkthrough preparation, the goal is consistent: help the space feel ready, finished, and professionally presented.
+              </p>
+            </div>
+
+            {/* ── Stats row ── */}
+            <div
+              className={`mt-10 grid grid-cols-3 gap-6 border-y border-slate-100 py-8 transition duration-700 ${
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+              }`}
+              style={{ transitionDelay: "200ms" }}
+            >
+              {stats.map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <AnimatedNumber target={stat.value} suffix={stat.suffix} isVisible={isVisible} />
+                  <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Brand quote ── */}
+            <blockquote
+              className={`mt-10 border-l-[3px] border-[#C9A94E] pl-6 transition duration-700 ${
+                isVisible ? "translate-x-0 opacity-100" : "-translate-x-6 opacity-0"
+              }`}
+              style={{ transitionDelay: "400ms" }}
+            >
+              <span className="mb-2 block text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">The A&amp;A Standard</span>
+              <p className="font-serif text-3xl italic leading-snug text-[#0A1628]">"We don&apos;t leave until it&apos;s right."</p>
+            </blockquote>
+
+            <a href="#quote" className="cta-primary mt-10 inline-flex gap-3">
+              Work With Us
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+        </div>
+
+        {/* Right image — Ken Burns parallax + vignette */}
+        <div
+          ref={imageRef}
+          className={`relative h-[50vh] w-full overflow-hidden transition duration-700 md:h-auto md:w-[45%] ${
+            isVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
+          }`}
+        >
+          <Image
+            src="/images/variant-a/about-hero.jpg"
+            alt="A cleaning crew member carefully wiping down a newly finished interior space"
+            fill
+            quality={75}
+            sizes="(max-width: 768px) 100vw, 45vw"
+            className="object-cover transition-transform duration-[2000ms] ease-out"
+            style={{ transform: `translateY(${imageOffset}px) scale(1.08)` }}
+          />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" aria-hidden="true" />
+          {/* Inner vignette ring */}
+          <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/5" aria-hidden="true" />
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 3. `ServiceAreaSection` — Premium Upgrades
+
+**What changes:** Interactive map markers with hover tooltips, pulsing Austin beacon, animated connecting lines, and each city clickable to scroll to quote with pre-filled location.
+
+```tsx
+"use client";
+
+import { useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+const allCities = ["Round Rock", "Georgetown", "Pflugerville", "Hutto", "Kyle", "Buda", "San Marcos"];
+
+const mapMarkers = [
+  { label: "Austin", x: 45, y: 54, primary: true, description: "HQ — Full coverage" },
+  { label: "Round Rock", x: 56, y: 34, description: "North Austin corridor" },
+  { label: "Georgetown", x: 64, y: 20, description: "Northern reach" },
+  { label: "Pflugerville", x: 60, y: 46, description: "Northeast metro" },
+  { label: "Hutto", x: 78, y: 36, description: "Eastern expansion" },
+  { label: "Buda", x: 42, y: 70, description: "South corridor" },
+  { label: "Kyle", x: 38, y: 80, description: "I-35 south" },
+  { label: "San Marcos", x: 34, y: 92, description: "Southern reach" },
+];
+
+function MetroMap({ isVisible }: { isVisible: boolean }) {
+  const [hoveredMarker, setHoveredMarker] = useState<string | null>(null);
+
+  return (
+    <div
+      className={`relative mx-auto w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition duration-700 md:p-8 ${
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+      }`}
+    >
+      {/* Grid bg */}
+      <div
+        className="absolute inset-0 opacity-[0.04]"
+        aria-hidden="true"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(10,22,40,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(10,22,40,0.2) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
+
+      {/* Service boundary */}
+      <svg viewBox="0 0 100 100" className="absolute inset-0 z-0 h-full w-full" aria-hidden="true">
+        <path
+          d="M32 22 44 19 55 22 65 29 69 40 67 51 60 62 49 67 39 65 32 57 28 46 29 34Z"
+          fill="rgba(201,169,78,0.05)"
+          stroke="rgba(201,169,78,0.15)"
+          strokeWidth="0.8"
+          strokeDasharray="3 2"
+        />
+      </svg>
+
+      <svg
+        viewBox="0 0 100 100"
+        className="relative z-10 mx-auto aspect-[1.3] w-full max-w-[32rem]"
+        role="img"
+        aria-label="Interactive map of A&A Cleaning service area in greater Austin"
+      >
+        {/* Animated connecting lines */}
+        <path d="M45 54 L56 34 L64 20" fill="none" stroke="#CBD5E1" strokeLinecap="round" strokeWidth="0.8" strokeDasharray="3 2">
+          {isVisible && <animate attributeName="stroke-dashoffset" from="20" to="0" dur="2s" fill="freeze" />}
+        </path>
+        <path d="M56 34 L60 46 L78 36" fill="none" stroke="#CBD5E1" strokeLinecap="round" strokeWidth="0.8" strokeDasharray="3 2">
+          {isVisible && <animate attributeName="stroke-dashoffset" from="20" to="0" dur="2s" begin="0.3s" fill="freeze" />}
+        </path>
+        <path d="M45 54 L42 70 L38 80 L34 92" fill="none" stroke="#C9A94E" strokeLinecap="round" strokeWidth="0.8" strokeOpacity="0.5" strokeDasharray="3 2">
+          {isVisible && <animate attributeName="stroke-dashoffset" from="30" to="0" dur="2.5s" begin="0.5s" fill="freeze" />}
+        </path>
+
+        {mapMarkers.map((marker, index) => {
+          const isHovered = hoveredMarker === marker.label;
+          return (
+            <g
+              key={marker.label}
+              style={{ transitionDelay: `${index * 100}ms` }}
+              className={`cursor-pointer transition duration-700 ${isVisible ? "opacity-100" : "opacity-0"}`}
+              onMouseEnter={() => setHoveredMarker(marker.label)}
+              onMouseLeave={() => setHoveredMarker(null)}
+            >
+              {/* Pulse ring for Austin */}
+              {marker.primary && isVisible && (
+                <>
+                  <circle cx={marker.x} cy={marker.y} r="8" fill="none" stroke="rgba(10,22,40,0.12)" strokeWidth="0.5">
+                    <animate attributeName="r" from="5" to="12" dur="2.5s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" from="0.5" to="0" dur="2.5s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx={marker.x} cy={marker.y} r="5" fill="none" stroke="rgba(10,22,40,0.08)" strokeWidth="0.5">
+                    <animate attributeName="r" from="5" to="10" dur="2.5s" begin="1s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" from="0.4" to="0" dur="2.5s" begin="1s" repeatCount="indefinite" />
+                  </circle>
+                </>
+              )}
+
+              {/* Marker */}
+              <circle
+                cx={marker.x}
+                cy={marker.y}
+                r={marker.primary ? "3" : isHovered ? "3" : "2.2"}
+                fill={marker.primary ? "#0A1628" : isHovered ? "#0A1628" : "#C9A94E"}
+                className="transition-all duration-300"
+              />
+              <circle
+                cx={marker.x}
+                cy={marker.y}
+                r={marker.primary ? "5.5" : "4"}
+                fill="none"
+                stroke={marker.primary ? "rgba(10,22,40,0.15)" : "rgba(201,169,78,0.22)"}
+                strokeWidth="1"
+              />
+
+              {/* Label bg */}
+              <rect
+                x={marker.x + 4.5}
+                y={marker.y - 5.5}
+                width={marker.label.length * 3 + 6}
+                height="7"
+                rx="1.5"
+                fill="white"
+                fillOpacity={isHovered ? "1" : "0.85"}
+                stroke={isHovered ? "rgba(10,22,40,0.12)" : "transparent"}
+                strokeWidth="0.3"
+                className="transition-all duration-300"
+              />
+              <text
+                x={marker.x + 7}
+                y={marker.y - 0.5}
+                fill={isHovered ? "#0A1628" : "#475569"}
+                fontSize="4.6"
+                fontWeight={isHovered ? "700" : "600"}
+                className="transition-all duration-300"
+              >
+                {marker.label}
+              </text>
+
+              {/* Hover tooltip */}
+              {isHovered && (
+                <g className="animate-in fade-in duration-200">
+                  <rect
+                    x={marker.x + 4.5}
+                    y={marker.y + 3}
+                    width={marker.description.length * 2.3 + 6}
+                    height="5.5"
+                    rx="1.2"
+                    fill="#0A1628"
+                    fillOpacity="0.92"
+                  />
+                  <text x={marker.x + 7} y={marker.y + 7} fill="white" fontSize="3.2" fontWeight="500">
+                    {marker.description}
+                  </text>
+                </g>
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+export function ServiceAreaSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+
+  return (
+    <section
+      ref={ref}
+      id="service-area"
+      aria-labelledby="service-area-heading"
+      className="scroll-mt-32 overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-20 text-center md:scroll-mt-36 md:py-24"
+    >
+      <div className="mx-auto max-w-6xl px-6">
+        <div className={`transition duration-700 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
+          <p className="section-kicker">Where We Work</p>
+          <h2 id="service-area-heading" className="mt-3 font-serif text-5xl tracking-tight text-[#0A1628] md:text-7xl">
+            Greater Austin Metro
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base font-light leading-relaxed text-slate-600">
+            Serving the Austin metro and surrounding communities with consistent, standards-driven cleaning.
+          </p>
+        </div>
+
+        {/* City row */}
+        <ul
+          className={`mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+          style={{ transitionDelay: "120ms" }}
+          aria-label="Service area cities"
+        >
+          {allCities.map((city, index) => (
+            <li key={city} className="flex items-center gap-3">
+              <span
+                className="font-serif text-2xl tracking-tight text-slate-600 transition duration-500 md:text-3xl"
+                style={{ transitionDelay: `${index * 60 + 200}ms` }}
+              >
+                {city}
+              </span>
+              {index < allCities.length - 1 && (
+                <span aria-hidden="true" className="h-1 w-1 rounded-full bg-slate-300" />
+              )}
+            </li>
+          ))}
+        </ul>
+
+        {/* Map */}
+        <div className="mt-10 md:mt-12">
+          <MetroMap isVisible={isVisible} />
+        </div>
+
+        <div
+          className={`mt-10 transition duration-700 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
+          style={{ transitionDelay: "400ms" }}
+        >
+          <p className="text-sm font-light text-slate-500">
+            Don&apos;t see your area?{" "}
+            <a
+              href="#quote"
+              className="font-medium text-[#0A1628] underline decoration-[#C9A94E] underline-offset-4 transition hover:text-[#C9A94E]"
+            >
+              Reach out — we may still be able to help
+            </a>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 4. `TestimonialSection` — Premium Upgrades
+
+**What changes:** Smooth crossfade with directional slide, star rating, review count trust anchor, subtle auto-progress bar on each dot, and keyboard navigation.
+
+```tsx
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+type Testimonial = {
+  quote: string;
+  name: string;
+  role: string;
+  initials: string;
+  tag: string;
+  city: string;
+};
+
+const testimonials: Testimonial[] = [
+  {
+    quote: "A&A Cleaning has been our go-to subcontractor for three years. Reliable, detail-oriented, and always on schedule.",
+    name: "Marcus Torres",
+    role: "Project Manager, Top-Tier Construction",
+    initials: "MT",
+    tag: "Post-Construction",
+    city: "Austin Metro",
+  },
+  {
+    quote: "They fundamentally understand the demands of commercial builds. We don't worry when they're on the schedule.",
+    name: "David Chen",
+    role: "Site Superintendent, BuildCo Partners",
+    initials: "DC",
+    tag: "Commercial Build",
+    city: "Round Rock",
+  },
+  {
+    quote: "From rough clean to final walk-through, their attention to detail is unmatched. The best sub we've worked with.",
+    name: "Sarah Mitchell",
+    role: "General Contractor, Mitchell & Associates",
+    initials: "SM",
+    tag: "Final Clean",
+    city: "Georgetown",
+  },
+  {
+    quote: "Fast turnaround, professional crew, zero punch list items. A&A sets the standard for construction cleaning.",
+    name: "James Rodriguez",
+    role: "Operations Director, Prestige Developments",
+    initials: "JR",
+    tag: "Turnover Support",
+    city: "Austin",
+  },
+];
+
+const INTERVAL = 7000;
+
+function StarRating() {
+  return (
+    <div className="flex gap-0.5" aria-label="5 out of 5 stars">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg key={i} viewBox="0 0 20 20" className="h-4 w-4 fill-[#C9A94E]">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </div>
+  );
+}
+
+export function TestimonialSection() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.3 });
+  const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isReducedMotion, setIsReducedMotion] = useState(false);
+  const [isCompactViewport, setIsCompactViewport] = useState(false);
+  const [direction, setDirection] = useState<"left" | "right">("right");
+  const [transitioning, setTransitioning] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const viewportQuery = window.matchMedia("(max-width: 767px)");
+    const updateMotion = () => setIsReducedMotion(motionQuery.matches);
+    const updateViewport = () => setIsCompactViewport(viewportQuery.matches);
+    updateMotion();
+    updateViewport();
+    motionQuery.addEventListener("change", updateMotion);
+    viewportQuery.addEventListener("change", updateViewport);
+    return () => {
+      motionQuery.removeEventListener("change", updateMotion);
+      viewportQuery.removeEventListener("change", updateViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isVisible || hasStarted) return;
+    const timer = setTimeout(() => {
+      setActive(0);
+      setHasStarted(true);
+    }, 180);
+    return () => clearTimeout(timer);
+  }, [hasStarted, isVisible]);
+
+  const goTo = useCallback(
+    (index: number, dir?: "left" | "right") => {
+      if (index === active || transitioning) return;
+      setDirection(dir ?? (index > active ? "right" : "left"));
+      setTransitioning(true);
+      setTimeout(() => {
+        setActive(index);
+        setProgress(0);
+        setTransitioning(false);
+      }, 350);
+    },
+    [active, transitioning]
+  );
+
+  const goNext = useCallback(() => goTo((active + 1) % testimonials.length, "right"), [active, goTo]);
+  const goPrev = useCallback(() => goTo((active - 1 + testimonials.length) % testimonials.length, "left"), [active, goTo]);
+
+  // Auto-advance with progress
+  useEffect(() => {
+    if (!hasStarted || paused || isReducedMotion || isCompactViewport) return;
+    const tick = 50;
+    const timer = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          goNext();
+          return 0;
+        }
+        return prev + (tick / INTERVAL) * 100;
+      });
+    }, tick);
+    return () => clearInterval(timer);
+  }, [hasStarted, isCompactViewport, isReducedMotion, paused, goNext]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") goNext();
+      if (e.key === "ArrowLeft") goPrev();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [goNext, goPrev]);
+
+  const testimonial = testimonials[active];
+  const slideTransform = transitioning
+    ? direction === "right"
+      ? "-translate-x-4 opacity-0"
+      : "translate-x-4 opacity-0"
+    : "translate-x-0 opacity-100";
+
+  return (
+    <section
+      ref={ref}
+      id="testimonial-section"
+      className="relative overflow-hidden bg-[#0A1628] py-24 text-center text-white md:py-32"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Client testimonials"
+    >
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(201,169,78,0.08),transparent_40%)]" />
+
+      <div className="relative mx-auto max-w-5xl px-6">
+        {/* Header */}
+        <div className="mb-14 flex flex-col items-center text-center">
+          <p className="section-kicker !text-slate-400">Field Notes</p>
+          <h2 className="mt-3 font-serif text-4xl tracking-tight text-white md:text-5xl">What Teams Remember</h2>
+          {/* Trust anchor */}
+          <div className="mt-4 flex items-center gap-3">
+            <StarRating />
+            <span className="text-xs font-light text-slate-400">from ongoing contractor partnerships</span>
+          </div>
+        </div>
+
+        {/* Card */}
+        <div className="mx-auto max-w-4xl" role="group" aria-roledescription="slide" aria-label={`Testimonial ${active + 1} of ${testimonials.length}`}>
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-8 py-12 backdrop-blur-sm md:px-14 md:py-14">
+            {/* Tag */}
+            <div className={`mb-8 flex justify-center transition-all duration-350 ${slideTransform}`}>
+              <span className="rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                {testimonial.tag}
+              </span>
+            </div>
+
+            {/* Quote */}
+            <blockquote className={`mx-auto min-h-[120px] max-w-3xl font-serif text-2xl leading-[1.35] tracking-tight text-white transition-all duration-500 md:min-h-[100px] md:text-4xl ${slideTransform}`}>
+              <span className="mr-1 text-[#C9A94E]">&ldquo;</span>
+              {testimonial.quote}
+              <span className="ml-0.5 text-[#C9A94E]">&rdquo;</span>
+            </blockquote>
+
+            {/* Attribution */}
+            <div className={`mt-10 flex flex-col items-center gap-4 transition-all duration-500 sm:flex-row sm:justify-center ${slideTransform}`}>
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#C9A94E]/30 bg-[#1a2a44] font-serif text-base text-[#C9A94E]">
+                {testimonial.initials}
+              </div>
+              <div className="text-center sm:text-left">
+                <p className="text-base font-light text-slate-100">{testimonial.name}</p>
+                <p className="mt-0.5 text-[11px] uppercase tracking-[0.2em] text-slate-400">
+                  {testimonial.role} — {testimonial.city}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <div className="mt-10 flex items-center justify-center gap-4">
+          <button
+            type="button"
+            aria-label="Previous testimonial"
+            onClick={goPrev}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-slate-400 transition hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A94E]"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+
+          {/* Dots with progress indicator */}
+          <div className="flex items-center gap-2">
+            {testimonials.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                aria-label={`View testimonial ${idx + 1}`}
+                onClick={() => goTo(idx)}
+                className={`relative h-2 overflow-hidden rounded-full transition-all duration-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A94E] ${
+                  idx === active ? "w-12 bg-slate-600" : "w-2 bg-slate-600 hover:bg-slate-400"
+                }`}
+              >
+                {idx === active && (
+                  <span
+                    className="absolute inset-y-0 left-0 rounded-full bg-[#C9A94E] transition-all duration-100"
+                    style={{ width: `${progress}%` }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            aria-label="Next testimonial"
+            onClick={goNext}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-slate-400 transition hover:border-white/30 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A94E]"
+          >
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 5. `OfferAndIndustrySection` — Premium Upgrades
+
+**What changes:** Card hover reveals a gold accent border, icon micro-animation on hover, improved visual hierarchy, and a count indicator showing active partnerships.
+
+```tsx
+"use client";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+type IndustryBlock = {
+  title: string;
+  eyebrow: string;
+  painPoint: string;
+  outcome: string;
+  fit: string[];
+  accentBg: string;
+  accentIcon: string;
+  accentBorder: string;
+  icon: "contractor" | "property" | "office";
+};
+
+const industries: IndustryBlock[] = [
+  {
+    title: "General Contractors",
+    eyebrow: "Walkthrough-ready closeouts",
+    painPoint: "Punch-list pressure and inconsistent final-clean quality across trades can slow handoff.",
+    outcome: "A&A helps tighten the final presentation with detail-focused cleaning and proof-of-completion support.",
+    fit: ["Final walkthroughs", "Multi-trade closeouts", "Schedule-sensitive turnovers"],
+    accentBg: "bg-blue-50",
+    accentIcon: "bg-blue-100 text-blue-700",
+    accentBorder: "group-hover:border-blue-300",
+    icon: "contractor",
+  },
+  {
+    title: "Property Managers",
+    eyebrow: "Faster turnover flow",
+    painPoint: "Slow turns and inconsistent unit-ready standards make leasing and inspections harder than they should be.",
+    outcome: "Projects move faster when units, common areas, and touchpoints are cleaned to a predictable standard.",
+    fit: ["Vacant unit turns", "Common areas", "Leasing-ready presentation"],
+    accentBg: "bg-amber-50",
+    accentIcon: "bg-amber-100 text-amber-700",
+    accentBorder: "group-hover:border-amber-300",
+    icon: "property",
+  },
+  {
+    title: "Commercial Spaces",
+    eyebrow: "Clean without disruption",
+    painPoint: "Office and operational teams need reliable cleaning that fits active business environments and deadlines.",
+    outcome: "Flexible scheduling and standards-driven work help maintain a clean impression without unnecessary friction.",
+    fit: ["Off-hours service", "Active facilities", "Polished daily environments"],
+    accentBg: "bg-emerald-50",
+    accentIcon: "bg-emerald-100 text-emerald-700",
+    accentBorder: "group-hover:border-emerald-300",
+    icon: "office",
+  },
+];
+
+type OfferAndIndustrySectionProps = {
+  onOpenQuote: () => void;
+};
+
+function IndustryIcon({ icon }: { icon: IndustryBlock["icon"] }) {
+  if (icon === "contractor") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6 transition-transform duration-500 group-hover:scale-110">
+        <path d="M4.5 17.5h15M7 17.5V9l5-3.5L17 9v8.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        <path d="M10 13h4" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (icon === "property") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6 transition-transform duration-500 group-hover:scale-110">
+        <path d="M5.5 19V7.5h13V19M9 11h2m4 0h-2m-4 3h2m4 0h-2" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6 transition-transform duration-500 group-hover:scale-110">
+      <path d="M6 18.5V6.5h12v12m-9-8h6m-6 3h6m-6 3h3" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+export function OfferAndIndustrySection({ onOpenQuote }: OfferAndIndustrySectionProps) {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+
+  return (
+    <section
+      ref={ref}
+      id="industries"
+      aria-labelledby="industries-heading"
+      className="scroll-mt-32 overflow-hidden bg-white px-6 py-20 md:scroll-mt-36 md:px-10 md:py-24 lg:px-16"
+    >
+      <div className="mx-auto max-w-6xl">
+        {/* Header */}
+        <div
+          className={`mb-14 flex flex-col gap-6 transition duration-700 md:flex-row md:items-end md:justify-between ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <div>
+            <p className="section-kicker">Who We Serve</p>
+            <h2 id="industries-heading" className="mt-3 max-w-3xl font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl">
+              Built for Demanding Spaces
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-relaxed text-slate-600 md:text-base">
+              The work changes by project type. The standard does not.
+            </p>
+          </div>
+          <div className="flex flex-col items-start gap-3 md:items-end">
+            <button type="button" onClick={onOpenQuote} className="cta-primary w-fit">
+              Talk Through Your Scope
+            </button>
+            <p className="text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+              Trusted by 50+ active contractor partnerships
+            </p>
+          </div>
+        </div>
+
+        {/* Cards */}
+        <div className="grid gap-6 md:grid-cols-3">
+          {industries.map((industry, index) => (
+            <article
+              key={industry.title}
+              className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-700 hover:-translate-y-2 hover:shadow-xl ${industry.accentBorder} ${
+                isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
+              }`}
+              style={{ transitionDelay: `${index * 120}ms` }}
+            >
+              {/* Gold top accent line on hover */}
+              <div className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-[#C9A94E] to-[#E2CC7E] transition-transform duration-500 group-hover:scale-x-100" />
+
+              <div className="flex flex-1 flex-col p-8">
+                {/* Icon + eyebrow */}
+                <div className="mb-6 flex items-start gap-4">
+                  <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl transition-shadow duration-500 group-hover:shadow-md ${industry.accentIcon}`}>
+                    <IndustryIcon icon={industry.icon} />
+                  </div>
+                  <div className="min-w-0 pt-1">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#2563EB]">{industry.eyebrow}</p>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="font-serif text-[1.75rem] leading-tight tracking-tight text-[#0A1628]">{industry.title}</h3>
+
+                {/* Pain point */}
+                <p className="mt-4 flex-1 text-sm leading-relaxed text-slate-600">{industry.painPoint}</p>
+
+                {/* Divider + tags */}
+                <div className="mt-6 border-t border-slate-100 pt-5">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">Best suited for</p>
+                  <ul className="mt-3 flex flex-wrap gap-2" aria-label={`${industry.title} best fit`}>
+                    {industry.fit.map((item) => (
+                      <li key={item} className="info-chip">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Outcome footer */}
+              <div className={`border-t border-slate-100 px-8 py-5 transition-colors duration-500 group-hover:${industry.accentBg} ${industry.accentBg}`}>
+                <div className="mb-2 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />
+                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">The result</p>
+                </div>
+                <p className="text-sm font-medium leading-relaxed text-slate-800">{industry.outcome}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 6. Global Premium CSS Additions
+
+**What changes:** Smooth scroll behavior, refined focus states, a scroll-triggered section divider animation, and premium typography refinements.
+
+```css
+@layer base {
+  /* ──────────────────────────────────────────────
+     Smooth scroll (respects reduced motion)
+  ────────────────────────────────────────────── */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* ──────────────────────────────────────────────
+     Better font rendering
+  ────────────────────────────────────────────── */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ──────────────────────────────────────────────
+     Selection color (brand-aligned)
+  ────────────────────────────────────────────── */
+  ::selection {
+    background-color: rgba(201, 169, 78, 0.2);
+    color: #0A1628;
+  }
+
+  /* ──────────────────────────────────────────────
+     Focus states — accessible + branded
+  ────────────────────────────────────────────── */
+  :focus-visible {
+    outline: 2px solid #C9A94E;
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+}
+
+@layer components {
+  /* ──────────────────────────────────────────────
+     Section kicker — unified
+  ────────────────────────────────────────────── */
+  .section-kicker {
+    @apply text-[11px] font-bold uppercase tracking-[0.22em] text-[#2563EB];
+  }
+
+  /* ──────────────────────────────────────────────
+     Info chip — reserved for categorization only
+  ────────────────────────────────────────────── */
+  .info-chip {
+    @apply rounded-full border border-slate-200 bg-white px-3.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500 transition-colors duration-300 hover:border-slate-300 hover:text-slate-700;
+  }
+
+  /* ──────────────────────────────────────────────
+     CTA Primary — with subtle press feedback
+  ────────────────────────────────────────────── */
+  .cta-primary {
+    @apply inline-flex items-center justify-center rounded-full bg-[#0A1628] px-7 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-white shadow-sm transition-all duration-300;
+    @apply hover:bg-[#162540] hover:shadow-lg hover:-translate-y-0.5;
+    @apply active:translate-y-0 active:shadow-sm active:scale-[0.98];
+    @apply focus-visible:ring-2 focus-visible:ring-[#C9A94E] focus-visible:ring-offset-2;
+  }
+
+  .cta-outline-dark {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-[#0A1628] px-7 py-3 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] transition-all duration-300;
+    @apply hover:bg-[#0A
+
+    Here are the fully upgraded components. I've analyzed each, removed redundancies, tightened hierarchy, and brought everything to a polished 10/10.
+
+---
+
+## 1. `HeroSection` (Upgraded)
+
+**Key changes:** Fixed invalid `bg-white/6`, removed redundant service chips (subtitle says it), simplified trust bar, defined proper CTA styling, cleaner scroll indicator, tightened animation timing.
+
+```tsx
+"use client";
+
+import Image from "next/image";
+import { useEffect, useState } from "react";
+
+import { trackConversionEvent } from "@/lib/analytics";
+import { COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
+
+type HeroSectionProps = {
+  onOpenQuote: () => void;
+};
+
+type TrustIcon = "shield" | "clock" | "message";
+
+function TrustGlyph({ icon }: { icon: TrustIcon }) {
+  if (icon === "shield") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
+        <path
+          d="M12 3 5 6v5c0 5 3.4 8.8 7 10 3.6-1.2 7-5 7-10V6l-7-3Z"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d="m9.5 12 1.8 1.8 3.2-3.6"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    );
+  }
+
+  if (icon === "clock") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
+        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M12 7.5v5l3 1.8"
+          fill="none"
+          stroke="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
+      <path
+        d="M7.5 8.5h9m-9 4h5M6 18.5l1.4-2.8a8 8 0 1 1 2.1 1.3L6 18.5Z"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+const trustItems: { icon: TrustIcon; label: string }[] = [
+  { icon: "shield", label: "Licensed & Insured" },
+  { icon: "clock", label: "Response Within 1 Hour" },
+  { icon: "message", label: "Se Habla Español" },
+];
+
+export function HeroSection({ onOpenQuote }: HeroSectionProps) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setIsVisible(true), 200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const fadeUp = (delay: number, duration = 800) =>
+    isVisible
+      ? {
+          animationName: "heroFadeUp",
+          animationDuration: `${duration}ms`,
+          animationTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
+          animationFillMode: "forwards" as const,
+          animationDelay: `${delay}ms`,
+        }
+      : undefined;
+
+  return (
+    <section
+      id="hero"
+      aria-labelledby="hero-heading"
+      className="relative min-h-[100svh] overflow-hidden"
+    >
+      {/* Background image with Ken Burns */}
+      <Image
+        src="/images/variant-a/hero.jpg"
+        alt="Modern glass-walled office lobby after professional cleaning"
+        fill
+        priority
+        quality={75}
+        sizes="100vw"
+        className="object-cover"
+        style={isVisible ? { animation: "heroKenBurns 18s ease-out forwards" } : undefined}
+      />
+
+      {/* Overlay stack */}
+      <div className="absolute inset-0 bg-[#0A1628]/30" aria-hidden="true" />
+      <div
+        className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/90 via-[#0A1628]/40 to-transparent"
+        aria-hidden="true"
+      />
+
+      {/* Hero content */}
+      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col items-center justify-center px-6 pb-36 pt-28 text-center md:justify-end md:pb-32 md:pt-40">
+        <div className="max-w-4xl">
+          {/* Context badge */}
+          <p
+            className="mb-6 inline-flex rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-[10px] uppercase tracking-[0.22em] text-slate-200 opacity-0 backdrop-blur-sm"
+            style={fadeUp(200)}
+          >
+            Austin Metro&ensp;·&ensp;Post-Construction&ensp;·&ensp;Commercial
+          </p>
+
+          {/* Headline */}
+          <h1
+            id="hero-heading"
+            className="font-serif text-[clamp(3.2rem,10vw,7.5rem)] leading-[0.94] tracking-tight text-white"
+          >
+            {[
+              { text: "Every Surface.", delay: 600 },
+              { text: "Every Detail.", delay: 800 },
+              { text: "Every Time.", delay: 1000, italic: true },
+            ].map((line) => (
+              <span
+                key={line.text}
+                className={`block opacity-0 ${line.italic ? "italic text-slate-300" : ""}`}
+                style={fadeUp(line.delay)}
+              >
+                {line.text}
+              </span>
+            ))}
+          </h1>
+
+          {/* Subtitle */}
+          <p
+            className="mx-auto mt-6 max-w-2xl text-base font-light leading-relaxed text-slate-200 opacity-0 md:text-lg"
+            style={fadeUp(1200)}
+          >
+            Post-construction and commercial cleaning built for walkthroughs,
+            turnovers, and tight schedules across the Austin metro.
+          </p>
+
+          {/* CTAs */}
+          <div
+            className="mt-10 flex w-full max-w-md flex-col gap-4 opacity-0 sm:mx-auto sm:flex-row sm:justify-center"
+            style={fadeUp(1400)}
+          >
+            <button
+              type="button"
+              onClick={onOpenQuote}
+              className="inline-flex w-full items-center justify-center rounded-full bg-white px-8 py-4 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg active:scale-[0.98] sm:w-auto"
+            >
+              Request a Quote
+            </button>
+            <a
+              href={`tel:${COMPANY_PHONE_E164}`}
+              className="inline-flex w-full items-center justify-center rounded-full border border-white/25 bg-white/[0.08] px-8 py-4 text-[11px] font-bold uppercase tracking-[0.18em] text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.14] active:scale-[0.98] sm:w-auto"
+              onClick={() => {
+                void trackConversionEvent({ eventName: "call_click", source: "hero" });
+              }}
+            >
+              Call {COMPANY_PHONE}
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll indicator */}
+      <div
+        className="absolute bottom-24 left-1/2 z-30 hidden -translate-x-1/2 opacity-0 sm:block"
+        style={fadeUp(1700)}
+      >
+        <div className="hero-bounce-subtle flex flex-col items-center text-white/40">
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            className="h-5 w-5"
+          >
+            <path
+              d="m5.5 7.5 4.5 5 4.5-5"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.2"
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* Trust bar */}
+      <div
+        className="absolute bottom-0 left-0 z-20 w-full border-t border-white/10 bg-[#0A1628]/50 opacity-0 backdrop-blur-md"
+        style={fadeUp(1600)}
+      >
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-6 py-3.5 md:justify-between">
+          {trustItems.map((item) => (
+            <div
+              key={item.label}
+              className="inline-flex items-center gap-2.5 text-[11px] font-medium uppercase tracking-[0.16em] text-slate-300"
+            >
+              <span className="text-slate-500">
+                <TrustGlyph icon={item.icon} />
+              </span>
+              <span>{item.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <style jsx global>{`
+        @keyframes heroFadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(24px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        @keyframes heroKenBurns {
+          from {
+            transform: scale(1);
+          }
+          to {
+            transform: scale(1.06);
+          }
+        }
+        @keyframes heroBounceSubtle {
+          0%,
+          100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(5px);
+          }
+        }
+        .hero-bounce-subtle {
+          animation: heroBounceSubtle 2.2s ease-in-out infinite;
+        }
+      `}</style>
+    </section>
+  );
+}
+```
+
+---
+
+## 2. `AuthorityBar` (Upgraded)
+
+**Key changes:** Renamed kicker from "Proof Rail" to "Track Record", fixed heading, unified all 4 stats as clean counters (no oversized Licensed block), removed "Core signal" badge, cleaner trust line, reduced number sizes.
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+type Stat = {
+  target: number;
+  suffix: string;
+  label: string;
+  detail: string;
+};
+
+const stats: Stat[] = [
+  { target: 15, suffix: "+", label: "Years", detail: "Field experience" },
+  { target: 500, suffix: "+", label: "Projects", detail: "Spaces delivered" },
+  { target: 100, suffix: "%", label: "On-Time", detail: "Handoff focus" },
+  { target: 100, suffix: "%", label: "Insured", detail: "Licensed & compliant" },
+];
+
+function useCountUp(target: number, start: boolean) {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!start) return;
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+    if (reduceMotion) {
+      setValue(target);
+      return;
+    }
+
+    let frame = 0;
+    const startTime = performance.now();
+    const duration = 1400;
+
+    const tick = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - (1 - progress) ** 3;
+      setValue(Math.round(target * eased));
+      if (progress < 1) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [start, target]);
+
+  return value;
+}
+
+function StatBlock({
+  stat,
+  start,
+  index,
+  isVisible,
+}: {
+  stat: Stat;
+  start: boolean;
+  index: number;
+  isVisible: boolean;
+}) {
+  const value = useCountUp(stat.target, start);
+
+  return (
+    <div
+      className={`flex flex-col items-center px-4 py-6 text-center transition duration-700 ${
+        isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+      }`}
+      style={{ transitionDelay: `${index * 100 + 100}ms` }}
+    >
+      <div
+        className="mb-2 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl"
+        aria-label={`${stat.target}${stat.suffix} ${stat.label}`}
+      >
+        <span aria-hidden="true">{value}</span>
+        <span className="text-slate-400" aria-hidden="true">
+          {stat.suffix}
+        </span>
+      </div>
+      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500">
+        {stat.label}
+      </p>
+      <p className="mt-1.5 text-xs font-light text-slate-400">{stat.detail}</p>
+    </div>
+  );
+}
+
+export function AuthorityBar() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.35 });
+
+  return (
+    <section
+      ref={ref}
+      aria-labelledby="authority-heading"
+      className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-20 md:py-24"
+    >
+      <div className="pointer-events-none absolute inset-0 opacity-40">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(201,169,78,0.08),transparent_34%)]" />
+      </div>
+
+      <div className="mx-auto max-w-6xl px-6">
+        {/* Header */}
+        <div
+          className={`mb-12 text-center transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <p className="section-kicker">Track Record</p>
+          <h2
+            id="authority-heading"
+            className="mt-3 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl"
+          >
+            Built on Results
+          </h2>
+        </div>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-y-6 lg:grid-cols-4">
+          {stats.map((stat, index) => (
+            <div
+              key={stat.label}
+              className={`relative ${
+                index < stats.length - 1
+                  ? "lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:h-16 lg:after:w-px lg:after:-translate-y-1/2 lg:after:bg-slate-200"
+                  : ""
+              }`}
+            >
+              <StatBlock
+                stat={stat}
+                start={isVisible}
+                index={index}
+                isVisible={isVisible}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Trust anchor */}
+        <div
+          className={`mt-10 border-t border-slate-200 pt-6 text-center transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+          }`}
+          style={{ transitionDelay: "500ms" }}
+        >
+          <p className="flex items-center justify-center gap-2 text-sm font-light text-slate-500">
+            <span
+              className="tracking-[0.18em] text-[#C9A94E]"
+              aria-label="5 out of 5 stars"
+            >
+              ★★★★★
+            </span>
+            <span>
+              Trusted across Austin-area job sites, offices, and turnover
+              projects
+            </span>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 3. `ServiceSpreadSection` (Upgraded)
+
+**Key changes:** Added section header, removed redundant bottom `surface-panel-soft` info box, removed duplicate `packageLabel` display, simplified image overlays (from 3 to 1), reduced title sizing, cleaner overall layout.
+
+```tsx
+"use client";
+
+import Image from "next/image";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+type ServiceSpreadSectionProps = {
+  onOpenQuote: () => void;
+};
+
+type ServiceItem = {
+  anchor: string;
+  index: string;
+  icon: "build" | "detail" | "office" | "turn" | "wash";
+  titleLines: string[];
+  packageLabel: string;
+  description: string;
+  responsePromise: string;
+  image: string;
+  bullets: string[];
+  reverse?: boolean;
+};
+
+const services: ServiceItem[] = [
+  {
+    anchor: "service-post-construction",
+    index: "01",
+    icon: "build",
+    titleLines: ["Post-", "Construction", "Clean"],
+    packageLabel: "Builder Turnover Package",
+    description:
+      "Rough and final clean for new construction projects. We handle debris, dust, and detail so spaces are move-in ready.",
+    responsePromise: "Call-back target: under 1 hour",
+    image: "/images/variant-a/service-spread-01.jpg",
+    bullets: ["Multifamily buildings", "Commercial offices", "Schools & institutional"],
+  },
+  {
+    anchor: "service-final-clean",
+    index: "02",
+    icon: "detail",
+    titleLines: ["Final", "Clean"],
+    packageLabel: "First + Second Final Package",
+    description:
+      "Detail-level cleaning for move-in readiness with first and second final workflows.",
+    responsePromise: "Quote target: same day",
+    image: "/images/variant-a/service-spread-02.jpg",
+    bullets: ["Hardwood floors & tiling", "Fixtures & appliances", "Complete dust removal"],
+    reverse: true,
+  },
+  {
+    anchor: "service-commercial",
+    index: "03",
+    icon: "office",
+    titleLines: ["Commercial", "Cleaning"],
+    packageLabel: "Recurring Site Care",
+    description:
+      "Ongoing and one-time cleaning for offices, retail spaces, and commercial facilities.",
+    responsePromise: "Flexible scheduling available",
+    image: "/images/variant-a/service-spread-03.jpg",
+    bullets: ["Office complexes", "Retail environments", "Regular maintenance"],
+  },
+  {
+    anchor: "service-move",
+    index: "04",
+    icon: "turn",
+    titleLines: ["Move-In /", "Move-Out"],
+    packageLabel: "Vacant Unit Turnover",
+    description:
+      "Vacant unit turnover cleaning for property managers with fast turnaround.",
+    responsePromise: "Same-day support available",
+    image: "/images/variant-a/service-spread-04.jpg",
+    bullets: ["Apartment turns", "Deep sanitation", "Property management support"],
+    reverse: true,
+  },
+  {
+    anchor: "service-windows",
+    index: "05",
+    icon: "wash",
+    titleLines: ["Windows &", "Power Wash"],
+    packageLabel: "Exterior Detail Upgrade",
+    description:
+      "Interior/exterior window cleaning and power washing for polished final delivery.",
+    responsePromise: "Scope quote after initial call",
+    image: "/images/variant-a/service-spread-05.jpg",
+    bullets: ["Exterior facades", "High-reach windows", "Concrete & walkways"],
+  },
+];
+
+function ServiceIcon({ icon }: { icon: ServiceItem["icon"] }) {
+  if (icon === "build") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="M4 18h16M6.5 18V9.5L12 6l5.5 3.5V18" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        <path d="M10 18v-4h4v4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (icon === "detail") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="m6 16 3.5-9 1.6 4.2L15 13l3 7-4.2-1.3L11 22l-1.1-4-4.5-2Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (icon === "office") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="M5 20V5.5L12 4l7 1.5V20M9 8.5h.01M9 12h.01M9 15.5h.01M15 8.5h.01M15 12h.01M15 15.5h.01" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  if (icon === "turn") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+        <path d="M7 10.5 12 6l5 4.5M8.5 9.5V18h7V9.5M4.5 13.5c0 3 2.6 5.5 5.8 5.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+        <path d="m4.5 18 1.8 1.6L8 18" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      </svg>
+    );
+  }
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5">
+      <path d="M6 5h10l2 3v3H6V5Zm0 6h13l-2 8H8L6 11Zm4-6 2 6" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+function ServiceSpreadItem({
+  onOpenQuote,
+  service,
+}: {
+  onOpenQuote: () => void;
+  service: ServiceItem;
+}) {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+
+  return (
+    <article
+      ref={ref}
+      id={service.anchor}
+      className={`group flex min-h-[52vh] flex-col overflow-hidden border-b border-slate-100 last:border-b-0 ${
+        service.reverse ? "md:flex-row-reverse" : "md:flex-row"
+      }`}
+    >
+      {/* Image side */}
+      <div
+        className={`relative h-[36vh] w-full overflow-hidden transition duration-700 md:h-auto md:w-[54%] ${
+          isVisible
+            ? "translate-x-0 opacity-100"
+            : service.reverse
+              ? "translate-x-8 opacity-0"
+              : "-translate-x-8 opacity-0"
+        }`}
+      >
+        <Image
+          src={service.image}
+          alt={`${service.titleLines.join(" ")} — ${service.packageLabel}`}
+          fill
+          quality={72}
+          sizes="(max-width: 768px) 100vw, 54vw"
+          className="object-cover transition duration-1000 group-hover:scale-[1.02]"
+        />
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#081120]/25 via-transparent to-transparent" />
+
+        {/* Single clean overlay — index + package label */}
+        <div className="pointer-events-none absolute left-6 top-6 flex items-center gap-3 md:left-8 md:top-8">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-[#081120]/40 text-[11px] font-bold text-white backdrop-blur-sm">
+            {service.index}
+          </span>
+          <span className="rounded-full border border-white/15 bg-[#081120]/35 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
+            {service.packageLabel}
+          </span>
+        </div>
+      </div>
+
+      {/* Content side */}
+      <div
+        className={`flex w-full items-center ${
+          service.reverse ? "bg-[#FAFAF8]" : "bg-white"
+        } transition duration-700 md:w-[46%] ${
+          isVisible
+            ? "translate-x-0 opacity-100"
+            : service.reverse
+              ? "-translate-x-8 opacity-0"
+              : "translate-x-8 opacity-0"
+        }`}
+      >
+        <div className="max-w-xl p-8 md:p-12 lg:p-16 xl:p-20">
+          {/* Icon + response promise */}
+          <div
+            className={`mb-5 flex items-center gap-3 transition duration-700 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+          >
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm">
+              <ServiceIcon icon={service.icon} />
+            </span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+              {service.responsePromise}
+            </span>
+          </div>
+
+          {/* Title */}
+          <h2
+            className={`mb-5 font-serif text-3xl leading-[1.08] tracking-tight text-[#0A1628] transition duration-700 md:text-4xl lg:text-5xl ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+            }`}
+            style={{ transitionDelay: "60ms" }}
+          >
+            {service.titleLines.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+          </h2>
+
+          {/* Description */}
+          <p
+            className={`mb-7 text-base font-light leading-relaxed text-slate-600 transition duration-700 md:text-lg ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+            }`}
+            style={{ transitionDelay: "120ms" }}
+          >
+            {service.description}
+          </p>
+
+          {/* Bullets */}
+          <ul
+            className={`mb-8 space-y-2.5 transition duration-700 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+            }`}
+            style={{ transitionDelay: "180ms" }}
+          >
+            {service.bullets.map((bullet) => (
+              <li
+                key={bullet}
+                className="flex items-center gap-3 text-sm text-slate-700"
+              >
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#C9A94E]" />
+                {bullet}
+              </li>
+            ))}
+          </ul>
+
+          {/* CTA */}
+          <button
+            type="button"
+            onClick={onOpenQuote}
+            className={`cta-outline-dark gap-3 transition duration-700 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+            }`}
+            style={{ transitionDelay: "240ms" }}
+          >
+            Get a Quote
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+}
+
+export function ServiceSpreadSection({ onOpenQuote }: ServiceSpreadSectionProps) {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.1 });
+
+  return (
+    <section
+      ref={ref}
+      id="services"
+      aria-labelledby="services-heading"
+      className="scroll-mt-32 border-b border-slate-200 bg-white md:scroll-mt-36"
+    >
+      {/* Section header */}
+      <div
+        className={`border-b border-slate-100 bg-white px-6 py-16 text-center transition duration-700 md:py-20 ${
+          isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+        }`}
+      >
+        <p className="section-kicker">What We Do</p>
+        <h2
+          id="services-heading"
+          className="mt-3 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl"
+        >
+          Services Built for the Job
+        </h2>
+        <p className="mx-auto mt-4 max-w-2xl text-base font-light leading-relaxed text-slate-600">
+          From rough cleans on active sites to walkthrough-ready final
+          presentations — scoped to your timeline, delivered to standard.
+        </p>
+      </div>
+
+      {/* Service items */}
+      {services.map((service) => (
+        <ServiceSpreadItem
+          key={service.anchor}
+          onOpenQuote={onOpenQuote}
+          service={service}
+        />
+      ))}
+    </section>
+  );
+}
+```
+
+---
+
+## 4. `BeforeAfterSlider` (Upgraded)
+
+**Key changes:** Removed grid background, removed tick marks, fixed internal-sounding description copy, simplified bottom detail panel (removed "Signal" column), kept grayscale on before image but subtler, cleaner overall.
+
+```tsx
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+
+import { useInViewOnce } from "./useInViewOnce";
+
+const pairs = [
+  {
+    before: "/images/variant-a/comparison-01-before.jpg",
+    after: "/images/variant-a/comparison-01-after.jpg",
+    caption: "Commercial Office Finish",
+    location: "Downtown Austin, TX",
+    tag: "Commercial Office",
+    scope: "Lobby + Shared Areas",
+    result: "Final Presentation",
+  },
+  {
+    before: "/images/variant-a/comparison-02-before.jpg",
+    after: "/images/variant-a/comparison-02-after.jpg",
+    caption: "Luxury Apartment Turnover",
+    location: "South Congress, Austin",
+    tag: "Apartment Turn",
+    scope: "Vacant Unit Refresh",
+    result: "Leasing Ready",
+  },
+  {
+    before: "/images/variant-a/comparison-03-before.jpg",
+    after: "/images/variant-a/comparison-03-after.jpg",
+    caption: "Post-Construction Final Clean",
+    location: "Round Rock, TX",
+    tag: "Post-Construction",
+    scope: "Dust + Detail Finish",
+    result: "Walkthrough Ready",
+  },
+];
+
+export function BeforeAfterSlider() {
+  const { ref, isVisible } = useInViewOnce<HTMLElement>({ threshold: 0.2 });
+  const [active, setActive] = useState(0);
+  const [position, setPosition] = useState(50);
+  const item = pairs[active];
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const isDraggingRef = useRef(false);
+
+  const updatePosition = (clientX: number) => {
+    if (!trackRef.current) return;
+    const rect = trackRef.current.getBoundingClientRect();
+    const pct = ((clientX - rect.left) / rect.width) * 100;
+    setPosition(Math.max(2, Math.min(98, pct)));
+  };
+
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (isDraggingRef.current) updatePosition(e.clientX);
+    };
+    const onMouseUp = () => {
+      isDraggingRef.current = false;
+    };
+    const onTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      if (isDraggingRef.current && touch) updatePosition(touch.clientX);
+    };
+    const onTouchEnd = () => {
+      isDraggingRef.current = false;
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
+  return (
+    <section
+      ref={ref}
+      aria-labelledby="before-after-heading"
+      className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-20 md:py-24"
+    >
+      <div className="mx-auto max-w-6xl px-6">
+        {/* Header */}
+        <div
+          className={`mb-12 text-center transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <p className="section-kicker">The A&amp;A Standard</p>
+          <h2
+            id="before-after-heading"
+            className="mt-3 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl"
+          >
+            See the Difference
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-base font-light leading-relaxed text-slate-600">
+            Side-by-side proof of what finish quality looks like — from active
+            site to walkthrough-ready.
+          </p>
+        </div>
+
+        {/* Pair selector dots */}
+        <div
+          className={`mb-6 flex justify-center gap-2 transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          {pairs.map((pair, idx) => (
+            <button
+              key={pair.tag}
+              type="button"
+              aria-label={`View ${pair.tag} comparison`}
+              onClick={() => {
+                setActive(idx);
+                setPosition(50);
+              }}
+              className={`rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] transition-all duration-300 ${
+                active === idx
+                  ? "border border-[#0A1628] bg-[#0A1628] text-white"
+                  : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-700"
+              }`}
+            >
+              {pair.tag}
+            </button>
+          ))}
+        </div>
+
+        {/* Slider */}
+        <div
+          ref={trackRef}
+          className={`relative mx-auto aspect-video max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+          style={{ touchAction: "pan-y" }}
+        >
+          {/* After image (full) */}
+          <Image
+            src={item.after}
+            alt="After cleaning"
+            fill
+            quality={72}
+            sizes="(max-width: 1024px) 100vw, 960px"
+            className="object-cover"
+          />
+
+          {/* Before image (clipped) */}
+          <div
+            className="absolute inset-y-0 left-0 overflow-hidden"
+            style={{ width: `${position}%` }}
+          >
+            <Image
+              src={item.before}
+              alt="Before cleaning"
+              fill
+              quality={72}
+              sizes="(max-width: 1024px) 100vw, 960px"
+              className="object-cover grayscale-[30%]"
+            />
+          </div>
+
+          {/* Bottom gradient for contrast */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#081120]/50 to-transparent" />
+
+          {/* Slider handle */}
+          <div
+            className="absolute inset-y-0 z-10 w-0.5 -translate-x-1/2 cursor-ew-resize bg-white/90"
+            style={{ left: `${position}%` }}
+            role="slider"
+            tabIndex={0}
+            aria-label="Before and after comparison slider"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(position)}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft")
+                setPosition((p) => Math.max(2, p - 5));
+              if (e.key === "ArrowRight")
+                setPosition((p) => Math.min(98, p + 5));
+              if (e.key === "Home") setPosition(2);
+              if (e.key === "End") setPosition(98);
+            }}
+            onMouseDown={(e) => {
+              updatePosition(e.clientX);
+              isDraggingRef.current = true;
+            }}
+            onTouchStart={(e) => {
+              const touch = e.touches[0];
+              if (touch) {
+                updatePosition(touch.clientX);
+                isDraggingRef.current = true;
+              }
+            }}
+          >
+            <div className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/30 bg-white shadow-lg">
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5 text-slate-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+              >
+                <path d="M8 12H16M8 12L10 9.5M8 12L10 14.5M16 12L14 9.5M16 12L14 14.5" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Before / After labels */}
+          <span className="absolute left-4 top-4 rounded-full bg-[#0A1628]/70 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
+            Before
+          </span>
+          <span className="absolute right-4 top-4 rounded-full bg-[#0A1628]/70 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-sm">
+            After
+          </span>
+
+          {/* Instruction hint — fades out after interaction */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-5 flex justify-center">
+            <span className="rounded-full bg-[#081120]/50 px-3.5 py-1.5 text-[10px] font-medium uppercase tracking-[0.18em] text-white/70 backdrop-blur-sm">
+              Drag to compare
+            </span>
+          </div>
+        </div>
+
+        {/* Detail panel — simplified to 3 columns */}
+        <div
+          className={`mx-auto mt-6 max-w-5xl transition duration-700 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+          }`}
+        >
+          <div className="grid gap-4 rounded-xl border border-slate-200 bg-white p-5 md:grid-cols-3 md:items-center">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#2563EB]">
+                {item.tag}
+              </p>
+              <p className="mt-1.5 text-sm font-medium text-[#0A1628]">
+                {item.caption}
+              </p>
+              <p className="mt-0.5 text-xs font-light text-slate-400">
+                {item.location}
+              </p>
+            </div>
+            <div className="border-slate-100 md:border-l md:pl-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                Scope
+              </p>
+              <p className="mt-1.5 text-sm text-slate-700">{item.scope}</p>
+            </div>
+            <div className="border-slate-100 md:border-l md:pl-5">
+              <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                Result
+              </p>
+              <p className="mt-1.5 text-sm text-slate-700">{item.result}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+```
+
+---
+
+## 5. `VariantAPublicPage` (Upgraded)
+
+**Key changes:** Optimized section ordering for better narrative flow (services → proof → process → industries → testimonials), cleaner mobile sticky bar.
+
+```tsx
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { AIQuoteAssistant } from "./AIQuoteAssistant";
+import { AboutSection } from "./AboutSection";
+import { AuthorityBar } from "./AuthorityBar";
+import { BeforeAfterSlider } from "./BeforeAfterSlider";
+import { CareersSection } from "./CareersSection";
+import { FloatingQuotePanel } from "./FloatingQuotePanel";
+import { FooterSection } from "./FooterSection";
+import { HeroSection } from "./HeroSection";
+import { OfferAndIndustrySection } from "./OfferAndIndustrySection";
+import { PublicHeader } from "./PublicHeader";
+import { QuoteSection } from "./QuoteSection";
+import { ServiceAreaSection } from "./ServiceAreaSection";
+import { ServiceSpreadSection } from "./ServiceSpreadSection";
+import { ScrollToTopButton } from "./ScrollToTopButton";
+import { TestimonialSection } from "./TestimonialSection";
+import { TimelineSection } from "./TimelineSection";
+import { trackConversionEvent } from "@/lib/analytics";
+import { COMPANY_PHONE_E164 } from "@/lib/company";
+
+export function VariantAPublicPage() {
+  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = isQuoteOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isQuoteOpen]);
+
+  const openQuote = () => {
+    void trackConversionEvent({
+      eventName: "quote_open_clicked",
+      source: "public_page",
+    });
+    setIsQuoteOpen(true);
+  };
+  const closeQuote = () => setIsQuoteOpen(false);
+
+  return (
+    <main className="pb-24 md:pb-0">
+      <PublicHeader onOpenQuote={openQuote} />
+
+      {/* 1. Hook — first impression */}
+      <HeroSection onOpenQuote={openQuote} />
+
+      {/* 2. Trust — immediate credibility */}
+      <AuthorityBar />
+
+      {/* 3. What we do — services */}
+      <ServiceSpreadSection onOpenQuote={openQuote} />
+
+      {/* 4. Proof — visual evidence */}
+      <BeforeAfterSlider />
+
+      {/* 5. How it works — process clarity */}
+      <TimelineSection />
+
+      {/* 6. Who we serve — industry fit */}
+      <OfferAndIndustrySection onOpenQuote={openQuote} />
+
+      {/* 7. Social proof — what others say */}
+      <TestimonialSection />
+
+      {/* 8. Who we are */}
+      <AboutSection />
+
+      {/* 9. Where we work */}
+      <ServiceAreaSection />
+
+      {/* 10. Final CTA */}
+      <QuoteSection onOpenQuote={openQuote} />
+
+      {/* 11. Careers */}
+      <CareersSection />
+
+      {/* 12. Footer */}
+      <FooterSection onOpenQuote={openQuote} />
+
+      {/* Overlays & utilities */}
+      <FloatingQuotePanel isOpen={isQuoteOpen} onClose={closeQuote} />
+      <AIQuoteAssistant />
+      <ScrollToTopButton />
+
+      {/* Mobile sticky CTA bar */}
+      <div
+        className="fixed bottom-0 left-0 z-40 flex w-full gap-3 border-t border-slate-200/60 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] backdrop-blur-sm md:hidden"
+        style={{
+          paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
+        }}
+      >
+        <a
+          href={`tel:${COMPANY_PHONE_E164}`}
+          onClick={() => {
+            void trackConversionEvent({
+              eventName: "call_click",
+              source: "mobile_sticky",
+            });
+          }}
+          className="cta-outline-dark flex-1 py-3 text-center"
+        >
+          Call
+        </a>
+        <button
+          type="button"
+          onClick={openQuote}
+          className="cta-primary flex-1 py-3"
+        >
+          Get a Quote
+        </button>
+      </div>
+    </main>
+  );
+}
+```
+
+---
+
+## Summary of All Changes
+
+| Section | Before | After |
+|---|---|---|
+| **Hero** | `bg-white/6` (invalid), redundant service chips, heavy trust bar, undefined `cta-light` | Fixed classes, removed chips (subtitle covers it), lighter trust bar as text, proper CTA styling |
+| **AuthorityBar** | "Proof Rail" jargon, oversized "Licensed" block, "Core signal" badge | "Track Record" / "Built on Results", unified 4 stat counters, removed jargon badges |
+| **ServiceSpread** | No section header, `packageLabel` shown twice, redundant `surface-panel-soft` bottom box, 3 image overlays, `text-6xl` titles | Added intro header, single packageLabel, removed info box, 1 clean overlay, `text-5xl` titles |
+| **BeforeAfter** | Grid background, tick marks, internal-sounding copy, 4-column detail panel with empty "Signal" | Clean bg, no ticks, user-facing copy, 3-column panel, tag-based pair selector |
+| **PageLayout** | BeforeAfter after Industries, Timeline after Testimonials | Logical narrative: Services → Proof → Process → Industries → Testimonials |
