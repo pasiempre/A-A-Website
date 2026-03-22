@@ -1,12 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 
+import { authorizeAdmin } from "@/lib/auth";
 import { buildQuoteEmailHtml } from "@/lib/quote-email";
 import { buildQuotePdf } from "@/lib/quote-pdf";
-import { sendResendEmail } from "@/lib/email";
+import { sendEmailResilient } from "@/lib/resilient-email";
 import { getSiteUrl } from "@/lib/site";
+import {
+  guardIdempotency,
+  commitIdempotency,
+  idempotencyKey,
+} from "@/lib/idempotency";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 
 type QuoteSendBody = {
   leadId?: string;
@@ -20,30 +25,6 @@ type QuoteSendBody = {
   validUntil?: string;
   notes?: string;
 };
-
-async function authorizeAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return { ok: false as const, status: 401, error: authError?.message ?? "Unauthorized." };
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profileError || !profile || profile.role !== "admin") {
-    return { ok: false as const, status: 403, error: profileError?.message ?? "Admin role required." };
-  }
-
-  return { ok: true as const, userId: user.id };
-}
 
 function nextQuoteNumber() {
   const year = new Date().getFullYear();
@@ -77,6 +58,15 @@ export async function POST(request: Request) {
 
   const subtotal = Number((quantity * unitPrice).toFixed(2));
   const total = Number((subtotal + (Number.isFinite(taxAmount) ? taxAmount : 0)).toFixed(2));
+
+  // --- Idempotency guard ---
+  const dedup = guardIdempotency(
+    idempotencyKey("quote-send", leadId, subtotal, taxAmount),
+  );
+  if (dedup.isDuplicate) {
+    return dedup.replay;
+  }
+
   const siteAddress = body.siteAddress?.trim() || null;
   const scopeDescription = body.scopeDescription?.trim() || null;
   const lineDescription = body.lineDescription?.trim() || "Cleaning scope";
@@ -172,8 +162,8 @@ export async function POST(request: Request) {
     let emailed = false;
 
     if (lead.email) {
-      const emailResult = await sendResendEmail({
-        to: [lead.email],
+      const emailResult = await sendEmailResilient({
+        to: lead.email,
         subject: `${quoteNumber} from A&A Cleaning`,
         html: buildQuoteEmailHtml({
           recipientName: lead.name,
@@ -189,11 +179,12 @@ export async function POST(request: Request) {
             contentBase64: pdfBuffer.toString("base64"),
           },
         ],
+        tag: "quote-send",
       });
 
-      emailed = emailResult.ok;
-      deliveryStatus = emailResult.ok ? "sent" : "failed";
-      deliveryError = emailResult.ok ? null : emailResult.error ?? "Quote email failed.";
+      emailed = emailResult.success;
+      deliveryStatus = emailResult.success ? "sent" : "failed";
+      deliveryError = emailResult.success ? null : emailResult.error ?? "Quote email failed.";
     }
 
     await supabase
@@ -205,7 +196,7 @@ export async function POST(request: Request) {
       })
       .eq("id", quote.id);
 
-    return NextResponse.json({
+    const responseBody = {
       success: true,
       quoteId: quote.id,
       quoteNumber,
@@ -213,7 +204,16 @@ export async function POST(request: Request) {
       shareUrl,
       deliveryStatus,
       deliveryError,
-    });
+    };
+
+    // Record for idempotency replay
+    commitIdempotency(
+      idempotencyKey("quote-send", leadId, subtotal, taxAmount),
+      200,
+      responseBody,
+    );
+
+    return NextResponse.json(responseBody);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unexpected server error." },

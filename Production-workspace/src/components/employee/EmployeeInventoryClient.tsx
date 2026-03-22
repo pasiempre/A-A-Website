@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { createClient } from "@/lib/supabase/client";
+import { listPendingPhotoUploads } from "@/lib/photo-upload-queue";
 
 type Supply = {
   id: string;
@@ -42,6 +43,7 @@ export function EmployeeInventoryClient() {
   const [isSaving, setIsSaving] = useState(false);
   const [statusText, setStatusText] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
+  const [pendingPhotoUploads, setPendingPhotoUploads] = useState(0);
 
   const lowStockSupplies = useMemo(
     () => supplies.filter((supply) => Number(supply.current_stock) <= Number(supply.reorder_threshold)),
@@ -97,6 +99,9 @@ export function EmployeeInventoryClient() {
       if (!usageForm.assignmentId && nextAssignments[0]) {
         setUsageForm((prev) => ({ ...prev, assignmentId: nextAssignments[0].id }));
       }
+
+      const pending = await listPendingPhotoUploads().catch(() => []);
+      setPendingPhotoUploads(pending.length);
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : "No se pudo cargar inventario.");
     } finally {
@@ -212,6 +217,15 @@ export function EmployeeInventoryClient() {
 
       {statusText ? <p className="mb-3 text-sm text-emerald-700">{statusText}</p> : null}
       {errorText ? <p className="mb-3 text-sm text-rose-600">{errorText}</p> : null}
+
+      <div className="mb-4 rounded border border-sky-200 bg-sky-50 p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-sky-800">Carga de fotos</p>
+        <p className="mt-1 text-xs text-sky-700">
+          {pendingPhotoUploads > 0
+            ? `${pendingPhotoUploads} foto(s) pendientes en cola offline. Se sincronizan automáticamente al recuperar conexión.`
+            : "Sin fotos pendientes en cola offline."}
+        </p>
+      </div>
 
       <div className="mb-5 rounded border border-amber-200 bg-amber-50 p-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-amber-800">Alertas de stock bajo</p>

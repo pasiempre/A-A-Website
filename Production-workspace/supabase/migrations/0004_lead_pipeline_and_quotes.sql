@@ -68,7 +68,7 @@ create index if not exists idx_quote_line_items_quote_sort
 
 alter table public.quote_line_items enable row level security;
 
-create policy if not exists "admin_all_quote_line_items"
+create policy "admin_all_quote_line_items"
 on public.quote_line_items for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');

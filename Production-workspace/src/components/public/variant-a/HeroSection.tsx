@@ -142,12 +142,12 @@ export function HeroSection() {
             className="mt-10 flex w-full max-w-xl flex-col gap-4 opacity-0 sm:mx-auto sm:flex-row sm:justify-center"
             style={fadeUp(1640, 920)}
           >
-            <QuoteCTA className="cta-primary w-full bg-white px-8 py-4 text-[#0A1628] hover:bg-slate-100 sm:w-auto">
-              Get Your Free Quote
+            <QuoteCTA className="cta-primary min-h-[48px] w-full bg-white px-8 py-4 text-[#0A1628] hover:bg-slate-100 sm:w-auto">
+              Get a Free Quote
             </QuoteCTA>
             <a
               href={`tel:${COMPANY_PHONE_E164}`}
-              className="cta-light w-full px-8 py-4 sm:w-auto"
+              className="cta-light min-h-[48px] w-full px-8 py-4 sm:w-auto"
               onClick={() => {
                 void trackConversionEvent({ eventName: "call_click", source: "hero" });
               }}

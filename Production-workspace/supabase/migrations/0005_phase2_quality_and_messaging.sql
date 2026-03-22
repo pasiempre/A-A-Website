@@ -82,22 +82,22 @@ alter table public.job_checklist_items enable row level security;
 alter table public.job_messages enable row level security;
 alter table public.completion_reports enable row level security;
 
-create policy if not exists "admin_all_checklist_templates"
+create policy "admin_all_checklist_templates"
 on public.checklist_templates for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_checklist_template_items"
+create policy "admin_all_checklist_template_items"
 on public.checklist_template_items for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_job_checklist_items"
+create policy "admin_all_job_checklist_items"
 on public.job_checklist_items for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "employee_select_assigned_job_checklist_items"
+create policy "employee_select_assigned_job_checklist_items"
 on public.job_checklist_items for select
 using (
   public.current_user_role() = 'admin'
@@ -108,7 +108,7 @@ using (
   )
 );
 
-create policy if not exists "employee_update_assigned_job_checklist_items"
+create policy "employee_update_assigned_job_checklist_items"
 on public.job_checklist_items for update
 using (
   public.current_user_role() = 'admin'
@@ -127,12 +127,12 @@ with check (
   )
 );
 
-create policy if not exists "admin_all_job_messages"
+create policy "admin_all_job_messages"
 on public.job_messages for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "employee_select_assigned_job_messages"
+create policy "employee_select_assigned_job_messages"
 on public.job_messages for select
 using (
   public.current_user_role() = 'admin'
@@ -143,7 +143,7 @@ using (
   )
 );
 
-create policy if not exists "employee_insert_assigned_job_messages"
+create policy "employee_insert_assigned_job_messages"
 on public.job_messages for insert
 with check (
   public.current_user_role() = 'admin'
@@ -157,7 +157,7 @@ with check (
   )
 );
 
-create policy if not exists "admin_all_completion_reports"
+create policy "admin_all_completion_reports"
 on public.completion_reports for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');

@@ -1,7 +1,6 @@
-import { EmployeeInventoryClient } from "@/components/employee/EmployeeInventoryClient";
 import { EmployeePreviewModePanels } from "@/components/employee/EmployeePreviewModePanels";
+import { EmployeePortalTabs } from "@/components/employee/EmployeePortalTabs";
 import { AuthSignOutButton } from "@/components/ui/AuthSignOutButton";
-import { EmployeeTicketsClient } from "@/components/employee/EmployeeTicketsClient";
 import { isDevPreviewEnabled } from "@/lib/dev-preview";
 
 export default function EmployeeHomePage() {
@@ -26,8 +25,7 @@ export default function EmployeeHomePage() {
         </div>
         <AuthSignOutButton redirectTo="/auth/employee" />
       </div>
-      <EmployeeTicketsClient />
-      <EmployeeInventoryClient />
+      <EmployeePortalTabs />
     </main>
   );
 }

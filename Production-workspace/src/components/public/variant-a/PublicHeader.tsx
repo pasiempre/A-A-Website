@@ -187,22 +187,22 @@ export function PublicHeader() {
             <div className="hidden items-center gap-3 md:flex">
               <a
                 href={`tel:${COMPANY_PHONE_E164}`}
-                className="hidden rounded-md border border-white/15 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:border-white/35 hover:bg-white/8 lg:inline-flex"
+                className="hidden min-h-[40px] items-center rounded-lg border border-white/15 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:border-white/35 hover:bg-white/8 lg:inline-flex"
                 onClick={() => {
                   void trackConversionEvent({ eventName: "call_click", source: "header_nav" });
                 }}
               >
                 Call
               </a>
-              <QuoteCTA className="rounded-md bg-white px-5 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100">
+              <QuoteCTA className="min-h-[40px] rounded-lg bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100">
                 Free Quote
               </QuoteCTA>
             </div>
 
             {/* Mobile Nav Toggle */}
             <div className="flex items-center gap-2 md:hidden">
-              <QuoteCTA className="rounded-md bg-white px-3 py-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm">
-                Quote
+              <QuoteCTA className="min-h-[44px] rounded-lg bg-white px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm active:bg-slate-100">
+                Free Quote
               </QuoteCTA>
               <button
                 type="button"

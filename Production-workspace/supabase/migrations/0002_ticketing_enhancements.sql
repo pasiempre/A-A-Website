@@ -88,13 +88,13 @@ for each row execute function public.set_updated_at();
 alter table public.issue_reports enable row level security;
 
 -- Admin full access
-create policy if not exists "admin_all_issue_reports"
+create policy "admin_all_issue_reports"
 on public.issue_reports for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
 -- Employees can read issues for jobs assigned to them
-create policy if not exists "employee_select_assigned_issues"
+create policy "employee_select_assigned_issues"
 on public.issue_reports for select
 using (
   public.current_user_role() = 'admin'
@@ -106,7 +106,7 @@ using (
 );
 
 -- Employees can create issues only on assigned jobs
-create policy if not exists "employee_insert_assigned_issues"
+create policy "employee_insert_assigned_issues"
 on public.issue_reports for insert
 with check (
   public.current_user_role() = 'admin'
@@ -121,7 +121,7 @@ with check (
 );
 
 -- Employees can update only their own open issues (limited collaboration)
-create policy if not exists "employee_update_own_issues"
+create policy "employee_update_own_issues"
 on public.issue_reports for update
 using (
   public.current_user_role() = 'admin'
@@ -133,6 +133,6 @@ with check (
 );
 
 -- Prevent non-admin delete operations
-create policy if not exists "admin_delete_issue_reports_only"
+create policy "admin_delete_issue_reports_only"
 on public.issue_reports for delete
 using (public.current_user_role() = 'admin');

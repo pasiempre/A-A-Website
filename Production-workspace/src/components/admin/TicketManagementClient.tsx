@@ -12,6 +12,12 @@ import {
   parseAreas,
 } from "@/lib/ticketing";
 
+type TicketFilters = {
+  status: string;
+  priority: string;
+  search: string;
+};
+
 type Profile = {
   id: string;
   full_name: string | null;
@@ -33,6 +39,7 @@ type JobRow = {
   status: string;
   qa_status: "pending" | "approved" | "flagged" | "needs_rework";
   qa_notes: string | null;
+  qa_reviewed_at: string | null;
   scope: string | null;
   areas: string[] | null;
   assigned_week_start: string | null;
@@ -64,7 +71,25 @@ const initialForm = {
   checklistTemplateId: "",
 };
 
-export function TicketManagementClient() {
+type TicketManagementClientProps = {
+  mode?: "full" | "list";
+  filters?: TicketFilters;
+  selectionMode?: boolean;
+  selectedJobIds?: string[];
+  onToggleSelectJob?: (jobId: string, checked: boolean) => void;
+  onVisibleJobIdsChange?: (jobIds: string[]) => void;
+  refreshSignal?: number;
+};
+
+export function TicketManagementClient({
+  mode = "full",
+  filters,
+  selectionMode = false,
+  selectedJobIds = [],
+  onToggleSelectJob,
+  onVisibleJobIdsChange,
+  refreshSignal,
+}: TicketManagementClientProps) {
   const getSupabase = () => createClient();
 
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -80,6 +105,23 @@ export function TicketManagementClient() {
   const [qaSavingJobId, setQaSavingJobId] = useState<string | null>(null);
 
   const employeeOptions = useMemo(() => profiles.filter((profile) => profile.role === "employee"), [profiles]);
+  const visibleJobs = useMemo(() => {
+    const statusFilter = filters?.status ?? "all";
+    const priorityFilter = filters?.priority ?? "all";
+    const searchFilter = (filters?.search ?? "").trim().toLowerCase();
+
+    return jobs.filter((job) => {
+      const statusMatches = statusFilter === "all" || job.status === statusFilter;
+      const priorityMatches = priorityFilter === "all" || job.priority === priorityFilter;
+      const searchMatches =
+        searchFilter.length === 0 ||
+        job.title.toLowerCase().includes(searchFilter) ||
+        job.address.toLowerCase().includes(searchFilter) ||
+        (job.scope ?? "").toLowerCase().includes(searchFilter);
+
+      return statusMatches && priorityMatches && searchMatches;
+    });
+  }, [jobs, filters]);
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -94,7 +136,7 @@ export function TicketManagementClient() {
       supabase
         .from("jobs")
         .select(
-          "id, title, address, clean_type, priority, status, qa_status, qa_notes, scope, areas, assigned_week_start, created_at, duplicate_source_job_id, job_assignments(employee_id, role, status, profiles:employee_id(full_name)), issue_reports(id, description, status, created_at)",
+          "id, title, address, clean_type, priority, status, qa_status, qa_notes, qa_reviewed_at, scope, areas, assigned_week_start, created_at, duplicate_source_job_id, job_assignments(employee_id, role, status, profiles:employee_id(full_name)), issue_reports(id, description, status, created_at)",
         )
         .order("created_at", { ascending: false })
         .limit(100),
@@ -137,7 +179,11 @@ export function TicketManagementClient() {
 
   useEffect(() => {
     void loadData();
-  }, [loadData]);
+  }, [loadData, refreshSignal]);
+
+  useEffect(() => {
+    onVisibleJobIdsChange?.(visibleJobs.map((job) => job.id));
+  }, [onVisibleJobIdsChange, visibleJobs]);
 
   const createTicket = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -342,25 +388,80 @@ export function TicketManagementClient() {
     }
 
     if (selectedQaStatus === "needs_rework") {
-      const { error: assignmentResetError } = await supabase
-        .from("job_assignments")
-        .update({ status: "assigned", started_at: null, completed_at: null })
-        .eq("job_id", job.id);
+      const [assignmentResult, checklistResult] = await Promise.all([
+        supabase
+          .from("job_assignments")
+          .update({ status: "assigned", started_at: null, completed_at: null })
+          .eq("job_id", job.id),
+        supabase
+          .from("job_checklist_items")
+          .update({
+            is_completed: false,
+            completed_at: null,
+            completed_by: null,
+          })
+          .eq("job_id", job.id),
+      ]);
 
-      if (assignmentResetError) {
-        setFormError(assignmentResetError.message);
+      if (assignmentResult.error || checklistResult.error) {
+        setFormError(
+          assignmentResult.error?.message ??
+            checklistResult.error?.message ??
+            "Failed resetting assignments or checklist.",
+        );
         setQaSavingJobId(null);
         return;
       }
     }
 
-    setStatusText(selectedQaStatus === "needs_rework" ? "Rework requested and assignments reset." : "QA review saved.");
+    let autoReportWarning: string | null = null;
+    const shouldAutoTriggerReport =
+      selectedQaStatus === "approved" && job.qa_status !== "approved";
+
+    if (shouldAutoTriggerReport) {
+      try {
+        const response = await fetch("/api/completion-report", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            jobId: job.id,
+            autoTriggered: true,
+          }),
+        });
+
+        if (!response.ok) {
+          const body = (await response.json().catch(() => null)) as {
+            error?: string;
+          } | null;
+          autoReportWarning =
+            body?.error ??
+            `Completion report auto-trigger failed (${response.status}).`;
+        }
+      } catch (error) {
+        autoReportWarning =
+          error instanceof Error
+            ? error.message
+            : "Completion report auto-trigger failed.";
+      }
+    }
+
+    const baseMessage =
+      selectedQaStatus === "needs_rework"
+        ? "Rework requested — assignments and checklist reset."
+        : "QA review saved.";
+
+    setStatusText(
+      autoReportWarning
+        ? `${baseMessage} Report warning: ${autoReportWarning}`
+        : baseMessage,
+    );
     setQaSavingJobId(null);
     await loadData();
   };
 
   return (
-    <section className="mt-8 grid gap-8 lg:grid-cols-[1.1fr_1.4fr]">
+    <section className={`mt-8 grid gap-8 ${mode === "full" ? "lg:grid-cols-[1.1fr_1.4fr]" : "grid-cols-1"}`}>
+      {mode === "full" ? (
       <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <h2 className="text-xl font-semibold tracking-tight text-slate-900">Create Weekly Ticket</h2>
         <p className="mt-2 text-sm text-slate-600">Assign tickets by clean type, worker, and exact areas (cabinets, windows, etc.).</p>
@@ -381,7 +482,9 @@ export function TicketManagementClient() {
             <input
               className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
               value={form.address}
-              onChange={(event) => setForm((prev) => ({ ...prev, address: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, address: event.target.value }))
+              }
               required
             />
           </label>
@@ -495,22 +598,38 @@ export function TicketManagementClient() {
           </button>
         </form>
       </article>
+      ) : null}
 
       <article className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-6">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Ticket Board</h2>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{mode === "full" ? "Ticket Board" : "Dispatch Job List"}</h2>
           <button className="text-sm font-medium text-slate-700 underline" onClick={() => void loadData()} type="button">
             Refresh
           </button>
         </div>
 
+        {mode === "list" ? (
+          <p className="mt-2 text-xs text-slate-500">Showing {visibleJobs.length} filtered job(s).</p>
+        ) : null}
+
         {isLoading ? <p className="mt-4 text-sm text-slate-500">Loading tickets...</p> : null}
 
         <div className="mt-4 space-y-4">
-          {jobs.map((job) => (
+          {visibleJobs.map((job) => (
             <div key={job.id} className="rounded-md border border-slate-200 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
+                  {selectionMode ? (
+                    <label className="mb-2 inline-flex items-center gap-2 text-xs font-medium text-slate-600">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-slate-300"
+                        checked={selectedJobIds.includes(job.id)}
+                        onChange={(event) => onToggleSelectJob?.(job.id, event.target.checked)}
+                      />
+                      Select job
+                    </label>
+                  ) : null}
                   <h3 className="text-base font-semibold text-slate-900">{job.title}</h3>
                   <p className="mt-1 text-sm text-slate-600">{job.address}</p>
                   <p className="mt-1 text-xs text-slate-500">
@@ -530,13 +649,15 @@ export function TicketManagementClient() {
                       </option>
                     ))}
                   </select>
-                  <button
-                    type="button"
-                    className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
-                    onClick={() => void duplicateTicket(job)}
-                  >
-                    Duplicate
-                  </button>
+                  {mode === "full" ? (
+                    <button
+                      type="button"
+                      className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
+                      onClick={() => void duplicateTicket(job)}
+                    >
+                      Duplicate
+                    </button>
+                  ) : null}
                 </div>
               </div>
 
@@ -610,6 +731,12 @@ export function TicketManagementClient() {
                     placeholder="Rework details, verification notes, and completion criteria"
                   />
                 </label>
+
+                {job.qa_reviewed_at ? (
+                  <p className="mt-2 text-[11px] text-slate-400">
+                    Last reviewed: {new Date(job.qa_reviewed_at).toLocaleString()}
+                  </p>
+                ) : null}
               </div>
 
               <div className="mt-3">
@@ -630,7 +757,7 @@ export function TicketManagementClient() {
             </div>
           ))}
 
-          {!isLoading && jobs.length === 0 ? <p className="text-sm text-slate-500">No tickets yet.</p> : null}
+          {!isLoading && visibleJobs.length === 0 ? <p className="text-sm text-slate-500">No tickets yet.</p> : null}
         </div>
       </article>
     </section>

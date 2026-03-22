@@ -180,91 +180,91 @@ alter table public.supply_requests enable row level security;
 alter table public.ai_chat_sessions enable row level security;
 alter table public.ai_chat_messages enable row level security;
 
-create policy if not exists "admin_all_financial_snapshots"
+create policy "admin_all_financial_snapshots"
 on public.financial_snapshots for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_quickbooks_sync_queue"
+create policy "admin_all_quickbooks_sync_queue"
 on public.quickbooks_sync_queue for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_quickbooks_invoice_cache"
+create policy "admin_all_quickbooks_invoice_cache"
 on public.quickbooks_invoice_cache for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_employee_availability"
+create policy "admin_all_employee_availability"
 on public.employee_availability for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "employee_select_own_availability"
+create policy "employee_select_own_availability"
 on public.employee_availability for select
 using (employee_id = auth.uid() or public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_job_reassignment_history"
+create policy "admin_all_job_reassignment_history"
 on public.job_reassignment_history for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_supplies"
+create policy "admin_all_supplies"
 on public.supplies for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "employee_select_supplies"
+create policy "employee_select_supplies"
 on public.supplies for select
 using (is_active = true or public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_supply_usage_logs"
+create policy "admin_all_supply_usage_logs"
 on public.supply_usage_logs for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "employee_insert_supply_usage_logs"
+create policy "employee_insert_supply_usage_logs"
 on public.supply_usage_logs for insert
 with check (
   public.current_user_role() = 'admin'
   or logged_by = auth.uid()
 );
 
-create policy if not exists "employee_select_own_supply_usage_logs"
+create policy "employee_select_own_supply_usage_logs"
 on public.supply_usage_logs for select
 using (public.current_user_role() = 'admin' or logged_by = auth.uid());
 
-create policy if not exists "admin_all_supply_requests"
+create policy "admin_all_supply_requests"
 on public.supply_requests for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "employee_insert_own_supply_requests"
+create policy "employee_insert_own_supply_requests"
 on public.supply_requests for insert
 with check (
   public.current_user_role() = 'admin'
   or requested_by = auth.uid()
 );
 
-create policy if not exists "employee_select_own_supply_requests"
+create policy "employee_select_own_supply_requests"
 on public.supply_requests for select
 using (public.current_user_role() = 'admin' or requested_by = auth.uid());
 
-create policy if not exists "admin_all_ai_chat_sessions"
+create policy "admin_all_ai_chat_sessions"
 on public.ai_chat_sessions for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "public_insert_ai_chat_sessions"
+create policy "public_insert_ai_chat_sessions"
 on public.ai_chat_sessions for insert
 with check (user_type = 'public' or public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_ai_chat_messages"
+create policy "admin_all_ai_chat_messages"
 on public.ai_chat_messages for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "public_insert_ai_chat_messages"
+create policy "public_insert_ai_chat_messages"
 on public.ai_chat_messages for insert
 with check (
   exists (

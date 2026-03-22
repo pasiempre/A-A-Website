@@ -7,6 +7,33 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
+    ],
+    qualities: [68, 70, 75, 80],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/admin.html",
+        destination: "/admin",
+        permanent: false,
+      },
+      {
+        source: "/employee.html",
+        destination: "/employee",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default withBundleAnalyzer(nextConfig);

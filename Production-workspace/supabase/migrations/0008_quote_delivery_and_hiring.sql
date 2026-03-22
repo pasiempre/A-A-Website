@@ -61,11 +61,11 @@ for each row execute function public.set_updated_at();
 
 alter table public.employment_applications enable row level security;
 
-create policy if not exists "admin_all_employment_applications"
+create policy "admin_all_employment_applications"
 on public.employment_applications for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "public_insert_employment_applications"
+create policy "public_insert_employment_applications"
 on public.employment_applications for insert
 with check (true);

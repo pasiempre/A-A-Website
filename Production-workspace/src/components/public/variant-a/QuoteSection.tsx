@@ -6,7 +6,6 @@ import { useId } from "react";
 import { trackConversionEvent } from "@/lib/analytics";
 import { COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 
-import { QuoteCTA } from "./QuoteCTA";
 import { useInViewOnce } from "./useInViewOnce";
 import { useQuoteForm } from "./useQuoteForm";
 
@@ -263,24 +262,30 @@ export function QuoteSection() {
                   type="submit"
                   disabled={isSubmitting}
                   aria-describedby={feedback ? `${fieldPrefix}-feedback` : undefined}
-                  className="cta-primary w-full"
+                  className="cta-primary min-h-[48px] w-full"
                 >
-                  {isSubmitting ? "Submitting..." : "Get My Free Quote"}
+                  {isSubmitting ? "Submitting..." : "Submit Quote Request"}
                 </button>
                 <p className="mt-4 text-center text-[10px] uppercase tracking-[0.18em] text-slate-600">We never share your information.</p>
               </div>
             </form>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <QuoteCTA className="cta-outline-dark">
-                Need to Share More Details?
-              </QuoteCTA>
               <a
                 href={`tel:${COMPANY_PHONE_E164}`}
-                className="cta-outline-dark gap-3"
+                className="cta-outline-dark min-h-[48px] gap-3"
+                onClick={() => {
+                  void trackConversionEvent({ eventName: "call_click", source: "quote_section_below" });
+                }}
               >
                 <span className="h-2 w-2 rounded-full bg-[#C9A94E]" />
                 Prefer to call? {COMPANY_PHONE}
+              </a>
+              <a
+                href="#about"
+                className="cta-outline-dark min-h-[48px]"
+              >
+                Learn More About Us
               </a>
             </div>
           </div>
