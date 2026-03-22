@@ -37,7 +37,7 @@ for each row execute function public.set_updated_at();
 
 alter table public.notification_dispatch_queue enable row level security;
 
-create policy if not exists "admin_all_notification_dispatch_queue"
+create policy "admin_all_notification_dispatch_queue"
 on public.notification_dispatch_queue for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');

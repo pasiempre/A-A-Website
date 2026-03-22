@@ -1,4 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Services",
+  description:
+    "Explore A&A Cleaning services for post-construction final clean, builder turnover, recurring site care, and commercial presentation readiness.",
+  alternates: {
+    canonical: "/services",
+  },
+};
 
 export default function ServicesPage() {
   const services = [

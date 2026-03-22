@@ -1,35 +1,16 @@
 import { NextResponse } from "next/server";
 
+import { authorizeAdmin } from "@/lib/auth";
 import { dispatchAssignmentNotification } from "@/lib/assignment-notifications";
-import { createClient } from "@/lib/supabase/server";
+import {
+  guardIdempotency,
+  commitIdempotency,
+  idempotencyKey,
+} from "@/lib/idempotency";
 
 type AssignmentNotifyBody = {
   assignmentId?: string;
 };
-
-async function authorizeAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return { ok: false as const, status: 401, error: authError?.message ?? "Unauthorized." };
-  }
-
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profileError || !profile || profile.role !== "admin") {
-    return { ok: false as const, status: 403, error: profileError?.message ?? "Admin role required." };
-  }
-
-  return { ok: true as const };
-}
 
 export async function POST(request: Request) {
   const auth = await authorizeAdmin();
@@ -49,9 +30,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "assignmentId is required." }, { status: 400 });
   }
 
+  // --- Idempotency guard ---
+  const key = idempotencyKey("assignment-notify", assignmentId);
+  const dedup = guardIdempotency(key);
+  if (dedup.isDuplicate) {
+    return dedup.replay;
+  }
+
   try {
     const result = await dispatchAssignmentNotification(assignmentId);
-    return NextResponse.json({ success: true, ...result });
+    const responseBody = { success: true, ...result };
+
+    commitIdempotency(key, 200, responseBody);
+
+    return NextResponse.json(responseBody);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unexpected server error." },

@@ -1,7 +1,39 @@
 import type { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
+      },
+    ],
+    qualities: [68, 70, 75, 80],
+  },
+  async redirects() {
+    return [
+      {
+        source: "/admin.html",
+        destination: "/admin",
+        permanent: false,
+      },
+      {
+        source: "/employee.html",
+        destination: "/employee",
+        permanent: false,
+      },
+    ];
+  },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

@@ -158,51 +158,51 @@ alter table public.job_assignments enable row level security;
 alter table public.job_photos enable row level security;
 
 -- Profiles
-create policy if not exists "profiles_select_self_or_admin"
+create policy "profiles_select_self_or_admin"
 on public.profiles for select
 using (auth.uid() = id or public.current_user_role() = 'admin');
 
-create policy if not exists "profiles_update_self_or_admin"
+create policy "profiles_update_self_or_admin"
 on public.profiles for update
 using (auth.uid() = id or public.current_user_role() = 'admin')
 with check (auth.uid() = id or public.current_user_role() = 'admin');
 
-create policy if not exists "profiles_insert_self_or_admin"
+create policy "profiles_insert_self_or_admin"
 on public.profiles for insert
 with check (auth.uid() = id or public.current_user_role() = 'admin');
 
 -- Admin-only core entities
-create policy if not exists "admin_all_clients"
+create policy "admin_all_clients"
 on public.clients for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_leads"
+create policy "admin_all_leads"
 on public.leads for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "public_insert_leads"
+create policy "public_insert_leads"
 on public.leads for insert
 with check (true);
 
-create policy if not exists "admin_all_quotes"
+create policy "admin_all_quotes"
 on public.quotes for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_jobs"
+create policy "admin_all_jobs"
 on public.jobs for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
-create policy if not exists "admin_all_assignments"
+create policy "admin_all_assignments"
 on public.job_assignments for all
 using (public.current_user_role() = 'admin')
 with check (public.current_user_role() = 'admin');
 
 -- Employees can read assignments/jobs they are assigned to
-create policy if not exists "employee_select_assigned_jobs"
+create policy "employee_select_assigned_jobs"
 on public.jobs for select
 using (
   public.current_user_role() = 'admin'
@@ -213,12 +213,12 @@ using (
   )
 );
 
-create policy if not exists "employee_select_own_assignments"
+create policy "employee_select_own_assignments"
 on public.job_assignments for select
 using (public.current_user_role() = 'admin' or employee_id = auth.uid());
 
 -- Employees can update status on assigned jobs
-create policy if not exists "employee_update_assigned_jobs"
+create policy "employee_update_assigned_jobs"
 on public.jobs for update
 using (
   public.current_user_role() = 'admin'
@@ -238,14 +238,14 @@ with check (
 );
 
 -- Photos: admin sees all, employee can insert/select their own on assigned jobs
-create policy if not exists "job_photos_select_admin_or_owner"
+create policy "job_photos_select_admin_or_owner"
 on public.job_photos for select
 using (
   public.current_user_role() = 'admin'
   or employee_id = auth.uid()
 );
 
-create policy if not exists "job_photos_insert_admin_or_owner"
+create policy "job_photos_insert_admin_or_owner"
 on public.job_photos for insert
 with check (
   public.current_user_role() = 'admin'
@@ -269,7 +269,7 @@ values ('job-photos-spike', 'job-photos-spike', false)
 on conflict (id) do nothing;
 
 -- Storage policies
-create policy if not exists "storage_admin_all_job_photos"
+create policy "storage_admin_all_job_photos"
 on storage.objects for all
 using (
   bucket_id in ('job-photos', 'job-photos-spike')
@@ -280,14 +280,14 @@ with check (
   and public.current_user_role() = 'admin'
 );
 
-create policy if not exists "storage_employee_insert_job_photos"
+create policy "storage_employee_insert_job_photos"
 on storage.objects for insert
 with check (
   bucket_id in ('job-photos', 'job-photos-spike')
   and (public.current_user_role() = 'employee' or public.current_user_role() = 'admin')
 );
 
-create policy if not exists "storage_employee_select_job_photos"
+create policy "storage_employee_select_job_photos"
 on storage.objects for select
 using (
   bucket_id in ('job-photos', 'job-photos-spike')

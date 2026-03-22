@@ -1,96 +1,116 @@
-import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
-const ADMIN_PREFIX = "/admin";
-const EMPLOYEE_PREFIX = "/employee";
-const AUTH_ADMIN = "/auth/admin";
-const AUTH_EMPLOYEE = "/auth/employee";
+import { isDevPreviewEnabled } from "@/lib/env";
+import { evaluateAuth } from "@/lib/middleware/auth";
+import { type RequestLog, logRequest } from "@/lib/middleware/logging";
+import { applySecurityHeaders } from "@/lib/middleware/security-headers";
+import {
+  rateLimitByPath,
+  rateLimitResponse,
+  setRateLimitHeaders,
+} from "@/lib/rate-limit";
 
-function getRole(user: {
-  app_metadata?: Record<string, unknown> | null;
-  user_metadata?: Record<string, unknown> | null;
-}) {
-  const appRole = user.app_metadata?.role;
-  const userRole = user.user_metadata?.role;
+// ============================================================
+// Helpers
+// ============================================================
 
-  if (typeof appRole === "string") {
-    return appRole;
-  }
-
-  if (typeof userRole === "string") {
-    return userRole;
-  }
-
-  return null;
+function getClientIp(request: NextRequest): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  return forwarded?.split(",")[0]?.trim() ?? realIp ?? "unknown";
 }
 
+function buildLogEntry(
+  overrides: Partial<RequestLog> & {
+    method: string;
+    pathname: string;
+    ip: string;
+    userAgent: string | null;
+    startTime: number;
+  },
+): RequestLog {
+  return {
+    timestamp: new Date().toISOString(),
+    userId: null,
+    role: null,
+    statusCode: 200,
+    rateLimited: false,
+    authFailure: false,
+    durationMs: Date.now() - overrides.startTime,
+    ...overrides,
+  };
+}
+
+// ============================================================
+// Middleware
+// ============================================================
+
 export async function middleware(request: NextRequest) {
-  const response = NextResponse.next({ request });
+  const startTime = Date.now();
+  const { pathname } = request.nextUrl;
+  const ip = getClientIp(request);
+  const userAgent = request.headers.get("user-agent");
+  const shared = { method: request.method, pathname, ip, userAgent, startTime };
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || !supabaseAnonKey) {
+  // 1. Dev preview bypass
+  if (isDevPreviewEnabled()) {
+    const response = NextResponse.next({ request });
+    applySecurityHeaders(response);
     return response;
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return request.cookies.getAll();
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          request.cookies.set(name, value);
-          response.cookies.set(name, value, options);
-        });
-      },
-    },
-  });
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
-  const role = user ? getRole(user) : null;
-
-  const isAdminRoute = pathname.startsWith(ADMIN_PREFIX);
-  const isEmployeeRoute = pathname.startsWith(EMPLOYEE_PREFIX);
-  const isAuthAdmin = pathname.startsWith(AUTH_ADMIN);
-  const isAuthEmployee = pathname.startsWith(AUTH_EMPLOYEE);
-
-  if (isAdminRoute) {
-    if (!user) {
-      return NextResponse.redirect(new URL(AUTH_ADMIN, request.url));
-    }
-
-    if (role !== "admin") {
-      return NextResponse.redirect(new URL(`${AUTH_ADMIN}?error=role`, request.url));
-    }
+  // 2. Rate limiting
+  const rateCheck = await rateLimitByPath(ip, pathname);
+  if (!rateCheck.allowed) {
+    const response = rateLimitResponse(rateCheck);
+    applySecurityHeaders(response);
+    logRequest(buildLogEntry({ ...shared, statusCode: 429, rateLimited: true }));
+    return response;
   }
 
-  if (isEmployeeRoute) {
-    if (!user) {
-      return NextResponse.redirect(new URL(AUTH_EMPLOYEE, request.url));
-    }
+  // 3. Auth evaluation
+  const response = NextResponse.next({ request });
+  const { context, redirect } = await evaluateAuth(request, response);
 
-    if (role !== "employee" && role !== "admin") {
-      return NextResponse.redirect(new URL(`${AUTH_EMPLOYEE}?error=role`, request.url));
-    }
+  if (redirect) {
+    setRateLimitHeaders(redirect.headers, rateCheck);
+    applySecurityHeaders(redirect);
+    logRequest(
+      buildLogEntry({
+        ...shared,
+        userId: context.userId,
+        role: context.role,
+        statusCode: 302,
+        authFailure: context.authFailure,
+        authFailureReason: context.authFailureReason,
+      }),
+    );
+    return redirect;
   }
 
-  if (isAuthAdmin && user && role === "admin") {
-    return NextResponse.redirect(new URL(ADMIN_PREFIX, request.url));
-  }
-
-  if (isAuthEmployee && user && (role === "employee" || role === "admin")) {
-    return NextResponse.redirect(new URL(EMPLOYEE_PREFIX, request.url));
-  }
+  // 4. Success path
+  setRateLimitHeaders(response.headers, rateCheck);
+  applySecurityHeaders(response);
+  logRequest(
+    buildLogEntry({
+      ...shared,
+      userId: context.userId,
+      role: context.role,
+    }),
+  );
 
   return response;
 }
 
+// ============================================================
+// Route matcher
+// ============================================================
+
 export const config = {
-  matcher: ["/admin/:path*", "/employee/:path*", "/auth/:path*"],
+  matcher: [
+    "/admin/:path*",
+    "/employee/:path*",
+    "/auth/:path*",
+    "/api/:path*",
+  ],
 };

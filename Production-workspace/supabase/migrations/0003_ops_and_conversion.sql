@@ -16,11 +16,11 @@ create index if not exists idx_conversion_events_event_created
 
 alter table public.conversion_events enable row level security;
 
-create policy if not exists "public_insert_conversion_events"
+create policy "public_insert_conversion_events"
 on public.conversion_events for insert
 with check (true);
 
-create policy if not exists "admin_read_conversion_events"
+create policy "admin_read_conversion_events"
 on public.conversion_events for select
 using (public.current_user_role() = 'admin');
 

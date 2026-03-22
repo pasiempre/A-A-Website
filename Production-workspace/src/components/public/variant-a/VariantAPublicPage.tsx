@@ -1,96 +1,89 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { AIQuoteAssistant } from "./AIQuoteAssistant";
+import dynamic from "next/dynamic";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { AboutSection } from "./AboutSection";
 import { AuthorityBar } from "./AuthorityBar";
-import { BeforeAfterSlider } from "./BeforeAfterSlider";
 import { CareersSection } from "./CareersSection";
-import { FloatingQuotePanel } from "./FloatingQuotePanel";
-import { FooterSection } from "./FooterSection";
 import { HeroSection } from "./HeroSection";
 import { OfferAndIndustrySection } from "./OfferAndIndustrySection";
-import { QuoteSection } from "./QuoteSection";
+import { useQuoteAction } from "./QuoteContext";
 import { ServiceAreaSection } from "./ServiceAreaSection";
 import { ServiceSpreadSection } from "./ServiceSpreadSection";
-import { TestimonialSection } from "./TestimonialSection";
 import { TimelineSection } from "./TimelineSection";
-import { trackConversionEvent } from "@/lib/analytics";
-import { COMPANY_PHONE_E164 } from "@/lib/company";
+
+const BeforeAfterSlider = dynamic(
+  () => import("./BeforeAfterSlider").then((module) => module.BeforeAfterSlider),
+);
+const TestimonialSection = dynamic(
+  () => import("./TestimonialSection").then((module) => module.TestimonialSection),
+);
+const QuoteSection = dynamic(() => import("./QuoteSection").then((module) => module.QuoteSection));
+const ExitIntentOverlay = dynamic(
+  () => import("./ExitIntentOverlay").then((module) => module.ExitIntentOverlay),
+  { ssr: false },
+);
 
 export function VariantAPublicPage() {
-  const [isQuoteOpen, setIsQuoteOpen] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => {
-      setShowBackToTop(window.scrollY > 900);
-    };
-
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = isQuoteOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isQuoteOpen]);
-
-  const openQuote = () => {
-    void trackConversionEvent({ eventName: "quote_open_clicked", source: "public_page" });
-    setIsQuoteOpen(true);
-  };
-  const closeQuote = () => setIsQuoteOpen(false);
+  const openQuote = useQuoteAction();
 
   return (
-    <main>
-      <HeroSection onOpenQuote={openQuote} />
-      <AuthorityBar />
-      <ServiceSpreadSection onOpenQuote={openQuote} />
-      <OfferAndIndustrySection onOpenQuote={openQuote} />
-      <BeforeAfterSlider />
-      <TestimonialSection />
-      <TimelineSection />
-      <AboutSection />
-      <ServiceAreaSection />
-      <QuoteSection onOpenQuote={openQuote} />
-      <CareersSection />
-      <FooterSection onOpenQuote={openQuote} />
+    <>
+      <main>
+        <HeroSection />
+        <AuthorityBar />
+        <IncludedSummarySection />
+        <ServiceSpreadSection />
+        <OfferAndIndustrySection />
+        <ErrorBoundary>
+          <BeforeAfterSlider />
+        </ErrorBoundary>
+        <ErrorBoundary>
+          <TestimonialSection />
+        </ErrorBoundary>
+        <TimelineSection />
+        <AboutSection />
+        <ServiceAreaSection />
+        <ErrorBoundary>
+          <QuoteSection />
+        </ErrorBoundary>
+        <CareersSection />
+      </main>
+      <ExitIntentOverlay onOpenQuote={openQuote} />
+    </>
+  );
+}
 
-      <FloatingQuotePanel isOpen={isQuoteOpen} onClose={closeQuote} />
-      <AIQuoteAssistant />
+function IncludedSummarySection() {
+  const summaryItems = [
+    {
+      title: "Scope-Driven Planning",
+      description: "We align crew, service type, and schedule before work starts.",
+    },
+    {
+      title: "Detail-Level Delivery",
+      description: "From rough clean to final walkthrough readiness, every phase is covered.",
+    },
+    {
+      title: "Fast Communication",
+      description: "Direct response and bilingual coordination with your team.",
+    },
+  ];
 
-      <button
-        type="button"
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        className={`fixed bottom-8 right-6 z-40 h-11 w-11 rounded-full bg-[#0A1628] text-white transition ${
-          showBackToTop ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
-        aria-label="Back to top"
-      >
-        ↑
-      </button>
-
-      <div className="fixed bottom-0 left-0 z-40 flex w-full gap-3 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
-        <a
-          href={`tel:${COMPANY_PHONE_E164}`}
-          onClick={() => {
-            void trackConversionEvent({ eventName: "call_click", source: "mobile_sticky" });
-          }}
-          className="flex-1 rounded-sm border border-[#0A1628] py-3 text-center text-xs uppercase tracking-[0.18em] text-[#0A1628]"
-        >
-          Call
-        </a>
-        <button
-          type="button"
-          onClick={openQuote}
-          className="flex-1 rounded-sm bg-[#0A1628] py-3 text-xs uppercase tracking-[0.18em] text-white"
-        >
-          Get a Quote
-        </button>
+  return (
+    <section className="border-b border-slate-200 bg-white px-6 py-16 md:px-8 md:py-20">
+      <div className="mx-auto max-w-7xl">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">What&apos;s Included</p>
+        <h2 className="mt-3 max-w-xl font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">A clear process from first call to final clean.</h2>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {summaryItems.map((item) => (
+            <article key={item.title} className="rounded-xl border border-slate-200 bg-slate-50 p-6">
+              <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
+              <p className="mt-2.5 text-sm leading-relaxed text-slate-600">{item.description}</p>
+            </article>
+          ))}
+        </div>
       </div>
-    </main>
+    </section>
   );
 }

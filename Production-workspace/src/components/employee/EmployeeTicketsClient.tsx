@@ -2,10 +2,24 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { compressPhoto, getCurrentPosition, validatePhoto } from "@/lib/client-photo";
-import { enqueuePendingPhotoUpload, listPendingPhotoUploads, removePendingPhotoUpload, type PendingPhotoUpload } from "@/lib/photo-upload-queue";
+import { EmployeeAssignmentCard } from "@/components/employee/EmployeeAssignmentCard";
+import { EmployeeChecklistView } from "@/components/employee/EmployeeChecklistView";
+import { EmployeeIssueReport } from "@/components/employee/EmployeeIssueReport";
+import { EmployeeMessageThread } from "@/components/employee/EmployeeMessageThread";
+import { EmployeePhotoUpload } from "@/components/employee/EmployeePhotoUpload";
+import { PhotoInventoryModal } from "@/components/employee/PhotoInventoryModal";
+import {
+  compressPhoto,
+  getCurrentPosition,
+  validatePhoto,
+} from "@/lib/client-photo";
+import {
+  enqueuePendingPhotoUpload,
+  listPendingPhotoUploads,
+  removePendingPhotoUpload,
+  type PendingPhotoUpload,
+} from "@/lib/photo-upload-queue";
 import { createClient } from "@/lib/supabase/client";
-import { ASSIGNMENT_STATUS_OPTIONS, formatCleanType } from "@/lib/ticketing";
 
 type AssignmentRow = {
   id: string;
@@ -13,28 +27,22 @@ type AssignmentRow = {
   employee_id: string;
   role: string;
   status: string;
-  jobs: {
-    title: string;
-    address: string;
-    clean_type: string;
-    scope: string | null;
-    areas: string[] | null;
-    priority: string;
-    job_checklist_items:
-      | {
-          id: string;
-          item_text: string;
-          is_completed: boolean;
-        }[]
-      | null;
-    job_messages:
-      | {
-          id: string;
-          message_text: string;
-          created_at: string;
-        }[]
-      | null;
-  }[] | null;
+  jobs:
+    | {
+        title: string;
+        address: string;
+        clean_type: string;
+        scope: string | null;
+        areas: string[] | null;
+        priority: string;
+        job_checklist_items:
+          | { id: string; item_text: string; is_completed: boolean }[]
+          | null;
+        job_messages:
+          | { id: string; message_text: string; created_at: string }[]
+          | null;
+      }[]
+    | null;
 };
 
 async function uploadCompletionAsset(options: {
@@ -46,24 +54,25 @@ async function uploadCompletionAsset(options: {
 }) {
   const { blob, metadata } = await compressPhoto(options.file);
   const position = await getCurrentPosition();
-  const baseName = options.file.name.replace(/\.[^.]+$/, "").replace(/\s+/g, "-") || "completion-photo";
+  const baseName =
+    options.file.name.replace(/\.[^.]+$/, "").replace(/\s+/g, "-") ||
+    "completion-photo";
   const filePath = `completion/${options.jobId}/${Date.now()}-${baseName}.jpg`;
 
-  const { error: uploadError } = await options.supabase.storage.from("job-photos").upload(filePath, blob, {
-    cacheControl: "3600",
-    upsert: false,
-    contentType: "image/jpeg",
-    metadata: {
-      capturedAt: new Date().toISOString(),
-      latitude: position?.coords.latitude ?? null,
-      longitude: position?.coords.longitude ?? null,
-      ...metadata,
-    },
-  });
-
-  if (uploadError) {
-    throw new Error(uploadError.message);
-  }
+  const { error: uploadError } = await options.supabase.storage
+    .from("job-photos")
+    .upload(filePath, blob, {
+      cacheControl: "3600",
+      upsert: false,
+      contentType: "image/jpeg",
+      metadata: {
+        capturedAt: new Date().toISOString(),
+        latitude: position?.coords.latitude ?? null,
+        longitude: position?.coords.longitude ?? null,
+        ...metadata,
+      },
+    });
+  if (uploadError) throw new Error(uploadError.message);
 
   const { error: insertError } = await options.supabase.from("job_photos").insert({
     job_id: options.jobId,
@@ -75,10 +84,7 @@ async function uploadCompletionAsset(options: {
     latitude: position?.coords.latitude ?? null,
     longitude: position?.coords.longitude ?? null,
   });
-
-  if (insertError) {
-    throw new Error(insertError.message);
-  }
+  if (insertError) throw new Error(insertError.message);
 
   return options.assignmentId;
 }
@@ -95,24 +101,25 @@ async function uploadIssueAsset(options: {
   if (options.file) {
     const { blob, metadata } = await compressPhoto(options.file);
     const position = await getCurrentPosition();
-    const baseName = options.file.name.replace(/\.[^.]+$/, "").replace(/\s+/g, "-") || "issue-photo";
+    const baseName =
+      options.file.name.replace(/\.[^.]+$/, "").replace(/\s+/g, "-") ||
+      "issue-photo";
     photoPath = `issue-reports/${options.jobId}/${Date.now()}-${baseName}.jpg`;
 
-    const { error: uploadError } = await options.supabase.storage.from("job-photos").upload(photoPath, blob, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: "image/jpeg",
-      metadata: {
-        capturedAt: new Date().toISOString(),
-        latitude: position?.coords.latitude ?? null,
-        longitude: position?.coords.longitude ?? null,
-        ...metadata,
-      },
-    });
-
-    if (uploadError) {
-      throw new Error(uploadError.message);
-    }
+    const { error: uploadError } = await options.supabase.storage
+      .from("job-photos")
+      .upload(photoPath, blob, {
+        cacheControl: "3600",
+        upsert: false,
+        contentType: "image/jpeg",
+        metadata: {
+          capturedAt: new Date().toISOString(),
+          latitude: position?.coords.latitude ?? null,
+          longitude: position?.coords.longitude ?? null,
+          ...metadata,
+        },
+      });
+    if (uploadError) throw new Error(uploadError.message);
   }
 
   const { error: issueError } = await options.supabase.from("issue_reports").insert({
@@ -121,10 +128,7 @@ async function uploadIssueAsset(options: {
     description: options.description,
     photo_path: photoPath,
   });
-
-  if (issueError) {
-    throw new Error(issueError.message);
-  }
+  if (issueError) throw new Error(issueError.message);
 }
 
 export function EmployeeTicketsClient() {
@@ -134,12 +138,22 @@ export function EmployeeTicketsClient() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusText, setStatusText] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+
+  const [completionFileByAssignment, setCompletionFileByAssignment] = useState<
+    Record<string, File | null>
+  >({});
+  const [uploadingCompletionFor, setUploadingCompletionFor] = useState<string | null>(
+    null,
+  );
   const [issueByAssignment, setIssueByAssignment] = useState<Record<string, string>>({});
-  const [issueFileByAssignment, setIssueFileByAssignment] = useState<Record<string, File | null>>({});
-  const [completionFileByAssignment, setCompletionFileByAssignment] = useState<Record<string, File | null>>({});
-  const [uploadingCompletionFor, setUploadingCompletionFor] = useState<string | null>(null);
+  const [issueFileByAssignment, setIssueFileByAssignment] = useState<
+    Record<string, File | null>
+  >({});
   const [messageByAssignment, setMessageByAssignment] = useState<Record<string, string>>({});
+
   const [pendingUploadCount, setPendingUploadCount] = useState(0);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
 
   const refreshPendingCount = useCallback(async () => {
     try {
@@ -152,9 +166,7 @@ export function EmployeeTicketsClient() {
 
   const loadAssignments = useCallback(async (options?: { setLoading?: boolean }) => {
     const supabase = getSupabase();
-    if (options?.setLoading !== false) {
-      setIsLoading(true);
-    }
+    if (options?.setLoading !== false) setIsLoading(true);
     setFormError(null);
 
     const {
@@ -181,7 +193,6 @@ export function EmployeeTicketsClient() {
     } else {
       setAssignments((data as AssignmentRow[]) ?? []);
     }
-
     setIsLoading(false);
   }, []);
 
@@ -191,10 +202,7 @@ export function EmployeeTicketsClient() {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return;
-    }
+    if (userError || !user) return;
 
     let flushed = 0;
     const pending = await listPendingPhotoUploads();
@@ -226,7 +234,6 @@ export function EmployeeTicketsClient() {
         await removePendingPhotoUpload(queuedUpload.id);
         flushed += 1;
       } catch {
-        // Keep queued for the next retry window.
       }
     }
 
@@ -234,7 +241,6 @@ export function EmployeeTicketsClient() {
       setStatusText(`Se sincronizaron ${flushed} carga(s) pendientes.`);
       await loadAssignments({ setLoading: false });
     }
-
     await refreshPendingCount();
   }, [loadAssignments, refreshPendingCount]);
 
@@ -245,10 +251,7 @@ export function EmployeeTicketsClient() {
       void flushPendingUploads();
     }, 0);
 
-    const onOnline = () => {
-      void flushPendingUploads();
-    };
-
+    const onOnline = () => void flushPendingUploads();
     window.addEventListener("online", onOnline);
     return () => {
       window.clearTimeout(timer);
@@ -266,21 +269,18 @@ export function EmployeeTicketsClient() {
     setFormError(null);
     setStatusText(null);
 
-    const patch: { status: string; started_at?: string; completed_at?: string } = { status: nextStatus };
-    if (nextStatus === "in_progress") {
-      patch.started_at = new Date().toISOString();
-    }
-    if (nextStatus === "complete") {
-      patch.completed_at = new Date().toISOString();
-    }
+    const patch: { status: string; started_at?: string; completed_at?: string } = {
+      status: nextStatus,
+    };
+    if (nextStatus === "in_progress") patch.started_at = new Date().toISOString();
+    if (nextStatus === "complete") patch.completed_at = new Date().toISOString();
 
-    const supabase = getSupabase();
-    const { error } = await supabase.from("job_assignments").update(patch).eq("id", assignmentId);
+    const { error } = await getSupabase().from("job_assignments").update(patch).eq("id", assignmentId);
+
     if (error) {
       setFormError(error.message);
       return;
     }
-
     setStatusText("Estado actualizado.");
     await loadAssignments();
   };
@@ -305,13 +305,12 @@ export function EmployeeTicketsClient() {
       setFormError(error.message);
       return;
     }
-
     await loadAssignments({ setLoading: false });
   };
 
   const sendJobMessage = async (assignment: AssignmentRow) => {
-    const messageText = messageByAssignment[assignment.id]?.trim();
-    if (!messageText) {
+    const text = messageByAssignment[assignment.id]?.trim();
+    if (!text) {
       setFormError("Escribe un mensaje antes de enviar.");
       return;
     }
@@ -321,7 +320,6 @@ export function EmployeeTicketsClient() {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
-
     if (authError || !user) {
       setFormError(authError?.message ?? "No se pudo validar la sesión.");
       return;
@@ -330,7 +328,7 @@ export function EmployeeTicketsClient() {
     const { error } = await supabase.from("job_messages").insert({
       job_id: assignment.job_id,
       sender_id: user.id,
-      message_text: messageText,
+      message_text: text,
       is_internal: false,
     });
 
@@ -338,14 +336,12 @@ export function EmployeeTicketsClient() {
       setFormError(error.message);
       return;
     }
-
     setMessageByAssignment((prev) => ({ ...prev, [assignment.id]: "" }));
     setStatusText("Mensaje enviado.");
     await loadAssignments({ setLoading: false });
   };
 
   const submitIssue = async (assignment: AssignmentRow) => {
-    const supabase = getSupabase();
     const description = issueByAssignment[assignment.id]?.trim();
     const issueFile = issueFileByAssignment[assignment.id] ?? null;
 
@@ -357,8 +353,8 @@ export function EmployeeTicketsClient() {
     if (issueFile) {
       try {
         validatePhoto(issueFile);
-      } catch (error) {
-        setFormError(error instanceof Error ? error.message : "Foto inválida.");
+      } catch (err) {
+        setFormError(err instanceof Error ? err.message : "Foto inválida.");
         return;
       }
     }
@@ -366,11 +362,11 @@ export function EmployeeTicketsClient() {
     setFormError(null);
     setStatusText(null);
 
+    const supabase = getSupabase();
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
-
     if (authError || !user) {
       setFormError(authError?.message ?? "No se pudo validar la sesión.");
       return;
@@ -384,11 +380,10 @@ export function EmployeeTicketsClient() {
         description,
         file: issueFile,
       });
-
       setIssueByAssignment((prev) => ({ ...prev, [assignment.id]: "" }));
       setIssueFileByAssignment((prev) => ({ ...prev, [assignment.id]: null }));
       setStatusText("Problema enviado. La administración lo revisará.");
-    } catch (error) {
+    } catch (err) {
       if (issueFile) {
         await queueUpload(
           {
@@ -405,14 +400,12 @@ export function EmployeeTicketsClient() {
         );
         return;
       }
-
-      setFormError(error instanceof Error ? error.message : "No se pudo enviar el problema.");
+      setFormError(err instanceof Error ? err.message : "No se pudo enviar el problema.");
     }
   };
 
   const uploadCompletionPhoto = async (assignment: AssignmentRow) => {
     const completionFile = completionFileByAssignment[assignment.id] ?? null;
-
     if (!completionFile) {
       setFormError("Selecciona una foto de finalización antes de subir.");
       return;
@@ -420,8 +413,8 @@ export function EmployeeTicketsClient() {
 
     try {
       validatePhoto(completionFile);
-    } catch (error) {
-      setFormError(error instanceof Error ? error.message : "Foto inválida.");
+    } catch (err) {
+      setFormError(err instanceof Error ? err.message : "Foto inválida.");
       return;
     }
 
@@ -434,7 +427,6 @@ export function EmployeeTicketsClient() {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
-
     if (authError || !user) {
       setFormError(authError?.message ?? "No se pudo validar la sesión.");
       setUploadingCompletionFor(null);
@@ -449,7 +441,6 @@ export function EmployeeTicketsClient() {
         userId: user.id,
         file: completionFile,
       });
-
       setCompletionFileByAssignment((prev) => ({ ...prev, [assignment.id]: null }));
       setStatusText("Foto final subida con ubicación y compresión optimizada.");
       await loadAssignments({ setLoading: false });
@@ -472,181 +463,148 @@ export function EmployeeTicketsClient() {
   };
 
   return (
-    <section className="mt-8 rounded-lg border border-slate-200 bg-white p-5 shadow-sm md:p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">Mis Trabajos</h2>
-          {pendingUploadCount > 0 ? <p className="mt-1 text-xs text-amber-700">{pendingUploadCount} carga(s) pendiente(s) para reintento.</p> : null}
-        </div>
-        <button type="button" className="text-sm font-medium text-slate-700 underline" onClick={() => void loadAssignments()}>
-          Actualizar
-        </button>
-      </div>
+    <>
+      <PhotoInventoryModal
+        open={photoModalOpen}
+        onClose={() => setPhotoModalOpen(false)}
+        onFlush={() => void flushPendingUploads()}
+      />
 
-      {statusText ? <p className="mt-3 text-sm text-green-700">{statusText}</p> : null}
-      {formError ? <p className="mt-3 text-sm text-red-600">{formError}</p> : null}
-
-      {isLoading ? <p className="mt-4 text-sm text-slate-500">Cargando trabajos...</p> : null}
-
-      <div className="mt-4 space-y-4">
-        {assignments.map((assignment) => {
-          const job = assignment.jobs?.[0] ?? null;
-          return (
-            <article key={assignment.id} className="rounded-md border border-slate-200 p-4">
-              <h3 className="text-lg font-semibold text-slate-900">{job?.title ?? "Trabajo"}</h3>
-              <p className="mt-1 text-sm text-slate-600">{job?.address}</p>
-              <p className="mt-1 text-xs text-slate-500">
-                {formatCleanType(job?.clean_type)} • {assignment.role === "lead" ? "Líder" : "Miembro"}
-              </p>
-
-              {job?.areas && job.areas.length > 0 ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {job.areas.map((area) => (
-                    <span key={area} className="rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700">
-                      {area}
-                    </span>
-                  ))}
-                </div>
-              ) : null}
-
-              <p className="mt-3 text-sm text-slate-600">{job?.scope ?? "Sin notas adicionales."}</p>
-
-              {job?.job_checklist_items && job.job_checklist_items.length > 0 ? (
-                <div className="mt-3 rounded-md border border-slate-200 p-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Checklist</p>
-                  <ul className="mt-2 space-y-2">
-                    {job.job_checklist_items.map((item) => (
-                      <li key={item.id} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={item.is_completed}
-                          onChange={(event) => void toggleChecklistItem(item.id, event.target.checked)}
-                          className="h-4 w-4 rounded border-slate-300"
-                        />
-                        <span className="text-sm text-slate-700">{item.item_text}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : null}
-
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <label className="text-sm font-medium text-slate-700">
-                  Estado
-                  <select
-                    className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    value={assignment.status}
-                    onChange={(event) => void updateAssignmentStatus(assignment.id, event.target.value)}
-                  >
-                    {ASSIGNMENT_STATUS_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="text-sm font-medium text-slate-700">
-                  Foto de problema (opcional)
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0] ?? null;
-                      setIssueFileByAssignment((prev) => ({ ...prev, [assignment.id]: file }));
-                    }}
-                  />
-                </label>
-              </div>
-
-              <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
-                <label className="text-sm font-medium text-slate-700">
-                  Foto de finalización
-                  <input
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                    onChange={(event) => {
-                      const file = event.target.files?.[0] ?? null;
-                      setCompletionFileByAssignment((prev) => ({ ...prev, [assignment.id]: file }));
-                    }}
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-70"
-                  disabled={uploadingCompletionFor === assignment.id}
-                  onClick={() => void uploadCompletionPhoto(assignment)}
-                >
-                  {uploadingCompletionFor === assignment.id ? "Subiendo..." : "Subir foto final"}
-                </button>
-              </div>
-
-              <p className="mt-2 text-[11px] text-slate-500">JPG/PNG/WebP, máximo 10 MB. La app comprime la foto y guarda reintentos si falla la señal.</p>
-
-              <label className="mt-3 block text-sm font-medium text-slate-700">
-                Reportar problema (basura, pintura en superficies, retrabajo, etc.)
-                <textarea
-                  rows={2}
-                  className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
-                  value={issueByAssignment[assignment.id] ?? ""}
-                  onChange={(event) => setIssueByAssignment((prev) => ({ ...prev, [assignment.id]: event.target.value }))}
-                />
-              </label>
-
+      <section className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">
+          <div>
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900 sm:text-xl">
+              Mis Trabajos
+            </h2>
+            <p className="mt-0.5 text-xs text-slate-500">
+              {assignments.length} asignación{assignments.length !== 1 ? "es" : ""}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            {pendingUploadCount > 0 && (
               <button
                 type="button"
-                className="mt-3 rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-                onClick={() => void submitIssue(assignment)}
+                onClick={() => setPhotoModalOpen(true)}
+                className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-amber-200 bg-amber-50 px-3 text-sm font-medium text-amber-800 hover:bg-amber-100"
+                aria-label={`${pendingUploadCount} fotos pendientes`}
               >
-                Enviar problema
+                📸
+                <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-600 px-1 text-[10px] font-bold text-white">
+                  {pendingUploadCount}
+                </span>
               </button>
+            )}
+            <button
+              type="button"
+              className="min-h-[44px] rounded-lg border border-slate-200 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 active:bg-slate-100"
+              onClick={() => void loadAssignments()}
+            >
+              Actualizar
+            </button>
+          </div>
+        </div>
 
-              <div className="mt-4 rounded-md border border-slate-200 p-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Mensajes del trabajo</p>
-                {job?.job_messages && job.job_messages.length > 0 ? (
-                  <ul className="mt-2 space-y-1">
-                    {job.job_messages.slice(0, 3).map((message) => (
-                      <li key={message.id} className="rounded bg-slate-50 px-2 py-1 text-xs text-slate-600">
-                        {message.message_text}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="mt-2 text-xs text-slate-500">No hay mensajes todavía.</p>
-                )}
+        {statusText && (
+          <div className="border-b border-green-100 bg-green-50 px-4 py-2.5 text-sm text-green-800 sm:px-5">
+            {statusText}
+          </div>
+        )}
+        {formError && (
+          <div className="border-b border-red-100 bg-red-50 px-4 py-2.5 text-sm text-red-800 sm:px-5">
+            {formError}
+          </div>
+        )}
 
-                <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
-                  <input
-                    className="rounded-md border border-slate-300 px-2 py-1.5 text-xs"
-                    placeholder="Mensaje para administración"
-                    value={messageByAssignment[assignment.id] ?? ""}
-                    onChange={(event) =>
-                      setMessageByAssignment((prev) => ({
-                        ...prev,
-                        [assignment.id]: event.target.value,
-                      }))
-                    }
-                  />
-                  <button
-                    type="button"
-                    className="rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
-                    onClick={() => void sendJobMessage(assignment)}
-                  >
-                    Enviar
-                  </button>
-                </div>
-              </div>
-            </article>
-          );
-        })}
+        {isLoading && (
+          <div className="px-4 py-10 text-center text-sm text-slate-500">Cargando trabajos...</div>
+        )}
 
-        {!isLoading && assignments.length === 0 ? <p className="text-sm text-slate-500">No hay trabajos asignados.</p> : null}
-      </div>
-    </section>
+        <div className="divide-y divide-slate-100">
+          {assignments.map((assignment) => {
+            const job = assignment.jobs?.[0] ?? null;
+            const checklistItems = job?.job_checklist_items ?? [];
+            const completedItems = checklistItems.filter((i) => i.is_completed).length;
+            const messages = job?.job_messages ?? [];
+            const expanded = expandedCard === assignment.id;
+
+            return (
+              <EmployeeAssignmentCard
+                key={assignment.id}
+                assignmentId={assignment.id}
+                title={job?.title ?? "Trabajo"}
+                address={job?.address ?? ""}
+                cleanType={job?.clean_type ?? ""}
+                priority={job?.priority ?? "normal"}
+                status={assignment.status}
+                role={assignment.role}
+                areas={job?.areas ?? null}
+                scope={job?.scope ?? null}
+                checklistTotal={checklistItems.length}
+                checklistCompleted={completedItems}
+                expanded={expanded}
+                onToggleExpand={() =>
+                  setExpandedCard((prev) => (prev === assignment.id ? null : assignment.id))
+                }
+                onStatusChange={(next) => void updateAssignmentStatus(assignment.id, next)}
+              >
+                <EmployeeChecklistView
+                  items={checklistItems}
+                  onToggle={(itemId, checked) => void toggleChecklistItem(itemId, checked)}
+                />
+
+                <EmployeePhotoUpload
+                  file={completionFileByAssignment[assignment.id] ?? null}
+                  onFileChange={(file) =>
+                    setCompletionFileByAssignment((prev) => ({
+                      ...prev,
+                      [assignment.id]: file,
+                    }))
+                  }
+                  onUpload={() => void uploadCompletionPhoto(assignment)}
+                  isUploading={uploadingCompletionFor === assignment.id}
+                />
+
+                <EmployeeIssueReport
+                  description={issueByAssignment[assignment.id] ?? ""}
+                  onDescriptionChange={(val) =>
+                    setIssueByAssignment((prev) => ({
+                      ...prev,
+                      [assignment.id]: val,
+                    }))
+                  }
+                  file={issueFileByAssignment[assignment.id] ?? null}
+                  onFileChange={(file) =>
+                    setIssueFileByAssignment((prev) => ({
+                      ...prev,
+                      [assignment.id]: file,
+                    }))
+                  }
+                  onSubmit={() => void submitIssue(assignment)}
+                />
+
+                <EmployeeMessageThread
+                  messages={messages}
+                  messageText={messageByAssignment[assignment.id] ?? ""}
+                  onMessageTextChange={(val) =>
+                    setMessageByAssignment((prev) => ({
+                      ...prev,
+                      [assignment.id]: val,
+                    }))
+                  }
+                  onSend={() => void sendJobMessage(assignment)}
+                />
+              </EmployeeAssignmentCard>
+            );
+          })}
+
+          {!isLoading && assignments.length === 0 && (
+            <div className="px-4 py-10 text-center">
+              <p className="text-2xl">📋</p>
+              <p className="mt-2 text-sm text-slate-500">No hay trabajos asignados.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </>
   );
 }
