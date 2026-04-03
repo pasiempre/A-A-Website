@@ -27,6 +27,7 @@ type AssignmentRow = {
   employee_id: string;
   role: string;
   status: string;
+  scheduled_start: string | null;
   jobs:
     | {
         title: string;
@@ -44,6 +45,73 @@ type AssignmentRow = {
       }[]
     | null;
 };
+
+function isSameLocalDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function JobDayTimeline({ assignments, isLoading }: { assignments: AssignmentRow[]; isLoading: boolean }) {
+  if (isLoading) {
+    return null;
+  }
+
+  const now = new Date();
+  const todayAssignments = assignments.filter((assignment) => {
+    if (!assignment.scheduled_start) {
+      return false;
+    }
+    return isSameLocalDay(new Date(assignment.scheduled_start), now);
+  });
+
+  const dateLabelRaw = now.toLocaleDateString("es-ES", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const dateLabel = dateLabelRaw.charAt(0).toUpperCase() + dateLabelRaw.slice(1);
+
+  return (
+    <div className="mb-4 rounded-xl bg-[#0A1628] p-4 text-white shadow-lg">
+      <p className="text-sm font-semibold">📅 Hoy — {dateLabel}</p>
+
+      {todayAssignments.length === 0 ? (
+        <p className="mt-2 text-sm text-slate-200">Sin horario programado</p>
+      ) : (
+        <div className="mt-3 space-y-2.5">
+          {todayAssignments.map((assignment) => {
+            const job = assignment.jobs?.[0];
+            const start = assignment.scheduled_start ? new Date(assignment.scheduled_start) : null;
+            const timeLabel = start
+              ? start.toLocaleTimeString("es-ES", { hour: "numeric", minute: "2-digit" })
+              : "Sin hora";
+
+            const isCurrent = assignment.status === "in_progress";
+            const isCompleted = assignment.status === "completed" || assignment.status === "complete";
+
+            return (
+              <div key={assignment.id} className={`text-sm ${isCompleted ? "text-slate-300" : "text-white"}`}>
+                <span className="font-semibold">{timeLabel}</span>
+                <span className="mx-2">→</span>
+                <span>{job?.address ?? "Sin dirección"}</span>
+                <span className="ml-1">({job?.clean_type ?? "Sin tipo"})</span>
+                {isCurrent && <span className="ml-2 font-semibold text-emerald-300">● AHORA</span>}
+                {isCompleted && <span className="ml-2">✓</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="mt-3 text-xs font-medium text-slate-200">
+        {todayAssignments.length} trabajo{todayAssignments.length !== 1 ? "s" : ""} hoy
+      </p>
+    </div>
+  );
+}
 
 async function uploadCompletionAsset(options: {
   supabase: ReturnType<typeof createClient>;
@@ -183,10 +251,10 @@ export function EmployeeTicketsClient() {
     const { data, error } = await supabase
       .from("job_assignments")
       .select(
-        "id, job_id, employee_id, role, status, jobs(title, address, clean_type, scope, areas, priority, job_checklist_items(id, item_text, is_completed), job_messages(id, message_text, created_at))",
+        "id, job_id, employee_id, role, status, scheduled_start, jobs(title, address, clean_type, scope, areas, priority, job_checklist_items(id, item_text, is_completed), job_messages(id, message_text, created_at))",
       )
       .eq("employee_id", user.id)
-      .order("assigned_at", { ascending: false });
+      .order("scheduled_start", { ascending: true, nullsFirst: false });
 
     if (error) {
       setFormError(error.message);
@@ -469,6 +537,8 @@ export function EmployeeTicketsClient() {
         onClose={() => setPhotoModalOpen(false)}
         onFlush={() => void flushPendingUploads()}
       />
+
+      <JobDayTimeline assignments={assignments} isLoading={isLoading} />
 
       <section className="mt-6 rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-4 py-4 sm:px-5">

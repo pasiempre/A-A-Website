@@ -6,7 +6,9 @@
     "build": "next build",
     "analyze": "ANALYZE=true next build --webpack",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "preflight:f07": "npx tsx src/lib/post-job-preflight.ts",
+    "smoke:f07": "npx tsx src/lib/post-job-smoke-tests.ts"
   },
   "keywords": [],
   "author": "",

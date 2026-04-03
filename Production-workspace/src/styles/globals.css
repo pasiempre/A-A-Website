@@ -9,10 +9,26 @@
   --color-gold: #C9A94E;
   --color-warm: #F1F0EE;
   --color-white: #FAFAF8;
+
+  --z-sticky-bar: 30;
+  --z-floating-widget: 40;
+  --z-header: 50;
+  --z-dialog: 55;
+  --z-overlay: 60;
 }
 
 body {
   @apply bg-[#FAFAF8] text-[#0A1628] antialiased;
+}
+
+/* MOBILE-ELEVATION: R-1 — Removed padding-top: env(safe-area-inset-top).
+   The header is position:fixed and handles its own safe area via inline style.
+   Body padding-top pushed content down ~47px on notched phones unnecessarily.
+   padding-bottom retained because sticky bar doesn't cover all bottom content. */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 *:focus-visible {
@@ -22,6 +38,11 @@ body {
 
 *:focus:not(:focus-visible) {
   outline: none;
+}
+
+body[data-mobile-menu-open="true"] .floating-widget {
+  pointer-events: none !important;
+  opacity: 0 !important;
 }
 
 @keyframes heroFadeUp {
@@ -59,20 +80,22 @@ body {
 }
 
 @layer components {
+  /* MOBILE-ELEVATION: A-3 — active:scale-[0.98] adds tactile press feedback on tap.
+     On mobile, :hover doesn't fire, so :active is the only interaction signal. */
   .cta-primary {
-    @apply inline-flex items-center justify-center rounded-md bg-[#0A1628] px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm transition duration-300 hover:bg-[#162742] hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center rounded-md bg-[#0A1628] px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm transition duration-300 hover:bg-[#162742] hover:-translate-y-0.5 active:scale-[0.98] active:shadow-none;
   }
 
   .cta-light {
-    @apply inline-flex items-center justify-center rounded-md border border-white/30 bg-white bg-opacity-10 px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur transition duration-300 hover:bg-white hover:text-[#0A1628] hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center rounded-md border border-white/30 bg-white bg-opacity-10 px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur transition duration-300 hover:bg-white hover:text-[#0A1628] hover:-translate-y-0.5 active:scale-[0.98];
   }
 
   .cta-gold {
-    @apply inline-flex items-center justify-center rounded-md bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition duration-300 hover:bg-[#d4b666] hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center rounded-md bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition duration-300 hover:bg-[#d4b666] hover:-translate-y-0.5 active:scale-[0.98];
   }
 
   .cta-outline-dark {
-    @apply inline-flex items-center justify-center rounded-md border border-slate-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 shadow-sm transition duration-300 hover:border-[#0A1628] hover:bg-white hover:text-[#0A1628] hover:-translate-y-0.5;
+    @apply inline-flex items-center justify-center rounded-md border border-slate-300 px-6 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-slate-700 shadow-sm transition duration-300 hover:border-[#0A1628] hover:bg-white hover:text-[#0A1628] hover:-translate-y-0.5 active:scale-[0.97];
   }
 
   .section-kicker {
@@ -113,7 +136,7 @@ body {
   }
 
   .ghost-index {
-    @apply pointer-events-none select-none font-serif text-[4.25rem] leading-none tracking-tight text-slate-200/80 md:text-[5.5rem];
+    @apply pointer-events-none select-none font-serif text-[3rem] leading-none tracking-tight text-slate-200/80 md:text-[5.5rem];
   }
 }
 

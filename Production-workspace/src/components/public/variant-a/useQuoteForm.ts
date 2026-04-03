@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { trackConversionEvent } from "@/lib/analytics";
 
@@ -28,6 +29,7 @@ type UseQuoteFormOptions = {
 };
 
 export function useQuoteForm({ source }: UseQuoteFormOptions) {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [phone, setPhone] = useState("");
@@ -38,17 +40,6 @@ export function useQuoteForm({ source }: UseQuoteFormOptions) {
   const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedback, setFeedback] = useState<FeedbackState | null>(null);
-
-  const resetForm = () => {
-    setName("");
-    setCompanyName("");
-    setPhone("");
-    setEmail("");
-    setServiceType("");
-    setTimeline("");
-    setDescription("");
-    setWebsite("");
-  };
 
   const submitLead = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -91,11 +82,9 @@ export function useQuoteForm({ source }: UseQuoteFormOptions) {
         metadata: { serviceType },
       });
 
-      setFeedback({
-        message: "Submitted. We’ll call you within the hour.",
-        type: "success",
-      });
-      resetForm();
+      // F-17: Redirect to confirmation page
+      const firstName = name.split(" ")[0] || "";
+      router.push(`/quote/success?name=${encodeURIComponent(firstName)}`);
     } finally {
       setIsSubmitting(false);
     }

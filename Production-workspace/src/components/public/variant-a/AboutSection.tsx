@@ -29,10 +29,10 @@ export function AboutSection() {
         />
       </div>
 
-      <div className="relative flex min-h-[70vh] flex-col md:flex-row">
+      <div className="relative flex flex-col md:min-h-[70vh] md:flex-row">
         <ScrollReveal
           as="div"
-          className="relative flex w-full items-center justify-center bg-[#FAFAF8] px-8 py-20 md:w-[52%] md:px-16 lg:px-24"
+          className="relative flex w-full items-center justify-center bg-[#FAFAF8] px-6 py-10 md:w-[52%] md:px-16 md:py-20 lg:px-24"
           threshold={0.15}
           hiddenClassName="-translate-x-10 opacity-0"
           visibleClassName="translate-x-0 opacity-100"
@@ -48,12 +48,14 @@ export function AboutSection() {
 
             <h2
               id="about-heading"
-              className="mt-5 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl lg:text-[3.25rem]"
+              className="mt-4 font-serif text-3xl tracking-tight text-[#0A1628] md:mt-5 md:text-5xl lg:text-[3.25rem]"
             >
               Built on Standards
             </h2>
 
-            <div className="mt-8 space-y-5 text-[1.05rem] font-light leading-relaxed text-slate-600">
+            {/* MOBILE-HARDENING: mt-6→mt-5 for tighter paragraph block. md:mt-8 preserved. */}
+            {/* MOBILE-ELEVATION: P-9 — font-normal on mobile for legibility, font-light on md+ */}
+            <div className="mt-5 space-y-4 text-sm font-normal leading-relaxed text-slate-600 md:mt-8 md:space-y-5 md:font-light md:text-[1.05rem]">
               <p>
                 A&A Cleaning was built on a simple principle: the job is not
                 done until every detail meets the standard.
@@ -65,7 +67,8 @@ export function AboutSection() {
               </p>
             </div>
 
-            <div className="mt-10 grid grid-cols-3 gap-4">
+            {/* MOBILE-HARDENING: mt-8→mt-6 for tighter proof grid. md:mt-10 preserved. */}
+            <div className="mt-6 grid grid-cols-3 gap-4 md:mt-10">
               {PROOF_POINTS.map((point, i) => (
                 <ScrollReveal
                   key={point.label}
@@ -78,29 +81,31 @@ export function AboutSection() {
                     transitionDelay: `${400 + i * 120}ms`,
                   }}
                 >
-                  <p className="text-2xl font-bold tracking-tight text-[#0A1628] lg:text-3xl">
+                  <p className="text-lg font-bold tracking-tight text-[#0A1628] md:text-2xl lg:text-3xl">
                     {point.value}
                   </p>
-                  <p className="mt-1 text-xs font-medium uppercase tracking-wider text-slate-600">
+                  <p className="mt-1 text-[10px] font-medium uppercase tracking-wider text-slate-600 md:text-xs">
                     {point.label}
                   </p>
                 </ScrollReveal>
               ))}
             </div>
 
-            <div className="mt-10 overflow-hidden rounded-2xl border-l-[3px] border-[#C9A94E] bg-slate-50/80 py-6 pl-6 pr-5">
+            {/* MOBILE-HARDENING: mt-8→mt-6 for tighter blockquote. md:mt-10 preserved. */}
+            <div className="mt-6 overflow-hidden rounded-2xl border-l-[3px] border-[#C9A94E] bg-slate-50/80 py-5 pl-5 pr-4 md:mt-10 md:py-6 md:pl-6 md:pr-5">
               <div className="flex items-center gap-2">
                 <span className="h-px w-5 bg-[#C9A94E]" aria-hidden="true" />
                 <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-600">
                   The A&A Standard
                 </span>
               </div>
-              <blockquote className="mt-3 font-serif text-2xl italic leading-snug text-[#0A1628] lg:text-3xl">
+              <blockquote className="mt-3 font-serif text-lg italic leading-snug text-[#0A1628] md:text-2xl lg:text-3xl">
                 &ldquo;We don&apos;t leave until it&apos;s right.&rdquo;
               </blockquote>
             </div>
 
-            <QuoteCTA className="cta-primary group mt-10 inline-flex items-center gap-3">
+            {/* MOBILE-HARDENING: mt-8→mt-6 for tighter CTA spacing. md:mt-10 preserved. */}
+            <QuoteCTA className="cta-primary group mt-6 inline-flex items-center gap-3 md:mt-10">
               Start Your Project
               <svg
                 aria-hidden="true"
@@ -120,7 +125,7 @@ export function AboutSection() {
 
         <ScrollReveal
           as="div"
-          className="relative h-[55vh] w-full overflow-hidden md:h-auto md:w-[48%] md:self-stretch"
+          className="relative h-56 w-full overflow-hidden md:h-auto md:w-[48%] md:self-stretch"
           threshold={0.15}
           hiddenClassName="translate-x-10 opacity-0"
           visibleClassName="translate-x-0 opacity-100"

@@ -20,6 +20,8 @@ export function getPublicEnv() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const employeeInventoryEnabled =
+    process.env.NEXT_PUBLIC_EMPLOYEE_INVENTORY === "true";
 
   const missing: string[] = [];
   if (!supabaseUrl) missing.push("NEXT_PUBLIC_SUPABASE_URL");
@@ -35,6 +37,7 @@ export function getPublicEnv() {
     supabaseUrl: supabaseUrl as string,
     supabaseAnonKey: supabaseAnonKey as string,
     appUrl,
+    employeeInventoryEnabled,
   };
 }
 

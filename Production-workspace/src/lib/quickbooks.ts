@@ -470,7 +470,7 @@ export async function qbApiRequest<T = unknown>(
   let response: Response;
   try {
     response = await attemptRequest(tokenResult.accessToken);
-  } catch (networkError) {
+  } catch {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     try {
       response = await attemptRequest(tokenResult.accessToken);

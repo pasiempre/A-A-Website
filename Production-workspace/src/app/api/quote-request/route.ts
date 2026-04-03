@@ -4,6 +4,7 @@ import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 import { dispatchSmsWithQuietHours, sendSms } from "@/lib/notifications";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { COMPANY_PHONE } from "@/lib/company";
 
 // ============================================================
 // Types
@@ -166,7 +167,8 @@ export async function POST(request: Request) {
       process.env.ADMIN_ALERT_PHONE || adminProfile?.phone;
 
     if (adminAlertPhone) {
-      const message = `New lead: ${safeName} from ${safeCompany}. ${safeServiceType}. Call ${phone}.`;
+      const safeTimeline = sanitize(body.timeline?.trim() || "Not specified");
+      const message = `🔔 New lead: ${safeName} from ${safeCompany} needs ${safeServiceType}. Timeline: ${safeTimeline}. Reply CALL to see details.`;
 
       const smsResult = await dispatchSmsWithQuietHours({
         supabase,
@@ -190,9 +192,8 @@ export async function POST(request: Request) {
       }
     }
 
-    // --- Lead acknowledgment SMS ---
-    const leadAckText =
-      "Thanks for contacting A&A Cleaning. We received your quote request and will call you within the hour during business hours.";
+    // --- Lead acknowledgment SMS (F-02: Lead auto-acknowledgment) ---
+    const leadAckText = `Hi ${safeName}! Thanks for reaching out to A&A Cleaning. We received your request and will call you within 1 hour. If you need us sooner: ${COMPANY_PHONE}. — The A&A Team`;
     const leadAckSms = await sendSms(phone, leadAckText);
     if (!leadAckSms.sent) {
       console.warn("Lead acknowledgment SMS failed:", leadAckSms.error);
@@ -217,13 +218,13 @@ export async function POST(request: Request) {
             body: JSON.stringify({
               from: process.env.RESEND_FROM_EMAIL,
               to: [recipientEmail],
-              subject: "A&A Cleaning quote request received",
+              subject: "A&A Cleaning: We Got Your Quote Request",
               html: `
                 <p>Hi ${safeName},</p>
-                <p>Thanks for requesting a quote from A&amp;A Cleaning.</p>
-                <p>We will call you within the hour during business hours to confirm scope and next steps.</p>
-                <p><strong>Request summary:</strong> ${safeServiceType}</p>
-                <p>Best,<br />A&amp;A Cleaning</p>
+                <p>Thanks for reaching out to A&amp;A Cleaning. We received your request and will call you within 1 hour.</p>
+                <p><strong>Service requested:</strong> ${safeServiceType}</p>
+                <p>If you need us sooner: ${COMPANY_PHONE}</p>
+                <p>&mdash; The A&amp;A Team</p>
               `,
             }),
             timeoutMs: 8_000,

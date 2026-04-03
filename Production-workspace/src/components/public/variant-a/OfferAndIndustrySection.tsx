@@ -134,7 +134,8 @@ export function OfferAndIndustrySection() {
       ref={ref}
       id="industries"
       aria-labelledby="industries-heading"
-      className="relative scroll-mt-32 overflow-hidden bg-gradient-to-b from-slate-50/50 via-white to-white px-6 py-24 md:scroll-mt-36 md:px-10 md:py-32 lg:px-16"
+      /* MOBILE-HARDENING: py-14→py-10 for tighter section padding. md:py-32 preserved. */
+      className="relative scroll-mt-32 overflow-hidden bg-gradient-to-b from-slate-50/50 via-white to-white px-6 py-10 md:scroll-mt-36 md:px-10 md:py-32 lg:px-16"
     >
       <div className="pointer-events-none absolute inset-0 opacity-[0.03]" aria-hidden="true">
         <div
@@ -148,7 +149,8 @@ export function OfferAndIndustrySection() {
 
       <div className="relative mx-auto max-w-7xl">
         <div
-          className={`mb-16 transition-all duration-700 ease-out md:mb-20 ${
+          /* MOBILE-HARDENING: mb-10→mb-8 for tighter heading block. md:mb-20 preserved. */
+          className={`mb-8 transition-all duration-700 ease-out md:mb-20 ${
             isVisible ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
           }`}
         >
@@ -161,7 +163,7 @@ export function OfferAndIndustrySection() {
 
               <h2
                 id="industries-heading"
-                className="mt-4 font-serif text-4xl tracking-tight text-[#0A1628] sm:text-5xl lg:text-[3.25rem]"
+                className="mt-4 font-serif text-3xl tracking-tight text-[#0A1628] sm:text-4xl md:text-5xl lg:text-[3.25rem]"
               >
                 Built for Demanding Spaces
               </h2>
@@ -195,14 +197,14 @@ export function OfferAndIndustrySection() {
               style={{ transitionDelay: isVisible ? `${index * 150}ms` : "0ms" }}
             >
               <div
-                className={`absolute inset-x-0 top-0 h-44 bg-gradient-to-b ${industry.accent} transition-opacity duration-500 ${
+                className={`absolute inset-x-0 top-0 h-44 bg-gradient-to-b ${industry.accent} transition-opacity duration-500 hidden md:block ${
                   hoveredIndex === index ? "opacity-100" : "opacity-70"
                 }`}
                 aria-hidden="true"
               />
 
               <div
-                className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${industry.accent.replace("to-transparent", "to-transparent")} opacity-0 transition-opacity duration-300 group-hover:opacity-100`}
+                className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${industry.accent.replace("to-transparent", "to-transparent")} opacity-0 transition-opacity duration-300 hidden md:block group-hover:opacity-100`}
                 style={{
                   background:
                     index === 0
@@ -214,40 +216,46 @@ export function OfferAndIndustrySection() {
                 aria-hidden="true"
               />
 
-              <div className="relative flex flex-1 flex-col p-8 lg:p-9">
-                <div className="mb-8 flex items-center gap-4">
+              <div className="relative flex flex-1 flex-col p-5 md:p-8 lg:p-9">
+                {/* MOBILE-HARDENING: mb-4→mb-3 for tighter icon/eyebrow row. md:mb-8 preserved. */}
+                <div className="mb-3 flex items-center gap-4 md:mb-8">
                   <div
-                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ring-1 transition-all duration-300 ${industry.accentIcon} group-hover:scale-110 group-hover:shadow-md`}
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 transition-all duration-300 md:h-14 md:w-14 md:rounded-2xl ${industry.accentIcon} group-hover:scale-110 group-hover:shadow-md`}
                   >
                     <IndustryIcon icon={industry.icon} />
                   </div>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 transition-colors duration-300 group-hover:text-[#2563EB]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 transition-colors duration-300 group-hover:text-[#2563EB] md:text-[11px]">
                     {industry.eyebrow}
                   </p>
                 </div>
 
-                <h3 className="font-serif text-[1.75rem] leading-[1.15] tracking-tight text-[#0A1628] lg:text-[2rem]">
+                <h3 className="font-serif text-2xl leading-[1.15] tracking-tight text-[#0A1628] md:text-[1.75rem] lg:text-[2rem]">
                   {industry.title}
                 </h3>
 
-                <div className="mt-5 flex items-baseline gap-2">
-                  <span className="text-2xl font-bold tracking-tight text-[#0A1628]">
+                {/* MOBILE-HARDENING: mt-4→mt-3 for tighter stat row. md:mt-5 preserved. */}
+                <div className="mt-3 flex items-baseline gap-2 md:mt-5">
+                  <span className="text-xl font-bold tracking-tight text-[#0A1628] md:text-2xl">
                     {industry.stat}
                   </span>
-                  <span className="text-sm text-slate-600">
+                  <span className="text-xs text-slate-600 md:text-sm">
                     {industry.statLabel}
                   </span>
                 </div>
 
-                <p className="mt-5 text-[0.925rem] leading-relaxed text-slate-500">
+                {/* MOBILE-HARDENING: mt-4→mt-3 for tighter pain point spacing. md:mt-5 preserved. */}
+                <p className="mt-3 text-sm leading-relaxed text-slate-500 md:mt-5 md:text-[0.925rem]">
                   {industry.painPoint}
                 </p>
 
-                <div className="mt-7 border-t border-slate-100 pt-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
+                <div className="mt-4 border-t border-slate-100 pt-4 md:mt-7 md:pt-5">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-500 md:text-[10px]">
                     Best suited for
                   </p>
-                  <ul className="mt-3 flex flex-wrap gap-2" aria-label={`${industry.title} best fit`}>
+                  <div className="mt-2 text-xs font-medium text-slate-600 md:hidden">
+                    {industry.fit.join(", ")}
+                  </div>
+                  <ul className="mt-3 hidden flex-wrap gap-2 md:flex" aria-label={`${industry.title} best fit`}>
                     {industry.fit.map((item) => (
                       <li
                         key={item}
@@ -259,7 +267,7 @@ export function OfferAndIndustrySection() {
                   </ul>
                 </div>
 
-                <div className="mt-7 flex gap-3 rounded-2xl bg-slate-50/80 p-5 transition-colors duration-300 group-hover:bg-slate-50">
+                <div className="mt-5 hidden gap-3 rounded-2xl bg-slate-50/80 p-4 transition-colors duration-300 group-hover:bg-slate-50 md:flex md:mt-7 md:p-5">
                   <div
                     className="mt-0.5 h-full w-[3px] shrink-0 rounded-full"
                     style={{
@@ -277,7 +285,8 @@ export function OfferAndIndustrySection() {
                   </p>
                 </div>
 
-                <div className="mt-auto pt-8">
+                {/* MOBILE-HARDENING: pt-5→pt-4 for tighter CTA spacing. md:pt-8 preserved. */}
+                <div className="mt-auto pt-4 md:pt-8">
                   <QuoteCTA className="inline-flex items-center gap-2 text-sm font-semibold text-[#0A1628] transition-all duration-300 group-hover:gap-3 group-hover:text-[#2563EB]">
                     Discuss Your Project
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

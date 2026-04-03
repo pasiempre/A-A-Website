@@ -93,16 +93,17 @@ function AnimatedMetric({ target, suffix, label, detail, icon, start }: Animated
   const value = useCountUp(target, start);
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-5 py-4 text-center">
-      <div className="icon-tile mb-5">
+    /* MOBILE-HARDENING: py-3→py-2 for tighter stat cells on mobile. md:py-4 preserved. */
+    <div className="flex h-full flex-col items-center justify-center px-2 py-2 text-center md:px-5 md:py-4">
+      <div className="icon-tile mb-3 hidden md:flex md:mb-5">
         <MetricIcon icon={icon} />
       </div>
-      <div className="mb-2 font-serif text-5xl tracking-tight text-[#0A1628] md:text-6xl lg:text-[5.25rem]" aria-label={`${target}${suffix} ${label}`}>
+      <div className="mb-1 font-serif text-2xl tracking-tight text-[#0A1628] md:mb-2 md:text-6xl lg:text-[5.25rem]" aria-label={`${target}${suffix} ${label}`}>
         <span aria-hidden="true">{value}</span>
         <span className="text-[#94A3B8]" aria-hidden="true">{suffix}</span>
       </div>
-      <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-600">{label}</div>
-      <div className="mt-2 text-xs uppercase tracking-[0.16em] text-slate-500">{detail}</div>
+      <div className="text-[9px] font-medium uppercase tracking-[0.22em] text-slate-600 md:text-[10px]">{label}</div>
+      <div className="mt-1 text-[10px] uppercase tracking-[0.16em] text-slate-500 md:mt-2 md:text-xs">{detail}</div>
     </div>
   );
 }
@@ -112,17 +113,19 @@ export function AuthorityBar() {
   const startCounters = isVisible;
 
   return (
-    <section ref={ref} aria-labelledby="authority-heading" className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-24 md:py-28">
+    <section ref={ref} aria-labelledby="authority-heading" className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] py-8 md:py-28">
       <div className="pointer-events-none absolute inset-0 opacity-50">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_-10%,rgba(201,169,78,0.12),transparent_34%)]" />
       </div>
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-10 text-center">
+        {/* MOBILE-HARDENING: mb-6→mb-4 for tighter heading spacing. md:mb-10 preserved. */}
+        <div className="mb-4 text-center md:mb-10">
           <p className="section-kicker">Track Record</p>
-          <h2 id="authority-heading" className="mt-3 font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl">Our Numbers Speak</h2>
+          <h2 id="authority-heading" className="mt-2 font-serif text-2xl tracking-tight text-[#0A1628] md:mt-3 md:text-5xl">Our Numbers Speak</h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-y-10 text-center sm:grid-cols-2 lg:grid-cols-4 lg:gap-y-0">
+        {/* MOBILE-HARDENING: gap-y-4→gap-y-2 for tighter grid rows on mobile. Desktop is single row (4 cols) so gap-y irrelevant. */}
+        <div className="grid grid-cols-2 gap-x-2 gap-y-2 text-center md:grid-cols-4 md:gap-y-0">
           <div className={dividerCellClass}>
             <AnimatedMetric {...animatedStats[0]} start={startCounters} />
           </div>
@@ -130,17 +133,27 @@ export function AuthorityBar() {
             <AnimatedMetric {...animatedStats[1]} start={startCounters} />
           </div>
 
-          <div className={`${dividerCellClass} flex flex-col items-center justify-center px-5 py-4 text-center`}>
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[#C9A94E]/30 bg-[#C9A94E]/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a6a1c]">
+          {/* MOBILE-HARDENING: py-3→py-2 matching AnimatedMetric cells. md:py-4 preserved. */}
+          {/* MOBILE-ELEVATION: P-4 — entrance animation with 600ms delay so Licensed & Insured
+              fades in after the two animated counters finish. Eliminates the visual "dead spot"
+              where neighboring cells animate but this one sits static. */}
+          <div
+            className={`${dividerCellClass} flex flex-col items-center justify-center px-2 py-2 text-center transition duration-700 md:px-5 md:py-4 ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+            }`}
+            style={{ transitionDelay: isVisible ? "600ms" : "0ms" }}
+          >
+            <div className="mb-2 hidden items-center gap-2 rounded-full border border-[#C9A94E]/30 bg-[#C9A94E]/10 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#8a6a1c] md:inline-flex md:mb-5">
               Key credential
             </div>
-            <div className="mb-3 font-serif text-[2.6rem] leading-[1.04] tracking-tight text-[#0A1628] md:text-[3.2rem]">
+            <div className="mb-1 font-serif text-xl leading-[1.04] tracking-tight text-[#0A1628] md:mb-3 md:text-[3.2rem]">
               {staticStat.title}
-              <br />
-              <span className="inline-block pt-1">{staticStat.subtitle}</span>
+              <span className="md:hidden"> {staticStat.subtitle}</span>
+              <br className="hidden md:block" />
+              <span className="hidden md:inline-block pt-1">{staticStat.subtitle}</span>
             </div>
-            <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-slate-600">Austin Standards</div>
-            <div className="mt-3 max-w-[14rem] text-xs uppercase tracking-[0.16em] text-slate-500">{staticStat.detail}</div>
+            <div className="text-[9px] font-medium uppercase tracking-[0.22em] text-slate-600 md:text-[10px]">Austin Standards</div>
+            <div className="mt-1 max-w-[14rem] text-[10px] uppercase tracking-[0.16em] text-slate-500 md:mt-3 md:text-xs">{staticStat.detail}</div>
           </div>
 
           <div className="lg:px-6">
@@ -148,11 +161,12 @@ export function AuthorityBar() {
           </div>
         </div>
 
-        <div className="mt-12 border-t border-slate-200 pt-8 text-center">
-          <div className="surface-panel-soft inline-flex flex-wrap items-center justify-center gap-3 px-5 py-3 text-sm text-slate-600">
-            <span className="text-base tracking-[0.22em] text-[#C9A94E]" aria-hidden="true">★★★★★</span>
+        {/* MOBILE-HARDENING: mt-6→mt-4, pt-5→pt-4 for tighter bottom trust bar. md:mt-12 md:pt-8 preserved. */}
+        <div className="mt-4 border-t border-slate-200 pt-4 text-center md:mt-12 md:pt-8">
+          <div className="surface-panel-soft inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 text-xs text-slate-600 md:gap-3 md:px-5 md:py-3 md:text-sm">
+            <span className="text-sm tracking-[0.22em] text-[#C9A94E] md:text-base" aria-hidden="true">★★★★★</span>
             <span className="sr-only">Rated 5 out of 5 stars</span>
-            <span className="font-light">Trusted across Austin-area job sites, office spaces, and turnover projects.</span>
+            <span className="font-light">Trusted across Austin-area job sites, office spaces, and turnovers.</span>
           </div>
         </div>
       </div>

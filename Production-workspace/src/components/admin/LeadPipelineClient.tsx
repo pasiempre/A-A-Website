@@ -65,6 +65,27 @@ type JobDraft = {
   employeeId: string;
 };
 
+type DispatchPreset = {
+  day: "today" | "tomorrow" | "next_business_day" | "custom";
+  window: "morning" | "midday" | "afternoon" | "custom";
+};
+
+type QuoteTemplateLineItem = {
+  description: string;
+  quantity: number;
+  unit: "flat" | "unit" | "sqft" | "hour";
+  unit_price: number;
+};
+
+type QuoteTemplateRow = {
+  id: string;
+  name: string;
+  service_type: string;
+  default_line_items: QuoteTemplateLineItem[];
+  base_price: number;
+  pricing_model: "flat" | "per_sqft" | "per_unit" | "per_hour";
+};
+
 const statusColumns: { key: LeadStatus; label: string }[] = [
   { key: "new", label: "New" },
   { key: "contacted", label: "Contacted" },
@@ -93,6 +114,11 @@ const defaultJobDraft: JobDraft = {
   employeeId: "",
 };
 
+const defaultDispatchPreset: DispatchPreset = {
+  day: "tomorrow",
+  window: "morning",
+};
+
 function timeAgo(iso: string) {
   const diffMs = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diffMs / (1000 * 60));
@@ -109,9 +135,55 @@ function statusBadge(status: string) {
   return "bg-slate-100 text-slate-700";
 }
 
+function humanizeServiceType(value: string | null | undefined) {
+  if (!value) {
+    return "General";
+  }
+
+  return value
+    .replaceAll("_", " ")
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0]?.toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function humanizePricingModel(value: QuoteTemplateRow["pricing_model"]) {
+  if (value === "per_sqft") return "Per Sq Ft";
+  if (value === "per_unit") return "Per Unit";
+  if (value === "per_hour") return "Per Hour";
+  return "Flat";
+}
+
+function buildScheduledStartFromPreset(preset: DispatchPreset) {
+  const now = new Date();
+  const target = new Date(now);
+
+  if (preset.day === "tomorrow") {
+    target.setDate(target.getDate() + 1);
+  } else if (preset.day === "next_business_day") {
+    target.setDate(target.getDate() + 1);
+    while (target.getDay() === 0 || target.getDay() === 6) {
+      target.setDate(target.getDate() + 1);
+    }
+  }
+
+  if (preset.window === "morning") {
+    target.setHours(9, 0, 0, 0);
+  } else if (preset.window === "midday") {
+    target.setHours(12, 0, 0, 0);
+  } else if (preset.window === "afternoon") {
+    target.setHours(15, 0, 0, 0);
+  }
+
+  const local = new Date(target.getTime() - target.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
+}
+
 export function LeadPipelineClient() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
+  const [quoteTemplates, setQuoteTemplates] = useState<QuoteTemplateRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusText, setStatusText] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -119,16 +191,48 @@ export function LeadPipelineClient() {
   const [activeJobLeadId, setActiveJobLeadId] = useState<string | null>(null);
   const [quoteDraftByLead, setQuoteDraftByLead] = useState<Record<string, QuoteDraft>>({});
   const [jobDraftByLead, setJobDraftByLead] = useState<Record<string, JobDraft>>({});
+  const [dispatchPresetByLead, setDispatchPresetByLead] = useState<Record<string, DispatchPreset>>({});
+  const [busyEmployeeIdsByLead, setBusyEmployeeIdsByLead] = useState<Record<string, string[]>>({});
   const [isSavingQuoteForLead, setIsSavingQuoteForLead] = useState<string | null>(null);
   const [isConvertingLead, setIsConvertingLead] = useState<string | null>(null);
   const [isCreatingJobForLead, setIsCreatingJobForLead] = useState<string | null>(null);
+  const [isSendingMessage, setIsSendingMessage] = useState<string | null>(null);
+  const [isCheckingAvailabilityForLead, setIsCheckingAvailabilityForLead] = useState<string | null>(null);
+
+  const sendQuickResponse = async (leadId: string, templateId: string) => {
+    if (!templateId) return;
+    setIsSendingMessage(leadId);
+    setErrorText(null);
+    setStatusText(null);
+
+    try {
+      const response = await fetch("/api/lead-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId, templateId }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({ error: "Failed to send message." }));
+        setErrorText(payload.error || "Failed to send message.");
+        return;
+      }
+
+      setStatusText("Quick response sent via SMS and logged to notes.");
+      await loadData();
+    } catch {
+      setErrorText("Error sending message.");
+    } finally {
+      setIsSendingMessage(null);
+    }
+  };
 
   const loadData = useCallback(async () => {
     setIsLoading(true);
     setErrorText(null);
 
     const supabase = createClient();
-    const [leadsResult, profilesResult] = await Promise.all([
+    const [leadsResult, profilesResult, templatesResult] = await Promise.all([
       supabase
         .from("leads")
         .select(
@@ -141,16 +245,26 @@ export function LeadPipelineClient() {
         .select("id, full_name, role")
         .in("role", ["admin", "employee"])
         .order("full_name", { ascending: true }),
+      supabase
+        .from("quote_templates")
+        .select("id, name, service_type, default_line_items, base_price, pricing_model")
+        .order("created_at", { ascending: false }),
     ]);
 
-    if (leadsResult.error || profilesResult.error) {
-      setErrorText(leadsResult.error?.message ?? profilesResult.error?.message ?? "Unable to load lead data.");
+    if (leadsResult.error || profilesResult.error || templatesResult.error) {
+      setErrorText(
+        leadsResult.error?.message
+          ?? profilesResult.error?.message
+          ?? templatesResult.error?.message
+          ?? "Unable to load lead data.",
+      );
       setIsLoading(false);
       return;
     }
 
     setLeads((leadsResult.data as LeadRow[]) ?? []);
     setEmployees((profilesResult.data as EmployeeOption[]) ?? []);
+    setQuoteTemplates((templatesResult.data as QuoteTemplateRow[] | null) ?? []);
     setIsLoading(false);
   }, []);
 
@@ -194,6 +308,37 @@ export function LeadPipelineClient() {
 
     setStatusText("Lead status updated.");
     await loadData();
+  };
+
+  const applyQuoteTemplate = (leadId: string, templateId: string) => {
+    if (!templateId) {
+      return;
+    }
+
+    const template = quoteTemplates.find((item) => item.id === templateId);
+    if (!template) {
+      return;
+    }
+
+    const line = template.default_line_items?.[0] ?? null;
+    if (!line) {
+      return;
+    }
+
+    setQuoteDraftByLead((prev) => ({
+      ...prev,
+      [leadId]: {
+        ...(prev[leadId] ?? defaultQuoteDraft),
+        scopeDescription:
+          (prev[leadId]?.scopeDescription?.trim() || "")
+          || `${template.name} template applied for ${template.service_type.replaceAll("_", " ")}.`,
+        lineDescription: line.description,
+        quantity: String(line.quantity),
+        unit: line.unit,
+        unitPrice: String(line.unit_price),
+        taxAmount: prev[leadId]?.taxAmount ?? defaultQuoteDraft.taxAmount,
+      },
+    }));
   };
 
   const createQuote = async (lead: LeadRow) => {
@@ -307,6 +452,13 @@ export function LeadPipelineClient() {
 
   const createJobFromQuote = async (lead: LeadRow, quoteId: string) => {
     const jobDraft = jobDraftByLead[lead.id] ?? defaultJobDraft;
+    const busyIds = busyEmployeeIdsByLead[lead.id] ?? [];
+
+    if (jobDraft.employeeId && busyIds.includes(jobDraft.employeeId)) {
+      setErrorText("Selected crew member is currently unavailable at that time. Choose another time or crew member.");
+      return;
+    }
+
     setErrorText(null);
     setStatusText(null);
     setIsCreatingJobForLead(lead.id);
@@ -336,6 +488,33 @@ export function LeadPipelineClient() {
     } finally {
       setIsCreatingJobForLead(null);
     }
+  };
+
+  const loadCrewAvailabilityForLead = async (leadId: string, scheduledStart: string) => {
+    if (!scheduledStart) {
+      setBusyEmployeeIdsByLead((prev) => ({ ...prev, [leadId]: [] }));
+      return;
+    }
+
+    setIsCheckingAvailabilityForLead(leadId);
+
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("job_assignments")
+      .select("employee_id, jobs!inner(scheduled_start, status)")
+      .eq("jobs.scheduled_start", scheduledStart)
+      .in("jobs.status", ["scheduled", "in_progress"]);
+
+    if (error) {
+      setErrorText(error.message);
+      setBusyEmployeeIdsByLead((prev) => ({ ...prev, [leadId]: [] }));
+      setIsCheckingAvailabilityForLead(null);
+      return;
+    }
+
+    const busyIds = Array.from(new Set(((data as { employee_id: string }[] | null) ?? []).map((row) => row.employee_id)));
+    setBusyEmployeeIdsByLead((prev) => ({ ...prev, [leadId]: busyIds }));
+    setIsCheckingAvailabilityForLead(null);
   };
 
   return (
@@ -368,6 +547,13 @@ export function LeadPipelineClient() {
                 const quoteDraft = quoteDraftByLead[lead.id] ?? defaultQuoteDraft;
                 const jobDraft = jobDraftByLead[lead.id] ?? defaultJobDraft;
                 const canCreateJob = latestQuote?.status === "accepted";
+                const draftSubtotal = Number.parseFloat(quoteDraft.quantity || "0") * Number.parseFloat(quoteDraft.unitPrice || "0");
+                const matchingTemplates = quoteTemplates.filter((template) => template.service_type === lead.service_type);
+                const fallbackTemplates = quoteTemplates.filter((template) => template.service_type !== lead.service_type);
+                const hasAnyTemplates = quoteTemplates.length > 0;
+                const isSelectedEmployeeUnavailable =
+                  Boolean(jobDraft.employeeId)
+                  && (busyEmployeeIdsByLead[lead.id] ?? []).includes(jobDraft.employeeId);
 
                 return (
                   <div key={lead.id} className="rounded-md border border-slate-200 bg-white p-3">
@@ -396,6 +582,20 @@ export function LeadPipelineClient() {
                     ) : null}
 
                     <div className="mt-3 grid gap-2">
+                      <select
+                        className="rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800 outline-none disabled:opacity-50"
+                        value=""
+                        disabled={isSendingMessage === lead.id}
+                        onChange={(e) => void sendQuickResponse(lead.id, e.target.value)}
+                      >
+                        <option value="" disabled>
+                          {isSendingMessage === lead.id ? "Sending..." : "Quick Response"}
+                        </option>
+                        <option value="awaiting_scope">Awaiting Scope</option>
+                        <option value="quote_sent">Quote Sent</option>
+                        <option value="follow_up">Follow-up</option>
+                      </select>
+
                       <select
                         className="rounded-md border border-slate-300 px-2 py-1 text-xs"
                         value={lead.status}
@@ -436,6 +636,8 @@ export function LeadPipelineClient() {
                           className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800"
                           onClick={() => {
                             setActiveJobLeadId((prev) => (prev === lead.id ? null : lead.id));
+                            const defaultPreset = dispatchPresetByLead[lead.id] ?? defaultDispatchPreset;
+                            const defaultScheduledStart = buildScheduledStartFromPreset(defaultPreset);
                             setJobDraftByLead((prev) => ({
                               ...prev,
                               [lead.id]:
@@ -443,8 +645,14 @@ export function LeadPipelineClient() {
                                 {
                                   ...defaultJobDraft,
                                   title: `${lead.company_name || lead.name} ${lead.service_type ? `- ${lead.service_type}` : "- Cleaning Job"}`,
+                                  scheduledStart: defaultScheduledStart,
                                 },
                             }));
+                            setDispatchPresetByLead((prev) => ({
+                              ...prev,
+                              [lead.id]: prev[lead.id] ?? defaultDispatchPreset,
+                            }));
+                            void loadCrewAvailabilityForLead(lead.id, defaultScheduledStart);
                           }}
                         >
                           {activeJobLeadId === lead.id ? "Hide Job Setup" : "Create Job from Quote"}
@@ -454,6 +662,45 @@ export function LeadPipelineClient() {
 
                     {activeQuoteLeadId === lead.id ? (
                       <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                        <div>
+                          <p className="mb-1 text-[11px] font-medium text-slate-600">
+                            Template Suggestions for {humanizeServiceType(lead.service_type)}
+                          </p>
+                          <select
+                            className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            defaultValue=""
+                            onChange={(event) => applyQuoteTemplate(lead.id, event.target.value)}
+                            disabled={!hasAnyTemplates}
+                          >
+                            <option value="" disabled>
+                              {hasAnyTemplates ? "Apply quick template" : "No templates available"}
+                            </option>
+                            {matchingTemplates.length > 0 ? (
+                              <optgroup label="Best Match">
+                                {matchingTemplates.map((template) => (
+                                  <option key={template.id} value={template.id}>
+                                    {template.name} ({humanizePricingModel(template.pricing_model)})
+                                  </option>
+                                ))}
+                              </optgroup>
+                            ) : null}
+                            {fallbackTemplates.length > 0 ? (
+                              <optgroup label="Other Templates">
+                                {fallbackTemplates.map((template) => (
+                                  <option key={template.id} value={template.id}>
+                                    {template.name} - {humanizeServiceType(template.service_type)} ({humanizePricingModel(template.pricing_model)})
+                                  </option>
+                                ))}
+                              </optgroup>
+                            ) : null}
+                          </select>
+                          {hasAnyTemplates && matchingTemplates.length === 0 ? (
+                            <p className="mt-1 text-[11px] text-amber-700">
+                              No exact service-type template yet. You can apply a general template, then adjust values.
+                            </p>
+                          ) : null}
+                        </div>
+
                         <input
                           className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
                           placeholder="Site address"
@@ -563,6 +810,9 @@ export function LeadPipelineClient() {
                             }))
                           }
                         />
+                        <p className="text-[11px] text-slate-500">
+                          Estimated subtotal: ${Number.isFinite(draftSubtotal) ? draftSubtotal.toFixed(2) : "0.00"}
+                        </p>
                         <button
                           type="button"
                           className="w-full rounded-md bg-[#0A1628] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1E293B] disabled:opacity-70"
@@ -576,6 +826,81 @@ export function LeadPipelineClient() {
 
                     {activeJobLeadId === lead.id && latestQuote ? (
                       <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
+                        {(() => {
+                          const busyIds = busyEmployeeIdsByLead[lead.id] ?? [];
+                          const availableCount = employees.length - busyIds.length;
+
+                          return (
+                            <p className="text-[11px] text-slate-500">
+                              {isCheckingAvailabilityForLead === lead.id
+                                ? "Checking crew availability..."
+                                : `${availableCount} of ${employees.length} crew members available at selected time.`}
+                            </p>
+                          );
+                        })()}
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <select
+                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            value={(dispatchPresetByLead[lead.id] ?? defaultDispatchPreset).day}
+                            onChange={(event) => {
+                              const nextPreset: DispatchPreset = {
+                                ...(dispatchPresetByLead[lead.id] ?? defaultDispatchPreset),
+                                day: event.target.value as DispatchPreset["day"],
+                              };
+
+                              setDispatchPresetByLead((prev) => ({ ...prev, [lead.id]: nextPreset }));
+
+                              if (nextPreset.day !== "custom" && nextPreset.window !== "custom") {
+                                const nextScheduledStart = buildScheduledStartFromPreset(nextPreset);
+                                setJobDraftByLead((prev) => ({
+                                  ...prev,
+                                  [lead.id]: {
+                                    ...(prev[lead.id] ?? defaultJobDraft),
+                                    scheduledStart: nextScheduledStart,
+                                  },
+                                }));
+                                void loadCrewAvailabilityForLead(lead.id, nextScheduledStart);
+                              }
+                            }}
+                          >
+                            <option value="today">Today</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="next_business_day">Next Business Day</option>
+                            <option value="custom">Custom Day</option>
+                          </select>
+
+                          <select
+                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            value={(dispatchPresetByLead[lead.id] ?? defaultDispatchPreset).window}
+                            onChange={(event) => {
+                              const nextPreset: DispatchPreset = {
+                                ...(dispatchPresetByLead[lead.id] ?? defaultDispatchPreset),
+                                window: event.target.value as DispatchPreset["window"],
+                              };
+
+                              setDispatchPresetByLead((prev) => ({ ...prev, [lead.id]: nextPreset }));
+
+                              if (nextPreset.day !== "custom" && nextPreset.window !== "custom") {
+                                const nextScheduledStart = buildScheduledStartFromPreset(nextPreset);
+                                setJobDraftByLead((prev) => ({
+                                  ...prev,
+                                  [lead.id]: {
+                                    ...(prev[lead.id] ?? defaultJobDraft),
+                                    scheduledStart: nextScheduledStart,
+                                  },
+                                }));
+                                void loadCrewAvailabilityForLead(lead.id, nextScheduledStart);
+                              }
+                            }}
+                          >
+                            <option value="morning">Morning</option>
+                            <option value="midday">Midday</option>
+                            <option value="afternoon">Afternoon</option>
+                            <option value="custom">Custom Time</option>
+                          </select>
+                        </div>
+
                         <input
                           className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
                           placeholder="Job title"
@@ -591,12 +916,14 @@ export function LeadPipelineClient() {
                           type="datetime-local"
                           className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
                           value={jobDraft.scheduledStart}
-                          onChange={(event) =>
-                            setJobDraftByLead((prev) => ({
-                              ...prev,
-                              [lead.id]: { ...jobDraft, scheduledStart: event.target.value },
-                            }))
-                          }
+                            onChange={(event) => {
+                              const nextScheduledStart = event.target.value;
+                              setJobDraftByLead((prev) => ({
+                                ...prev,
+                                [lead.id]: { ...jobDraft, scheduledStart: nextScheduledStart },
+                              }));
+                              void loadCrewAvailabilityForLead(lead.id, nextScheduledStart);
+                            }}
                         />
                         <select
                           className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
@@ -610,18 +937,28 @@ export function LeadPipelineClient() {
                         >
                           <option value="">Assign later</option>
                           {employees.map((employee) => (
-                            <option key={employee.id} value={employee.id}>
-                              {employee.full_name || employee.id.slice(0, 8)}
+                              <option
+                                key={employee.id}
+                                value={employee.id}
+                                disabled={(busyEmployeeIdsByLead[lead.id] ?? []).includes(employee.id) && employee.id !== jobDraft.employeeId}
+                              >
+                                {employee.full_name || employee.id.slice(0, 8)}
+                                {(busyEmployeeIdsByLead[lead.id] ?? []).includes(employee.id) ? " (unavailable)" : ""}
                             </option>
                           ))}
                         </select>
+                        {isSelectedEmployeeUnavailable ? (
+                          <p className="text-[11px] text-rose-600">
+                            Selected crew member is unavailable at this time.
+                          </p>
+                        ) : null}
                         <button
                           type="button"
                           className="w-full rounded-md bg-emerald-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-70"
-                          disabled={isCreatingJobForLead === lead.id}
+                          disabled={isCreatingJobForLead === lead.id || isSelectedEmployeeUnavailable}
                           onClick={() => void createJobFromQuote(lead, latestQuote.id)}
                         >
-                          {isCreatingJobForLead === lead.id ? "Creating..." : "Create Job"}
+                          {isCreatingJobForLead === lead.id ? "Scheduling..." : "Schedule & Notify Crew"}
                         </button>
                       </div>
                     ) : null}

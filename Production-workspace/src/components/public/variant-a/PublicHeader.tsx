@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { trackConversionEvent } from "@/lib/analytics";
 import { COMPANY_PHONE, COMPANY_PHONE_E164, COMPANY_SHORT_NAME } from "@/lib/company";
 import { QuoteCTA } from "./QuoteCTA";
+import { CTAButton } from "./CTAButton";
 
 const serviceLinks = [
   { href: "/#service-post-construction", label: "Post-Construction", desc: "Rough and final cleans for turnovers." },
@@ -51,8 +51,12 @@ export function PublicHeader() {
 
   useEffect(() => {
     document.body.style.overflow = isMobileMenuOpen ? "hidden" : "";
+
+    document.body.dataset.mobileMenuOpen = isMobileMenuOpen ? "true" : "false";
+
     return () => {
       document.body.style.overflow = "";
+      delete document.body.dataset.mobileMenuOpen;
     };
   }, [isMobileMenuOpen]);
 
@@ -84,18 +88,29 @@ export function PublicHeader() {
     ? "border-[#183556] bg-[#0f2746] shadow-[0_22px_70px_rgba(2,6,23,0.42)] md:backdrop-blur-md"
     : "border-transparent bg-[#07101d]/22 shadow-[0_18px_60px_rgba(2,6,23,0.16)] md:backdrop-blur-xl";
 
-  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+  /* MOBILE-ELEVATION: P-7 — collapse any expanded <details> elements in mobile nav on close.
+     Prevents stale expanded state when the menu re-opens after navigating. */
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+    document
+      .querySelectorAll("#mobile-nav-panel details[open]")
+      .forEach((el) => el.removeAttribute("open"));
+  };
 
   return (
-    <header ref={headerRef} className="fixed inset-x-0 top-0 z-50 text-white">
+    <header
+      ref={headerRef}
+      className="fixed inset-x-0 top-0 z-[var(--z-header)] text-white"
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
+    >
       {/* Floating Header Shell */}
-      <div className={`transition-all duration-300 ${forceSolidHeader || isScrolled ? "pt-2" : "pt-4 md:pt-6"}`}>
+      <div className={`transition-all duration-300 ${forceSolidHeader || isScrolled ? "pt-2" : "pt-3 md:pt-6"}`}>
         <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className={`flex h-16 items-center justify-between gap-4 rounded-xl border px-5 md:h-[4.5rem] md:px-6 transition duration-300 ${navShellClass}`}>
+          <div className={`flex h-14 items-center justify-between gap-4 rounded-xl border px-4 md:h-[4.5rem] md:px-6 transition duration-300 ${navShellClass}`}>
             
             {/* Logo */}
             <Link href="/" className="min-w-0">
-              <p className="font-serif text-2xl tracking-tight text-white md:text-3xl">{COMPANY_SHORT_NAME}</p>
+              <p className="font-serif text-xl font-semibold tracking-tight text-white md:text-3xl md:font-normal">{COMPANY_SHORT_NAME}</p>
               <p className="hidden text-[9px] uppercase tracking-[0.24em] text-slate-300 md:block">
                 Construction-Ready Cleaning
               </p>
@@ -185,23 +200,22 @@ export function PublicHeader() {
 
             {/* Desktop CTAs */}
             <div className="hidden items-center gap-3 md:flex">
-              <a
+              <CTAButton
+                ctaId="header_nav_call"
+                actionType="call"
                 href={`tel:${COMPANY_PHONE_E164}`}
                 className="hidden min-h-[40px] items-center rounded-lg border border-white/15 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:border-white/35 hover:bg-white/8 lg:inline-flex"
-                onClick={() => {
-                  void trackConversionEvent({ eventName: "call_click", source: "header_nav" });
-                }}
               >
                 Call
-              </a>
-              <QuoteCTA className="min-h-[40px] rounded-lg bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100">
+              </CTAButton>
+              <QuoteCTA ctaId="header_nav_quote" className="min-h-[40px] rounded-lg bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100">
                 Free Quote
               </QuoteCTA>
             </div>
 
             {/* Mobile Nav Toggle */}
             <div className="flex items-center gap-2 md:hidden">
-              <QuoteCTA className="min-h-[44px] rounded-lg bg-white px-4 py-2.5 text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm active:bg-slate-100">
+              <QuoteCTA ctaId="header_mobile_toggle_quote" className="min-h-[44px] rounded-lg bg-white px-3 py-2 text-[10px] font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm active:bg-slate-100">
                 Free Quote
               </QuoteCTA>
               <button
@@ -224,20 +238,23 @@ export function PublicHeader() {
         id="mobile-nav-panel"
         role="region"
         aria-label="Mobile navigation"
+        aria-hidden={!isMobileMenuOpen}
         className={`md:hidden ${isMobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} transition duration-300`}
       >
-        <div className={`absolute inset-x-4 transition-all duration-300 ${isScrolled ? "top-[4.8rem]" : "top-[5.8rem]"} rounded-2xl border border-white/10 bg-[#0A1628] p-5 shadow-2xl`}>
+        <div
+          className="absolute inset-x-4 top-[4.5rem] max-h-[calc(100svh-6rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0A1628] p-5 shadow-2xl"
+          style={{ paddingBottom: "env(safe-area-inset-bottom, 12px)" }}
+        >
           <div className="space-y-3">
-            <a
+            <CTAButton
+              ctaId="mobile_menu_call"
+              actionType="call"
               href={`tel:${COMPANY_PHONE_E164}`}
-              className="block rounded-2xl bg-white/6 px-4 py-3 text-sm uppercase tracking-[0.18em] text-white"
-              onClick={() => {
-                closeMobileMenu();
-                void trackConversionEvent({ eventName: "call_click", source: "header_mobile" });
-              }}
+              onClick={closeMobileMenu}
+              className="w-full rounded-2xl bg-white/6 px-4 py-3 text-sm uppercase tracking-[0.18em] text-white"
             >
               Call {COMPANY_PHONE}
-            </a>
+            </CTAButton>
 
             <details className="rounded-2xl border border-white/10 bg-white/4">
               <summary className="cursor-pointer list-none px-4 py-3 text-sm uppercase tracking-[0.18em] text-white">

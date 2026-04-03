@@ -133,10 +133,10 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
     <article
       ref={ref}
       id={service.anchor}
-      className={`group flex min-h-[60vh] flex-col overflow-hidden ${service.reverse ? "md:flex-row-reverse" : "md:flex-row"}`}
+      className={`group flex flex-col overflow-hidden md:min-h-[60vh] ${service.reverse ? "md:flex-row-reverse" : "md:flex-row"}`}
     >
       <div
-        className={`relative h-[40vh] w-full overflow-hidden transition duration-700 md:h-auto md:w-[56%] lg:w-[58%] ${
+        className={`relative h-40 w-full overflow-hidden transition duration-700 md:h-auto md:w-[56%] lg:w-[58%] ${
           isVisible ? "translate-x-0 opacity-100" : service.reverse ? "translate-x-10 opacity-0" : "-translate-x-10 opacity-0"
         }`}
       >
@@ -149,7 +149,8 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
           className="object-cover transition duration-700 group-hover:scale-[1.03]"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#081120]/30 via-transparent to-transparent" />
-        <div className="pointer-events-none absolute inset-x-8 top-8 flex items-start justify-between">
+        {/* MOBILE-HARDENING: Hide top image overlay badges on mobile — redundant with content area. */}
+        <div className="pointer-events-none absolute inset-x-4 top-4 hidden items-start justify-between md:flex md:inset-x-8 md:top-8">
           <ul className="flex gap-2" aria-label={`${service.titleLines.join(" ")} badges`}>
             <li className="info-chip-dark">{service.packageLabel}</li>
           </ul>
@@ -157,7 +158,8 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
             {service.index}
           </span>
         </div>
-        <div className="pointer-events-none absolute inset-x-8 bottom-8">
+        {/* MOBILE-HARDENING: Hide bottom image overlay on mobile — response promise is in content area on desktop panel. */}
+        <div className="pointer-events-none absolute inset-x-4 bottom-4 hidden md:block md:inset-x-8 md:bottom-8">
           <div className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-[#081120]/30 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-100 backdrop-blur-md">
             <span className="h-2 w-2 rounded-full bg-[#C9A94E]" aria-hidden="true" />
             {service.responsePromise}
@@ -169,47 +171,66 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
           isVisible ? "translate-x-0 opacity-100" : service.reverse ? "-translate-x-10 opacity-0" : "translate-x-10 opacity-0"
         }`}
       >
-        <div className="relative max-w-xl p-10 md:p-12 lg:p-14 xl:p-20">
+        {/* MOBILE-HARDENING: p-5→p-4 for tighter mobile card content. md:p-12 preserved. */}
+        <div className="relative max-w-xl p-4 md:p-12 lg:p-14 xl:p-20">
           <p
-            className={`mb-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#2563EB] transition duration-700 ${
+            className={`mb-1 hidden text-[11px] font-semibold uppercase tracking-[0.2em] text-[#2563EB] transition duration-700 md:block md:mb-2 ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
             }`}
           >
             {service.packageLabel}
           </p>
           <div
-            className={`mb-5 flex items-center gap-4 transition duration-700 ${
+            className={`mb-3 flex items-center gap-3 transition duration-700 md:mb-5 md:gap-4 ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
             }`}
             style={{ transitionDelay: "40ms" }}
           >
-            <span className="icon-tile">
+            <span className="icon-tile hidden md:inline-flex">
               <ServiceIcon icon={service.icon} />
             </span>
-            <span className="signal-line">{service.proofLine}</span>
+            <span className="signal-line hidden md:inline-flex">{service.proofLine}</span>
           </div>
+          {/* MOBILE-HARDENING: mb-3→mb-2 for tighter title spacing on mobile. md:mb-6 preserved. */}
           <h2
-            className={`mb-6 font-serif text-4xl uppercase leading-[1.05] tracking-tight text-[#0A1628] transition duration-700 md:text-5xl lg:text-5xl ${
+            className={`mb-2 font-serif text-2xl uppercase leading-[1.05] tracking-tight text-[#0A1628] transition duration-700 md:mb-6 md:text-5xl lg:text-5xl ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
             }`}
             style={{ transitionDelay: "80ms" }}
           >
             {service.titleLines.map((line) => (
-              <span key={line} className="block">
-                {line}
+              <span key={line} className="md:block">
+                {line}{" "}
               </span>
             ))}
           </h2>
+          {/* MOBILE-HARDENING: mb-4→mb-3 for tighter description spacing. md:mb-8 preserved. */}
+          {/* MOBILE-ELEVATION: P-9 — font-normal on mobile for legibility, font-light on md+ */}
           <p
-            className={`mb-8 text-lg font-light leading-relaxed text-slate-600 transition duration-700 ${
+            className={`mb-3 text-sm font-normal leading-relaxed text-slate-600 transition duration-700 md:mb-8 md:font-light md:text-lg ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
             }`}
             style={{ transitionDelay: "160ms" }}
           >
             {service.description}
           </p>
+
+          {/* MOBILE-ELEVATION: H-6 — response promise visible on mobile.
+              This is a key trust signal that was completely hidden from ~70%+ of users (mobile traffic).
+              Shown below description, above bullets. Hidden on md+ where image overlay version is visible. */}
+          <p
+            className={`mb-3 flex items-center gap-2 text-xs text-[#C9A94E] transition duration-700 md:hidden ${
+              isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+            }`}
+            style={{ transitionDelay: "200ms" }}
+          >
+            <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#C9A94E]" aria-hidden="true" />
+            {service.responsePromise}
+          </p>
+
+          {/* MOBILE-HARDENING: mb-5→mb-4, space-y-2→space-y-1.5 for tighter bullet list. md values preserved. */}
           <ul
-            className={`mb-8 space-y-3 text-slate-700 transition duration-700 ${
+            className={`mb-4 space-y-1.5 text-slate-700 transition duration-700 md:mb-8 md:space-y-3 ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
             }`}
             style={{ transitionDelay: "240ms" }}
@@ -217,13 +238,13 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
             {service.bullets.map((bullet) => (
               <li key={bullet} className="flex items-center gap-3">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />
-                <span>{bullet}</span>
+                <span className="text-xs md:text-base">{bullet}</span>
               </li>
             ))}
           </ul>
 
           <div
-            className={`surface-panel-soft mb-8 overflow-hidden px-4 py-4 transition duration-700 ${
+            className={`hidden surface-panel-soft mb-8 overflow-hidden px-4 py-4 transition duration-700 md:block ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
             }`}
             style={{ transitionDelay: "320ms" }}
@@ -241,6 +262,7 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
           </div>
 
           <QuoteCTA
+            ctaId={`service_${service.anchor}_quote`}
             className={`cta-outline-dark gap-3 ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
             }`}
@@ -257,7 +279,11 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
 
 export function ServiceSpreadSection() {
   return (
-    <section id="services" aria-label="Services" className="scroll-mt-32 border-b border-slate-200 bg-white md:scroll-mt-36">
+    /* MOBILE-ELEVATION: P-6 — removed border-b. This section transitions to OfferAndIndustry
+       which has a different background (gradient from-slate-50). The color change itself
+       serves as the visual divider; border-b is redundant and adds a visible line that
+       fights with the background transition. */
+    <section id="services" aria-label="Services" className="scroll-mt-32 bg-white md:scroll-mt-36">
       {services.map((service) => (
         <ServiceSpreadItem key={service.anchor} service={service} />
       ))}

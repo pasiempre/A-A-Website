@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import { AdminSidebarNav } from "@/components/admin/AdminSidebarNav";
+import { ConfigurationClient } from "@/components/admin/ConfigurationClient";
 import { DispatchModule } from "@/components/admin/DispatchModule";
-import { FirstRunWizardClient } from "@/components/admin/FirstRunWizardClient";
 import { HiringInboxClient } from "@/components/admin/HiringInboxClient";
 import { InventoryManagementClient } from "@/components/admin/InventoryManagementClient";
 import { LeadPipelineClient } from "@/components/admin/LeadPipelineClient";
@@ -44,8 +44,8 @@ const MODULE_META: Record<ModuleId, ModuleMeta> = {
   },
   wizard: {
     id: "wizard",
-    title: "First-Run Wizard",
-    subtitle: "Guided setup for first client, sample job, and assignment.",
+    title: "Configuration",
+    subtitle: "Manage onboarding setup and quote templates.",
   },
   leads: {
     id: "leads",
@@ -271,7 +271,7 @@ function ModuleContent({ moduleId, onModuleSelect }: { moduleId: ModuleId; onMod
     case "overview":
       return <OverviewDashboard onModuleSelect={onModuleSelect} />;
     case "wizard":
-      return <FirstRunWizardClient />;
+      return <ConfigurationClient />;
     case "leads":
       return <LeadPipelineClient />;
     case "tickets":

@@ -62,27 +62,11 @@ module.exports = {
         "dots-sm": "32px 32px",
         "dots-lg": "48px 48px",
       },
-      animation: {
-        "fade-up": "heroFadeUp 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards",
-        "ken-burns": "heroKenBurns 15s ease-out forwards",
-        "bounce-subtle": "heroBounceSubtle 2s ease-in-out infinite",
-      },
-      keyframes: {
-        heroFadeUp: {
-          from: { opacity: "0", transform: "translateY(30px)" },
-          to: { opacity: "1", transform: "translateY(0)" },
-        },
-        heroKenBurns: {
-          from: { transform: "scale(1)" },
-          to: { transform: "scale(1.05)" },
-        },
-        heroBounceSubtle: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(6px)" },
-        },
-      },
+      /* MOBILE-ELEVATION: DC-2 — Removed animation + keyframes sections.
+         heroFadeUp, heroKenBurns, heroBounceSubtle are defined in globals.css
+         and consumed via inline style={{ animation: "..." }}.
+         The Tailwind class versions (animate-fade-up, etc.) were never used. */
     },
   },
   plugins: [],
 }
-

@@ -59,8 +59,8 @@ export function CareersSection() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 py-24 md:py-32 lg:py-36">
-        <div className="flex flex-col gap-12 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 py-12 md:py-32 lg:py-36">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-16">
           <ScrollReveal as="div" className="max-w-xl" threshold={0.2}>
             <div className="flex items-center gap-3">
               <span className="h-px w-8 bg-[#C9A94E]" aria-hidden="true" />
@@ -71,20 +71,22 @@ export function CareersSection() {
 
             <h2
               id="careers-heading"
-              className="mt-5 font-serif text-4xl tracking-tight text-white md:text-5xl lg:text-[3.25rem]"
+              className="mt-4 font-serif text-3xl tracking-tight text-white md:mt-5 md:text-5xl lg:text-[3.25rem]"
             >
               We&apos;re Building a Team
             </h2>
 
-            <p className="mt-6 text-lg font-light leading-relaxed text-slate-300">
+            {/* MOBILE-ELEVATION: P-9 — font-normal on mobile for legibility, font-light on md+ */}
+            <p className="mt-4 text-sm font-normal leading-relaxed text-slate-300 md:mt-6 md:font-light md:text-lg">
               Professional cleaning careers for people who care about finish
               quality, reliability, and attention to detail. If you take pride in
               your work, we want to hear from you.
             </p>
 
+            {/* MOBILE-HARDENING: mt-8→mt-6 for tighter stats block. md preserved via transitionDelay. */}
             <ScrollReveal
               as="div"
-              className="mt-8 flex gap-8"
+              className="mt-6 flex gap-8 md:mt-8"
               threshold={0.2}
               style={{ transitionDelay: "200ms" }}
               hiddenClassName="translate-y-6 opacity-0"
@@ -105,15 +107,16 @@ export function CareersSection() {
               ))}
             </ScrollReveal>
 
+            {/* MOBILE-HARDENING: mt-10→mt-8 for tighter CTA spacing. md preserved via transitionDelay. */}
             <ScrollReveal
               as="div"
-              className="mt-10"
+              className="mt-8 md:mt-10"
               threshold={0.2}
               style={{ transitionDelay: "350ms" }}
             >
               <Link
                 href="/careers"
-                className="group inline-flex items-center gap-3 rounded-lg bg-white px-7 py-4 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-lg shadow-white/10 transition-all duration-300 hover:bg-slate-100 hover:shadow-xl"
+                className="group inline-flex items-center gap-3 rounded-lg bg-white px-6 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-lg shadow-white/10 transition-all duration-300 hover:bg-slate-100 hover:shadow-xl md:px-7 md:py-4"
               >
                 See Open Positions
                 <svg
@@ -132,12 +135,12 @@ export function CareersSection() {
             </ScrollReveal>
           </ScrollReveal>
 
-          <div className="flex flex-col gap-4 lg:w-[380px]">
+          <div className="flex flex-col gap-3 lg:w-[380px] lg:gap-4">
             {PERKS.map((perk, i) => (
               <ScrollReveal
                 key={perk.label}
                 as="div"
-                className="group flex items-center gap-5 rounded-2xl border border-white/10 bg-white/[0.06] px-6 py-5 backdrop-blur-sm transition-all duration-500 hover:border-white/20 hover:bg-white/[0.1]"
+                className="group flex items-center gap-5 rounded-2xl border border-white/10 bg-white/[0.06] px-5 py-4 backdrop-blur-sm transition-all duration-500 hover:border-white/20 hover:bg-white/[0.1] md:px-6 md:py-5"
                 style={{ transitionDelay: `${300 + i * 120}ms` }}
                 threshold={0.2}
                 hiddenClassName="translate-x-8 opacity-0"

@@ -78,15 +78,22 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${fieldPrefix}-title`}
-        className={`absolute right-0 top-0 h-full w-full max-w-md bg-white p-8 transition-transform duration-300 ${
+        /* MOBILE-HARDENING: Safe-area handling and refined mobile padding */
+        className={`absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-white px-6 pb-10 pt-14 transition-transform duration-300 md:p-8 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
+        style={{
+          paddingTop: "calc(3.5rem + env(safe-area-inset-top))",
+          paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom))",
+          paddingLeft: "calc(1.5rem + env(safe-area-inset-left))",
+          paddingRight: "calc(1.5rem + env(safe-area-inset-right))",
+        }}
       >
         <div className="mb-8 flex items-center justify-between">
-          <h3 id={`${fieldPrefix}-title`} className="font-serif text-3xl text-[#0A1628]">
+          <h3 id={`${fieldPrefix}-title`} className="font-serif text-2xl text-[#0A1628] md:text-3xl">
             Detailed Scope Request
           </h3>
-          <button ref={closeButtonRef} type="button" aria-label="Close quote request panel" onClick={onClose} className="rounded p-2 text-slate-500 hover:bg-slate-100">
+          <button ref={closeButtonRef} type="button" aria-label="Close quote request panel" onClick={onClose} className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100">
             ✕
           </button>
         </div>
@@ -111,7 +118,8 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
               id={`${fieldPrefix}-name`}
               name="name"
               autoComplete="name"
-              className="w-full border-b border-slate-300 px-1 py-2 text-sm"
+              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+              className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               required
               value={fields.name}
               onChange={(event) => setters.setName(event.target.value)}
@@ -124,7 +132,8 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
             <input
               id={`${fieldPrefix}-company`}
               name="companyName"
-              className="w-full border-b border-slate-300 px-1 py-2 text-sm"
+              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+              className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               value={fields.companyName}
               onChange={(event) => setters.setCompanyName(event.target.value)}
             />
@@ -140,7 +149,8 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
               autoComplete="tel"
               inputMode="tel"
               pattern="[0-9()\-\s]+"
-              className="w-full border-b border-slate-300 px-1 py-2 text-sm"
+              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+              className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               required
               value={fields.phone}
               onChange={(event) => setters.setPhone(event.target.value)}
@@ -154,7 +164,8 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
               id={`${fieldPrefix}-email`}
               name="email"
               autoComplete="email"
-              className="w-full border-b border-slate-300 px-1 py-2 text-sm"
+              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+              className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               type="email"
               value={fields.email}
               onChange={(event) => setters.setEmail(event.target.value)}
@@ -167,7 +178,8 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
             <select
               id={`${fieldPrefix}-service`}
               name="serviceType"
-              className="w-full border-b border-slate-300 px-1 py-2 text-sm text-slate-600"
+              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+              className="w-full border-b border-slate-300 px-1 py-4 text-sm text-slate-600"
               value={fields.serviceType}
               onChange={(event) => setters.setServiceType(event.target.value)}
             >
@@ -186,7 +198,8 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
             <select
               id={`${fieldPrefix}-timeline`}
               name="timeline"
-              className="w-full border-b border-slate-300 px-1 py-2 text-sm text-slate-600"
+              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+              className="w-full border-b border-slate-300 px-1 py-4 text-sm text-slate-600"
               value={fields.timeline}
               onChange={(event) => setters.setTimeline(event.target.value)}
             >
@@ -205,7 +218,9 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
             <textarea
               id={`${fieldPrefix}-description`}
               name="description"
-              className="w-full border-b border-slate-300 px-1 py-2 text-sm"
+              enterKeyHint="done"
+              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+              className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               rows={3}
               value={fields.description}
               onChange={(event) => setters.setDescription(event.target.value)}
@@ -224,7 +239,7 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
             type="submit"
             disabled={isSubmitting}
             aria-describedby={feedback ? `${fieldPrefix}-feedback` : undefined}
-            className="w-full rounded-sm bg-[#0A1628] py-3 text-xs font-medium uppercase tracking-[0.18em] text-white hover:bg-[#2563EB] disabled:opacity-70"
+            className="w-full rounded-sm bg-[#0A1628] py-3 text-xs font-medium uppercase tracking-[0.18em] text-white hover:bg-[#2563EB] disabled:opacity-70 min-h-[48px]"
           >
             {isSubmitting ? "Submitting..." : "Send My Quote Request"}
           </button>

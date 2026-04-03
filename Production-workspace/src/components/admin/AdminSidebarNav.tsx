@@ -12,36 +12,33 @@ interface NavItem {
   badge?: number;
 }
 
+/**
+ * F-05: Simplified Sidebar Grouping
+ * Reduces cognitive load by grouping 11 modules into 3 logical tiers.
+ */
 const NAV_GROUPS: NavGroup[] = [
   {
-    label: "Overview",
+    label: "Daily Work",
     items: [
-      { id: "overview", label: "Dashboard", icon: "◻" },
-      { id: "wizard", label: "Setup Wizard", icon: "⚡" },
-    ],
-  },
-  {
-    label: "Operations",
-    items: [
-      { id: "leads", label: "Lead Pipeline", icon: "🎯" },
-      { id: "tickets", label: "Job Management", icon: "📋" },
-      { id: "dispatch", label: "Dispatch & Bulk", icon: "🚀" },
-      { id: "operations", label: "QA & Checklists", icon: "✅" },
-      { id: "scheduling", label: "Scheduling", icon: "📅" },
-    ],
-  },
-  {
-    label: "Team",
-    items: [
-      { id: "hiring", label: "Hiring Inbox", icon: "👥" },
-      { id: "notifications", label: "Notifications", icon: "🔔" },
+      { id: "overview", label: "Home", icon: "🏠" },
+      { id: "leads", label: "Leads & Quotes", icon: "📋" },
+      { id: "tickets", label: "Jobs & Dispatch", icon: "🚐" },
+      { id: "operations", label: "Review & Approve", icon: "✅" },
     ],
   },
   {
     label: "Business",
     items: [
+      { id: "insights", label: "Insights", icon: "📈" },
+      { id: "hiring", label: "Hiring", icon: "👥" },
+    ],
+  },
+  {
+    label: "Settings",
+    items: [
+      { id: "notifications", label: "Notifications", icon: "🔔" },
       { id: "inventory", label: "Inventory", icon: "📦" },
-      { id: "insights", label: "Analytics", icon: "📊" },
+      { id: "wizard", label: "Configuration", icon: "⚙️" },
     ],
   },
 ];
@@ -58,7 +55,9 @@ export function AdminSidebarNav({ activeModule, collapsed, onSelect }: AdminSide
       {NAV_GROUPS.map((group) => (
         <div key={group.label} className="mb-4">
           {!collapsed && (
-            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">{group.label}</p>
+            <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+              {group.label}
+            </p>
           )}
           <ul className="space-y-0.5">
             {group.items.map((item) => {

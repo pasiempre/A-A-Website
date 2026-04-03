@@ -3,7 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { COMPANY_CITY, COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
+import { SERVICE_FAQS } from "@/lib/service-faqs";
 import { getSiteUrl } from "@/lib/site";
+import { ServicePageHardening } from "@/components/public/variant-a/ServicePageHardening";
 
 const PAGE_PATH = "/services/move-in-move-out-cleaning";
 const PAGE_TITLE = "Move-In Move-Out Cleaning in Austin";
@@ -54,11 +56,24 @@ export default function MoveInMoveOutCleaningPage() {
     ],
   };
 
+  const faqData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: SERVICE_FAQS.turnover.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([serviceData, breadcrumbData]) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([serviceData, breadcrumbData, faqData]) }}
       />
 
       <main id="main-content" className="bg-[#F1F0EE]">
@@ -136,6 +151,8 @@ export default function MoveInMoveOutCleaningPage() {
             </div>
           </div>
         </section>
+
+        <ServicePageHardening serviceType="turnover" />
 
         <section className="bg-[#0A1628] py-16 text-center md:py-20">
           <div className="mx-auto max-w-3xl px-6">

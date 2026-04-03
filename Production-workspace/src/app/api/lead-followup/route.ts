@@ -67,10 +67,8 @@ const ALERT_TIERS = [
     key: "1h" as const,
     hoursThreshold: 1,
     sentAtColumn: "first_alert_sent_at",
-    urgencyPrefix: "",
     messageTemplate: (lead: LeadRow) => {
-      const company = lead.company_name ?? "Unknown company";
-      return `New lead needs follow-up: ${lead.name} (${company}) — ${lead.phone}${lead.email ? ` / ${lead.email}` : ""}. Submitted ${formatTimeAgo(lead.created_at)}.`;
+      return `⚡ ${lead.name} hasn't been contacted yet. [Call Now] ${lead.phone}`;
     },
     contextType: "lead_followup_1h",
   },
@@ -78,10 +76,8 @@ const ALERT_TIERS = [
     key: "4h" as const,
     hoursThreshold: 4,
     sentAtColumn: "second_alert_sent_at",
-    urgencyPrefix: "URGENT: ",
     messageTemplate: (lead: LeadRow) => {
-      const company = lead.company_name ?? "Unknown company";
-      return `URGENT: Lead ${lead.name} (${company}) has been waiting ${formatTimeAgo(lead.created_at)} — ${lead.phone}. Please call ASAP.`;
+      return `⚠️ ${lead.name} still waiting (4 hrs). Leads contacted in 1hr convert 3x better. ${lead.phone}`;
     },
     contextType: "lead_followup_4h",
   },
@@ -89,10 +85,8 @@ const ALERT_TIERS = [
     key: "24h" as const,
     hoursThreshold: 24,
     sentAtColumn: "third_alert_sent_at",
-    urgencyPrefix: "🚨 CRITICAL: ",
     messageTemplate: (lead: LeadRow) => {
-      const company = lead.company_name ?? "Unknown company";
-      return `🚨 CRITICAL: Lead ${lead.name} (${company}) submitted ${formatTimeAgo(lead.created_at)} and has NOT been contacted. Phone: ${lead.phone}. This lead may be lost.`;
+      return `🔴 ${lead.name} waiting 24 hours. Consider this lead at risk. ${lead.phone}`;
     },
     contextType: "lead_followup_24h",
   },
@@ -115,17 +109,6 @@ function isWithinBusinessHours(): boolean {
     hour >= BUSINESS_HOUR_START &&
     hour < BUSINESS_HOUR_END
   );
-}
-
-function formatTimeAgo(iso: string): string {
-  const diffMs = Date.now() - new Date(iso).getTime();
-  const minutes = Math.floor(diffMs / 60_000);
-
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ${minutes % 60}m ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ${hours % 24}h ago`;
 }
 
 // ============================================================
@@ -310,7 +293,7 @@ export async function POST(request: Request) {
       .select("id, phone, notification_preferences")
       .eq("role", "admin")
       .order("created_at", { ascending: true })
-      .limit(5);
+      .limit(1);
 
     const adminProfile = adminProfiles?.[0] ?? null;
     const adminAlertPhone =
@@ -489,6 +472,7 @@ export async function POST(request: Request) {
         tierStats["24h"].queued,
       warnings: errors.length > 0 ? errors : undefined,
       telemetry,
+      // TODO(F-03): 48h auto-status update to "At Risk" requires schema and workflow support.
     });
   } catch (error) {
     const telemetry = {

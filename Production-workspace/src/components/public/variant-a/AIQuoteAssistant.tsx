@@ -192,7 +192,7 @@ export function AIQuoteAssistant() {
         aria-label={isOpen ? "Close quote assistant" : "Open quote assistant"}
         aria-expanded={isOpen}
         aria-controls="ai-quote-assistant-panel"
-        className="fixed bottom-24 right-6 z-50 inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/18 bg-[#1D4ED8] text-white shadow-[0_18px_50px_rgba(29,78,216,0.35)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#1948ca] md:bottom-8"
+        className="floating-widget fixed bottom-[7.5rem] right-5 z-[40] inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/18 bg-[#1D4ED8] text-white shadow-[0_18px_50px_rgba(29,78,216,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1948ca] md:bottom-8 md:right-6"
       >
         <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border border-white/40 bg-[#C9A94E]" />
         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6">
@@ -207,7 +207,7 @@ export function AIQuoteAssistant() {
           role="dialog"
           aria-labelledby={dialogLabelId}
           aria-modal="true"
-          className="fixed bottom-24 right-4 z-50 flex h-[28rem] w-[calc(100vw-2rem)] max-w-[22rem] flex-col overflow-hidden rounded border border-slate-300 bg-white shadow-xl md:bottom-20 md:right-6"
+          className="fixed bottom-[7.5rem] right-4 z-[55] flex h-[min(28rem,calc(100svh-13rem))] w-[calc(100vw-2rem)] max-w-[22rem] flex-col overflow-hidden rounded border border-slate-300 bg-white shadow-xl md:bottom-20 md:right-6"
         >
           <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
             <p id={dialogLabelId} className="text-sm font-semibold text-slate-800">Quote Assistant</p>
@@ -259,6 +259,8 @@ export function AIQuoteAssistant() {
               void sendMessage();
             }}
           >
+            {/* MOBILE-ELEVATION: MF-7 — enterKeyHint="send" shows "Send" on mobile keyboard return key.
+                Correct hint for a chat interface (vs "done" for forms, "search" for search). */}
             <textarea
               ref={inputRef}
               rows={2}
@@ -266,6 +268,7 @@ export function AIQuoteAssistant() {
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={handleInputKeyDown}
               placeholder={INPUT_PLACEHOLDER[locale]}
+              enterKeyHint="send"
               className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
             />
             <button

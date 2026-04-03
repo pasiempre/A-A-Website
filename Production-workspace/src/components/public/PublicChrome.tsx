@@ -10,6 +10,7 @@ import { COMPANY_PHONE_E164 } from "@/lib/company";
 import { FooterSection } from "./variant-a/FooterSection";
 import { PublicHeader } from "./variant-a/PublicHeader";
 import { QuoteContext } from "./variant-a/QuoteContext";
+import { CTAButton } from "./variant-a/CTAButton";
 
 const FloatingQuotePanel = dynamic(
   () => import("./variant-a/FloatingQuotePanel").then((module) => module.FloatingQuotePanel),
@@ -30,6 +31,20 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
 
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const mainRef = useRef<HTMLDivElement | null>(null);
+
+  /* MOBILE-ELEVATION: H-8 — sticky bar hidden until user scrolls past hero (~80vh).
+     Prevents CTA stacking on the first viewport where hero CTAs are already visible.
+     Bar slides up via translate-y transition once scroll intent is demonstrated. */
+  const [showStickyBar, setShowStickyBar] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowStickyBar(window.scrollY > window.innerHeight * 0.8);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const mainElement = mainRef.current;
@@ -78,31 +93,35 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
       </ErrorBoundary>
       <ScrollToTopButton />
 
+      {/* MOBILE-ELEVATION: MF-5 — sticky bar hidden when quote panel is open (isQuoteOpen).
+          Prevents tappable bar behind the z-50 FloatingQuotePanel.
+          H-8 — bar hidden until user scrolls past hero (showStickyBar).
+          Combined: bar only visible when scrolled AND panel closed. */}
       <div
-        className="fixed bottom-0 left-0 z-40 flex w-full gap-3 border-t border-slate-200/50 bg-white/95 px-4 pt-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] backdrop-blur-sm md:hidden"
+        className={`floating-widget fixed bottom-0 left-0 z-[30] flex w-full gap-3 border-t border-slate-200/50 bg-white/95 px-4 pt-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-transform duration-300 md:hidden ${
+          showStickyBar && !isQuoteOpen
+            ? "translate-y-0"
+            : "translate-y-full"
+        }`}
         style={{
           paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.75rem)",
         }}
       >
-        <a
+        <CTAButton
+          ctaId={isHomePage ? "mobile_sticky_call" : "mobile_sticky_call_sub"}
+          actionType="call"
           href={`tel:${COMPANY_PHONE_E164}`}
-          onClick={() => {
-            void trackConversionEvent({
-              eventName: "call_click",
-              source: isHomePage ? "mobile_sticky" : "mobile_sticky_sub",
-            });
-          }}
-          className="cta-outline-dark min-h-[48px] flex-1 py-3.5 text-center"
+          className="cta-outline-dark min-h-[48px] flex-1 whitespace-nowrap px-4 py-3.5 text-center tracking-[0.14em]"
         >
           Call
-        </a>
-        <button
-          type="button"
-          onClick={openQuote}
-          className="cta-primary min-h-[48px] flex-1 py-3.5 active:bg-[#1e293b]"
+        </CTAButton>
+        <CTAButton
+          ctaId={isHomePage ? "mobile_sticky_quote" : "mobile_sticky_quote_sub"}
+          actionType="quote"
+          className="cta-primary min-h-[48px] flex-1 whitespace-nowrap px-4 py-3.5 tracking-[0.14em] active:bg-[#1e293b]"
         >
-          Get a Free Quote
-        </button>
+          Free Quote
+        </CTAButton>
       </div>
     </QuoteContext.Provider>
   );

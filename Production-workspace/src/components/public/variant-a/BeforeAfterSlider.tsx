@@ -138,9 +138,10 @@ export function BeforeAfterSlider() {
     <section
       ref={ref}
       aria-labelledby="before-after-heading"
-      className="relative overflow-hidden bg-white py-24 md:py-32"
+      /* MOBILE-HARDENING: Tightened vertical padding for mobile */
+      className="relative overflow-hidden bg-white py-10 md:py-32"
     >
-      <div className="pointer-events-none absolute inset-0 opacity-[0.02]" aria-hidden="true">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.02] hidden md:block" aria-hidden="true">
         <div
           className="h-full w-full"
           style={{
@@ -152,11 +153,11 @@ export function BeforeAfterSlider() {
 
       <div className="relative mx-auto max-w-7xl px-6">
         <div
-          className={`mb-14 transition-all duration-700 ease-out md:mb-16 ${
+          className={`mb-8 transition-all duration-700 ease-out md:mb-16 ${
             isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           }`}
         >
-          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-6">
             <div className="max-w-xl">
               <div className="flex items-center gap-3">
                 <span className="h-px w-8 bg-[#2563EB]" aria-hidden="true" />
@@ -165,23 +166,23 @@ export function BeforeAfterSlider() {
 
               <h2
                 id="before-after-heading"
-                className="mt-4 font-serif text-4xl tracking-tight text-[#0A1628] sm:text-5xl"
+                className="mt-4 font-serif text-3xl tracking-tight text-[#0A1628] sm:text-5xl"
               >
                 See the Difference
               </h2>
-              <p className="mt-4 max-w-lg text-base leading-relaxed text-slate-500">
+              <p className="mt-3 max-w-lg text-base leading-relaxed text-slate-500 md:mt-4">
                 Every project is cleaned to the same standard. Drag to compare
                 the before and after — the results speak for&nbsp;themselves.
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {pairs.map((pair, idx) => (
                 <button
                   key={pair.tag}
                   type="button"
                   onClick={() => switchSlide(idx)}
-                  className={`rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-300 ${
+                  className={`inline-flex items-center rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-300 min-h-[44px] ${
                     active === idx
                       ? "bg-[#0A1628] text-white shadow-md"
                       : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-[#0A1628]"
@@ -202,7 +203,8 @@ export function BeforeAfterSlider() {
         >
           <div
             ref={trackRef}
-            className={`group/slider relative mx-auto aspect-[16/9] max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-2xl shadow-slate-200/50 transition-opacity duration-300 ${
+            /* MOBILE-HARDENING: Higher aspect ratio for better mobile viewing */
+            className={`group/slider relative mx-auto aspect-[4/3] max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 shadow-2xl shadow-slate-200/50 transition-opacity duration-300 md:aspect-[16/9] ${
               isTransitioning ? "opacity-0" : "opacity-100"
             }`}
             style={{
@@ -327,7 +329,7 @@ export function BeforeAfterSlider() {
         </div>
 
         <div
-          className={`mx-auto mt-8 max-w-6xl transition-all duration-700 ${
+          className={`mx-auto mt-5 max-w-6xl transition-all duration-700 ${
             isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
           } ${isTransitioning ? "opacity-0" : "opacity-100"}`}
           style={{ transitionDelay: "400ms" }}
@@ -345,7 +347,7 @@ export function BeforeAfterSlider() {
             ].map((cell) => (
               <div
                 key={cell.label}
-                className="bg-white p-5"
+                className="bg-white p-3 md:p-5"
               >
                 <p
                   className={`text-[10px] font-bold uppercase tracking-[0.22em] ${

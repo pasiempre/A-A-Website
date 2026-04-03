@@ -9,6 +9,8 @@ import {
   COMPANY_PHONE_E164,
 } from "@/lib/company";
 import { getSiteUrl } from "@/lib/site";
+import type { ServiceAreaRegion } from "@/lib/service-areas";
+import { SERVICE_AREA_CITIES } from "@/lib/service-areas";
 
 export const metadata: Metadata = {
   title: "Service Area — Austin Metro Cleaning Coverage",
@@ -27,7 +29,7 @@ type CityData = {
   name: string;
   slug: string;
   distance: string;
-  region: "North" | "Central" | "South";
+  region: ServiceAreaRegion;
   tagline: string;
   highlights: string[];
 };
@@ -42,67 +44,14 @@ const CITIES: CityData[] = [
       "Our home base. Full service coverage across all Austin neighborhoods and commercial districts.",
     highlights: ["Post-Construction", "Commercial", "Turnover"],
   },
-  {
-    name: "Round Rock",
-    slug: "round-rock",
-    distance: "20 mi",
-    region: "North",
-    tagline:
-      "Serving new builds along I-35 and commercial office parks in La Frontera and surrounding areas.",
-    highlights: ["Post-Construction", "Commercial", "Final Clean"],
-  },
-  {
-    name: "Georgetown",
-    slug: "georgetown",
-    distance: "30 mi",
-    region: "North",
-    tagline:
-      "From Sun City developments to downtown Georgetown's growing commercial district.",
-    highlights: ["Post-Construction", "Turnover", "Commercial"],
-  },
-  {
-    name: "Pflugerville",
-    slug: "pflugerville",
-    distance: "15 mi",
-    region: "North",
-    tagline:
-      "Supporting Pflugerville's rapid residential growth and expanding commercial corridor.",
-    highlights: ["Move-In/Out", "Commercial", "Post-Construction"],
-  },
-  {
-    name: "Hutto",
-    slug: "hutto",
-    distance: "25 mi",
-    region: "North",
-    tagline: "Builder turnover packages for Hutto's booming residential and production home market.",
-    highlights: ["Post-Construction", "Builder Turns", "Final Clean"],
-  },
-  {
-    name: "Buda",
-    slug: "buda",
-    distance: "12 mi",
-    region: "South",
-    tagline: "Fast response for South Austin corridor developments and commercial spaces.",
-    highlights: ["Post-Construction", "Turnover", "Commercial"],
-  },
-  {
-    name: "Kyle",
-    slug: "kyle",
-    distance: "18 mi",
-    region: "South",
-    tagline:
-      "Supporting one of Texas's fastest-growing cities with reliable construction cleaning.",
-    highlights: ["Post-Construction", "Apartment Turns", "Commercial"],
-  },
-  {
-    name: "San Marcos",
-    slug: "san-marcos",
-    distance: "28 mi",
-    region: "South",
-    tagline:
-      "Student housing turnovers, commercial builds, and recurring facility cleaning along the I-35 corridor.",
-    highlights: ["Turnover", "Commercial", "Power Wash"],
-  },
+  ...SERVICE_AREA_CITIES.map((city) => ({
+    name: city.name,
+    slug: city.slug,
+    distance: city.distanceLabel.replace(" miles from Austin HQ", " mi"),
+    region: city.region,
+    tagline: city.description,
+    highlights: city.highlights.slice(0, 3),
+  })),
 ];
 
 const REGION_COLORS: Record<CityData["region"], { dot: string; badge: string }> = {

@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { EmployeeInventoryClient } from "@/components/employee/EmployeeInventoryClient";
 import { EmployeeTicketsClient } from "@/components/employee/EmployeeTicketsClient";
+import { getPublicEnv } from "@/lib/env";
 
 type TabId = "tickets" | "inventory";
 
@@ -13,7 +14,7 @@ interface TabMeta {
   icon: string;
 }
 
-const TABS: TabMeta[] = [
+const ALL_TABS: TabMeta[] = [
   { id: "tickets", label: "Mis Trabajos", icon: "📋" },
   { id: "inventory", label: "Suministros", icon: "📦" },
 ];
@@ -22,16 +23,27 @@ function isTabId(value: string | null): value is TabId {
   return value === "tickets" || value === "inventory";
 }
 
-function resolveInitialTab(): TabId {
+function resolveInitialTab(availableTabs: TabMeta[]): TabId {
   if (typeof window === "undefined") {
-    return "tickets";
+    return availableTabs[0]?.id || "tickets";
   }
   const saved = localStorage.getItem("aa_employee_active_tab");
-  return isTabId(saved) ? saved : "tickets";
+  if (isTabId(saved) && availableTabs.some((t) => t.id === saved)) {
+    return saved;
+  }
+  return availableTabs[0]?.id || "tickets";
 }
 
 export function EmployeePortalTabs() {
-  const [activeTab, setActiveTab] = useState<TabId>(resolveInitialTab);
+  const availableTabs = useMemo(() => {
+    const { employeeInventoryEnabled } = getPublicEnv();
+    if (employeeInventoryEnabled) return ALL_TABS;
+    return ALL_TABS.filter((t) => t.id !== "inventory");
+  }, []);
+
+  const [activeTab, setActiveTab] = useState<TabId>(() =>
+    resolveInitialTab(availableTabs),
+  );
 
   const switchTab = useCallback((tabId: TabId) => {
     setActiveTab(tabId);
@@ -45,7 +57,7 @@ export function EmployeePortalTabs() {
         aria-label="Secciones del portal"
         role="tablist"
       >
-        {TABS.map((tab) => {
+        {availableTabs.map((tab) => {
           const isActive = tab.id === activeTab;
           return (
             <button
@@ -83,14 +95,16 @@ export function EmployeePortalTabs() {
         {activeTab === "tickets" && <EmployeeTicketsClient />}
       </div>
 
-      <div
-        id="panel-inventory"
-        role="tabpanel"
-        aria-labelledby="tab-inventory"
-        hidden={activeTab !== "inventory"}
-      >
-        {activeTab === "inventory" && <EmployeeInventoryClient />}
-      </div>
+      {availableTabs.some((t) => t.id === "inventory") && (
+        <div
+          id="panel-inventory"
+          role="tabpanel"
+          aria-labelledby="tab-inventory"
+          hidden={activeTab !== "inventory"}
+        >
+          {activeTab === "inventory" && <EmployeeInventoryClient />}
+        </div>
+      )}
     </div>
   );
 }

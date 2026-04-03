@@ -4,135 +4,18 @@ import { notFound } from "next/navigation";
 
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { getSiteUrl } from "@/lib/site";
-
-type LocationData = {
-  slug: string;
-  name: string;
-  distance: string;
-  region: string;
-  description: string;
-  highlights: string[];
-  nearbyAreas: string[];
-};
-
-const locations: LocationData[] = [
-  {
-    slug: "round-rock",
-    name: "Round Rock",
-    distance: "20 miles from Austin HQ",
-    region: "North Austin Metro",
-    description:
-      "A&A Cleaning provides post-construction cleaning, final clean services, and commercial facility care throughout Round Rock, TX. From new multifamily developments along I-35 to commercial office buildouts in the La Frontera area, we bring the same walkthrough-ready standard to every project.",
-    highlights: [
-      "Post-construction cleaning for new residential and commercial builds",
-      "Final clean services for property turnovers and lease-ready units",
-      "Ongoing commercial cleaning for Round Rock office parks and retail",
-      "Fast response times — typically under 1 hour during business hours",
-    ],
-    nearbyAreas: ["Pflugerville", "Georgetown", "Hutto", "Austin"],
-  },
-  {
-    slug: "georgetown",
-    name: "Georgetown",
-    distance: "30 miles from Austin HQ",
-    region: "North Austin Metro",
-    description:
-      "From Sun City developments to downtown Georgetown's growing commercial district, A&A Cleaning delivers construction-ready cleaning with the detail and consistency that contractors and property managers expect.",
-    highlights: [
-      "Post-construction rough and final cleans for Georgetown builders",
-      "Turnover cleaning for property management companies",
-      "Commercial facility maintenance for retail and office spaces",
-      "Licensed and insured for all commercial and construction site work",
-    ],
-    nearbyAreas: ["Round Rock", "Hutto", "Pflugerville", "Austin"],
-  },
-  {
-    slug: "pflugerville",
-    name: "Pflugerville",
-    distance: "15 miles from Austin HQ",
-    region: "North Austin Metro",
-    description:
-      "Pflugerville's rapid growth means more construction projects and more turnovers. A&A Cleaning supports local contractors and property teams with reliable, detail-focused cleaning that keeps handoffs on schedule.",
-    highlights: [
-      "Construction cleaning for Pflugerville's growing residential developments",
-      "Move-in/move-out cleaning for apartment communities",
-      "Commercial cleaning for tech corridor offices and retail",
-      "Crew scheduling that aligns with contractor timelines",
-    ],
-    nearbyAreas: ["Round Rock", "Hutto", "Austin"],
-  },
-  {
-    slug: "buda",
-    name: "Buda",
-    distance: "12 miles from Austin HQ",
-    region: "South Austin Metro",
-    description:
-      "A&A Cleaning serves the Buda area with the same standards-driven cleaning we bring to every Austin metro project. Whether it's a new build along I-35 or a commercial space in downtown Buda, we deliver walkthrough-ready results.",
-    highlights: [
-      "Post-construction cleaning for South Austin corridor developments",
-      "Turnover support for Buda property management teams",
-      "Detail-focused final cleans for residential and commercial projects",
-      "Flexible scheduling including weekends and off-hours",
-    ],
-    nearbyAreas: ["Kyle", "Austin", "San Marcos"],
-  },
-  {
-    slug: "kyle",
-    name: "Kyle",
-    distance: "18 miles from Austin HQ",
-    region: "South Austin Metro",
-    description:
-      "Kyle is one of the fastest-growing cities in Texas, and A&A Cleaning is here to support the construction and property management teams building it. We handle post-construction cleans, turnovers, and commercial maintenance throughout the Kyle area.",
-    highlights: [
-      "Cleaning support for Kyle's residential construction boom",
-      "Apartment turnover cleaning for leasing teams",
-      "Commercial facility care for Kyle Crossing and surrounding retail",
-      "Same-day emergency turnovers available by request",
-    ],
-    nearbyAreas: ["Buda", "San Marcos", "Austin"],
-  },
-  {
-    slug: "san-marcos",
-    name: "San Marcos",
-    distance: "28 miles from Austin HQ",
-    region: "South Austin Metro",
-    description:
-      "A&A Cleaning brings professional construction and commercial cleaning to San Marcos. From student housing turnovers near Texas State University to new commercial builds along the I-35 corridor, we deliver consistent, inspection-ready results.",
-    highlights: [
-      "Student housing turnover cleaning at scale",
-      "Post-construction services for San Marcos commercial development",
-      "Recurring cleaning contracts for retail and office environments",
-      "Bilingual crews — Se Habla Español",
-    ],
-    nearbyAreas: ["Kyle", "Buda", "Austin"],
-  },
-  {
-    slug: "hutto",
-    name: "Hutto",
-    distance: "25 miles from Austin HQ",
-    region: "North Austin Metro",
-    description:
-      "As Hutto continues its rapid residential and commercial growth, A&A Cleaning supports builders and property managers with reliable post-construction and turnover cleaning. We bring Austin-level standards to every Hutto project.",
-    highlights: [
-      "Post-construction cleaning for Hutto's new home developments",
-      "Builder turnover packages for production homebuilders",
-      "Commercial cleaning for Hutto's expanding retail and office market",
-      "Consistent crew quality and on-time delivery",
-    ],
-    nearbyAreas: ["Round Rock", "Pflugerville", "Georgetown"],
-  },
-];
+import { SERVICE_AREA_BY_SLUG, SERVICE_AREA_CITIES } from "@/lib/service-areas";
 
 type LocationPageProps = {
   params: Promise<{ slug: string }>;
 };
 
-function getLocation(slug: string): LocationData | undefined {
-  return locations.find((location) => location.slug === slug);
+function getLocation(slug: string) {
+  return SERVICE_AREA_BY_SLUG[slug];
 }
 
 export function generateStaticParams() {
-  return locations.map((location) => ({ slug: location.slug }));
+  return SERVICE_AREA_CITIES.map((location) => ({ slug: location.slug }));
 }
 
 export async function generateMetadata({ params }: LocationPageProps): Promise<Metadata> {
@@ -147,13 +30,13 @@ export async function generateMetadata({ params }: LocationPageProps): Promise<M
 
   return {
     title: `Cleaning Services in ${location.name}, TX | ${COMPANY_NAME}`,
-    description: `Professional post-construction, commercial, and turnover cleaning in ${location.name}, Texas. ${location.distance}. Licensed and insured.`,
+    description: `Professional post-construction, commercial, and turnover cleaning in ${location.name}, Texas. ${location.distanceLabel}. Licensed and insured.`,
     alternates: {
       canonical: `/service-area/${location.slug}`,
     },
     openGraph: {
       title: `Cleaning Services in ${location.name}, TX`,
-      description: `Post-construction and commercial cleaning serving ${location.name} and the ${location.region}.`,
+      description: `Post-construction and commercial cleaning serving ${location.name} and the ${location.region} Austin metro area.`,
       url: `${baseUrl}/service-area/${location.slug}`,
       type: "website",
     },
@@ -169,6 +52,18 @@ export default async function LocationPage({ params }: LocationPageProps) {
   }
 
   const baseUrl = getSiteUrl();
+  const nearbyAreas = location.nearbyAreaSlugs.map((slugValue) => {
+    if (slugValue === "austin") {
+      return { name: "Austin", href: "/#service-area" };
+    }
+
+    const city = SERVICE_AREA_BY_SLUG[slugValue];
+    if (!city) {
+      return null;
+    }
+
+    return { name: city.name, href: `/service-area/${city.slug}` };
+  }).filter(Boolean) as Array<{ name: string; href: string }>;
 
   const structuredData = [
     {
@@ -176,10 +71,17 @@ export default async function LocationPage({ params }: LocationPageProps) {
       "@type": "Service",
       name: `Cleaning Services in ${location.name}`,
       description: location.description,
+      serviceType: [
+        "Post-Construction Cleaning",
+        "Commercial Cleaning",
+        "Turnover Cleaning",
+      ],
       provider: {
         "@type": "LocalBusiness",
-        "@id": `${baseUrl}#localbusiness`,
+        "@id": `${baseUrl}/service-area/${location.slug}#localbusiness`,
         name: COMPANY_NAME,
+        telephone: COMPANY_PHONE_E164,
+        url: `${baseUrl}/service-area/${location.slug}`,
       },
       areaServed: {
         "@type": "City",
@@ -189,6 +91,23 @@ export default async function LocationPage({ params }: LocationPageProps) {
           name: "Texas",
         },
       },
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": `${baseUrl}/service-area/${location.slug}#localbusiness`,
+      name: `${COMPANY_NAME} - ${location.name}`,
+      telephone: COMPANY_PHONE_E164,
+      url: `${baseUrl}/service-area/${location.slug}`,
+      areaServed: {
+        "@type": "City",
+        name: location.name,
+      },
+      makesOffer: [
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Post-Construction Cleaning" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Commercial Cleaning" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Move-In / Move-Out Cleaning" } },
+      ],
     },
     {
       "@context": "https://schema.org",
@@ -225,11 +144,11 @@ export default async function LocationPage({ params }: LocationPageProps) {
         </nav>
 
         <section className="mx-auto max-w-7xl px-6 pb-16 pt-8 md:pb-24">
-          <p className="section-kicker mb-4">{location.region}</p>
+          <p className="section-kicker mb-4">{location.region} Austin Metro</p>
           <h1 className="max-w-3xl font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl lg:text-6xl">
-            Professional Cleaning in {location.name}, TX
+            Commercial and Post-Construction Cleaning in {location.name}
           </h1>
-          <p className="mt-2 text-sm font-medium text-slate-500">{location.distance}</p>
+          <p className="mt-2 text-sm font-medium text-slate-500">{location.distanceLabel}</p>
           <p className="mt-6 max-w-2xl text-lg font-light leading-relaxed text-slate-600">{location.description}</p>
 
           <ul className="mt-8 space-y-3">
@@ -244,6 +163,33 @@ export default async function LocationPage({ params }: LocationPageProps) {
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
             <Link href="/#quote" className="cta-primary px-8 py-4">Request a Quote</Link>
             <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { label: "Projects This Year", value: location.proof.annualProjects },
+              { label: "Response Window", value: location.proof.responseWindow },
+              { label: "Average Turnaround", value: location.proof.averageTurnaround },
+              { label: "Recurring Accounts", value: location.proof.recurringAccounts },
+            ].map((item) => (
+              <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <p className="text-2xl font-bold text-[#0A1628]">{item.value}</p>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-slate-500">{item.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="border-t border-slate-200 bg-[#FAFAF8] py-14 md:py-18">
+          <div className="mx-auto max-w-7xl px-6">
+            <h2 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">Local Project Signals in {location.name}</h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {location.localSignals.map((signal) => (
+                <article key={signal} className="rounded-2xl border border-slate-200 bg-white p-5">
+                  <p className="text-sm leading-relaxed text-slate-600">{signal}</p>
+                </article>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -300,17 +246,14 @@ export default async function LocationPage({ params }: LocationPageProps) {
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="font-serif text-lg font-semibold text-[#0A1628]">Also serving nearby areas</h2>
             <div className="mt-4 flex flex-wrap gap-3">
-              {location.nearbyAreas.map((area) => {
-                const areaData = locations.find((entry) => entry.name === area);
-                const href = areaData ? `/service-area/${areaData.slug}` : "/#service-area";
-
+              {nearbyAreas.map((area) => {
                 return (
                   <Link
-                    key={area}
-                    href={href}
+                    key={area.name}
+                    href={area.href}
                     className="info-chip transition-colors hover:border-slate-300 hover:text-[#0A1628]"
                   >
-                    {area}, TX
+                    {area.name}, TX
                   </Link>
                 );
               })}

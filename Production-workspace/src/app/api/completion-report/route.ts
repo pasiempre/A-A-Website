@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { startPostJobSequence } from "@/lib/post-job-sequence";
 import { createClient } from "@/lib/supabase/server";
 
 type ReportableQaStatus = "approved" | "completed";
@@ -467,6 +468,20 @@ export async function POST(request: Request) {
     errors.push(`Job update warning: ${updateJobError.message}`);
   }
 
+  let postJobSequenceId: string | null = null;
+  if (autoTriggered && qaApproved) {
+    const sequenceResult = await startPostJobSequence({ jobId });
+    if (sequenceResult.started) {
+      postJobSequenceId = sequenceResult.sequenceId;
+    }
+
+    if (sequenceResult.warnings.length > 0) {
+      errors.push(
+        ...sequenceResult.warnings.map((warning) => `[post-job-sequence] ${warning}`),
+      );
+    }
+  }
+
   const telemetry: ReportTelemetry = {
     jobId,
     reportId: reportInsert.id,
@@ -492,6 +507,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     success: true,
     reportId: reportInsert.id,
+    postJobSequenceId,
     emailed: emailSent,
     emailRecipients: allRecipients,
     autoTriggered,

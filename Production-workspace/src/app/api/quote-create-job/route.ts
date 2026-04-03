@@ -128,6 +128,29 @@ export async function POST(request: Request) {
 
     let assignmentId: string | null = null;
     if (body.employeeId?.trim()) {
+      if (scheduledStart) {
+        const { data: conflictAssignment, error: conflictError } = await supabase
+          .from("job_assignments")
+          .select("id, jobs!inner(id, title, scheduled_start, status)")
+          .eq("employee_id", body.employeeId.trim())
+          .eq("jobs.scheduled_start", scheduledStart)
+          .in("jobs.status", ["scheduled", "in_progress"])
+          .maybeSingle();
+
+        if (conflictError) {
+          return NextResponse.json({ error: conflictError.message }, { status: 500 });
+        }
+
+        if (conflictAssignment) {
+          return NextResponse.json(
+            {
+              error: "Selected crew member is already assigned at that time. Choose another start time or crew member.",
+            },
+            { status: 409 },
+          );
+        }
+      }
+
       const { data: assignment, error: assignmentError } = await supabase
         .from("job_assignments")
         .insert({

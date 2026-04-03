@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { QuoteCTA } from "./QuoteCTA";
 import { useInViewOnce } from "./useInViewOnce";
 
@@ -14,10 +15,12 @@ type AreaData = {
 
 const areas: AreaData[] = [
   { name: "Georgetown", distance: "30 mi", x: 58, y: 8, region: "north" },
+  { name: "The Domain", distance: "12 mi", x: 50, y: 22, region: "north" },
   { name: "Hutto", distance: "25 mi", x: 72, y: 18, region: "north" },
   { name: "Round Rock", distance: "20 mi", x: 52, y: 24, region: "north" },
   { name: "Pflugerville", distance: "15 mi", x: 60, y: 36, region: "north" },
   { name: "Austin", distance: "HQ", x: 44, y: 50, region: "central" },
+  { name: "Oak Hill", distance: "10 mi", x: 34, y: 60, region: "south" },
   { name: "Buda", distance: "12 mi", x: 40, y: 65, region: "south" },
   { name: "Kyle", distance: "18 mi", x: 36, y: 76, region: "south" },
   { name: "San Marcos", distance: "28 mi", x: 32, y: 90, region: "south" },
@@ -46,7 +49,7 @@ export function ServiceAreaSection() {
       className="relative scroll-mt-32 overflow-hidden bg-[#0A1628] md:scroll-mt-36"
     >
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        className="pointer-events-none absolute inset-0 opacity-[0.035] hidden md:block"
         aria-hidden="true"
       >
         <div
@@ -60,7 +63,7 @@ export function ServiceAreaSection() {
       </div>
 
       <div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.15]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.15] hidden md:block"
         style={{
           background:
             "radial-gradient(ellipse, rgba(201,169,78,0.35) 0%, transparent 70%)",
@@ -68,10 +71,10 @@ export function ServiceAreaSection() {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto max-w-7xl px-6 py-20 md:py-24">
-        <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-20">
+      <div className="relative mx-auto max-w-7xl px-6 py-10 md:py-24">
+        <div className="flex flex-col items-center gap-10 lg:flex-row lg:items-center lg:gap-20">
           <div
-            className={`relative w-full max-w-md flex-shrink-0 transition-all duration-700 ease-out lg:w-[420px] ${
+            className={`relative w-full max-w-md flex-shrink-0 transition-all duration-700 ease-out hidden md:block lg:w-[420px] ${
               isVisible
                 ? "translate-x-0 opacity-100"
                 : "-translate-x-10 opacity-0"
@@ -204,17 +207,18 @@ export function ServiceAreaSection() {
 
             <h2
               id="service-area-heading"
-              className="mt-4 font-serif text-3xl tracking-tight text-white sm:text-4xl lg:text-[2.75rem]"
+              className="mt-3 font-serif text-3xl tracking-tight text-white md:text-4xl lg:text-[2.75rem]"
             >
               Greater Austin Metro
             </h2>
 
-            <p className="mt-4 max-w-md text-base leading-relaxed text-slate-400">
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-400 md:mt-4 md:text-base">
               Georgetown to San Marcos — same standards,
               every&nbsp;location.
             </p>
 
-            <div className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
+            {/* MOBILE-HARDENING: Compact 2-column grid for city list */}
+            <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4 md:mt-8 lg:grid-cols-2 xl:grid-cols-4">
               {areas.map((area, i) => {
                 const meta = regionMeta[area.region];
                 const isHQ = area.name === "Austin";
@@ -263,7 +267,26 @@ export function ServiceAreaSection() {
               })}
             </div>
 
-            <div className="mt-6 flex items-center gap-5">
+            <div className="mt-4 flex flex-wrap gap-2">
+              {[
+                { name: "Round Rock", href: "/service-area/round-rock" },
+                { name: "Georgetown", href: "/service-area/georgetown" },
+                { name: "Pflugerville", href: "/service-area/pflugerville" },
+                { name: "Buda", href: "/service-area/buda" },
+                { name: "Kyle", href: "/service-area/kyle" },
+                { name: "San Marcos", href: "/service-area/san-marcos" },
+              ].map((city) => (
+                <Link
+                  key={city.name}
+                  href={city.href}
+                  className="inline-flex min-h-[40px] items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
+                >
+                  {city.name}
+                </Link>
+              ))}
+            </div>
+
+            <div className="mt-4 flex items-center gap-5 md:mt-6">
               {Object.entries(regionMeta).map(([key, meta]) => (
                 <div key={key} className="flex items-center gap-1.5">
                   <span
@@ -279,8 +302,8 @@ export function ServiceAreaSection() {
               ))}
             </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <QuoteCTA className="inline-flex items-center gap-2 rounded-lg bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#0A1628] transition-all duration-300 hover:bg-[#d4b85e] hover:shadow-lg hover:shadow-[#C9A94E]/20">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center md:mt-8">
+              <QuoteCTA ctaId="service_area_check_availability" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#0A1628] transition-all duration-300 hover:bg-[#d4b85e] hover:shadow-lg hover:shadow-[#C9A94E]/20 min-h-[48px]">
                 Check Availability in Your Area
                 <svg
                   aria-hidden="true"
