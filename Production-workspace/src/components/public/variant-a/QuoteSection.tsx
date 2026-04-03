@@ -133,7 +133,7 @@ export function QuoteSection() {
               Tell us about your project. We review the scope, confirm the right next step, and keep the intake simple.
             </p>
 
-            <form className="surface-panel mt-6 space-y-6 p-6 md:mt-10 md:p-7" aria-busy={isSubmitting} onSubmit={(event) => void submitLead(event)}>
+            <form className="surface-panel mt-6 space-y-4 p-6 md:mt-10 md:space-y-6 md:p-7" aria-busy={isSubmitting} onSubmit={(event) => void submitLead(event)}>
               <div aria-hidden="true" className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none">
                 <input
                   name="website"
@@ -287,13 +287,6 @@ export function QuoteSection() {
               >
                 <span className="h-2 w-2 rounded-full bg-[#C9A94E]" />
                 Prefer to call? {COMPANY_PHONE}
-              </CTAButton>
-              <CTAButton
-                ctaId="quote_section_learn_more"
-                href="#about"
-                className="cta-outline-dark min-h-[48px]"
-              >
-                Learn More About Us
               </CTAButton>
             </div>
           </div>

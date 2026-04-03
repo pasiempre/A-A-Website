@@ -37,6 +37,21 @@ const ExitIntentOverlay = dynamic(
   { ssr: false },
 );
 
+const INCLUDED_SUMMARY_ITEMS = [
+  {
+    title: "Scope-Driven Planning",
+    description: "We align crew, service type, and schedule before work starts.",
+  },
+  {
+    title: "Detail-Level Delivery",
+    description: "From rough clean to final walkthrough readiness, every phase is covered.",
+  },
+  {
+    title: "Fast Communication",
+    description: "Direct response and bilingual coordination with your team.",
+  },
+] as const;
+
 export function VariantAPublicPage() {
   const openQuote = useQuoteAction();
 
@@ -68,21 +83,6 @@ export function VariantAPublicPage() {
 }
 
 function IncludedSummarySection() {
-  const summaryItems = [
-    {
-      title: "Scope-Driven Planning",
-      description: "We align crew, service type, and schedule before work starts.",
-    },
-    {
-      title: "Detail-Level Delivery",
-      description: "From rough clean to final walkthrough readiness, every phase is covered.",
-    },
-    {
-      title: "Fast Communication",
-      description: "Direct response and bilingual coordination with your team.",
-    },
-  ];
-
   return (
     /* MOBILE-HARDENING: Tightened section padding and compact grid gap */
     <section className="border-b border-slate-200 bg-white px-6 py-6 md:px-8 md:py-20">
@@ -90,7 +90,7 @@ function IncludedSummarySection() {
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">What&apos;s Included</p>
         <h2 className="mt-2 max-w-xl font-serif text-2xl tracking-tight text-[#0A1628] md:mt-3 md:text-4xl">A clear process from first call to final clean.</h2>
         <div className="mt-5 grid gap-3 md:mt-10 md:gap-5 md:grid-cols-3">
-          {summaryItems.map((item) => (
+          {INCLUDED_SUMMARY_ITEMS.map((item) => (
             <article key={item.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4 md:p-6">
               <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
               <p className="mt-1 text-sm leading-relaxed text-slate-600 md:mt-2.5">{item.description}</p>

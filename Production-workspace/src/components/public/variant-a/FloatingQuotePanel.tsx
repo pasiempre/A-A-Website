@@ -18,6 +18,18 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
+    if (feedback?.type !== "success") {
+      return;
+    }
+
+    const closeTimer = window.setTimeout(() => {
+      onClose();
+    }, 1800);
+
+    return () => window.clearTimeout(closeTimer);
+  }, [feedback, onClose]);
+
+  useEffect(() => {
     if (!isOpen) {
       return;
     }
