@@ -1,0 +1,679 @@
+# Batches 2–4: Analysis & Changes
+
+Good news — your prior implementer did excellent work on these files. Most are already well-hardened. The changes below are targeted compliance fixes, not structural rewrites.
+
+---
+
+## Batch 2 — Section Hardening (ServiceAreaSection + FooterSection)
+
+### ServiceAreaSection.tsx — 1 change
+
+**Change 1: Add `ctaId` to QuoteCTA (F-25 compliance gap)**
+
+Every other QuoteCTA in the codebase now has a `ctaId`. This one was missed.
+
+```tsx
+// BEFORE (around line 183)
+<QuoteCTA className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#0A1628] transition-all duration-300 hover:bg-[#d4b85e] hover:shadow-lg hover:shadow-[#C9A94E]/20 min-h-[48px]">
+
+// AFTER
+<QuoteCTA ctaId="service_area_check_availability" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#0A1628] transition-all duration-300 hover:bg-[#d4b85e] hover:shadow-lg hover:shadow-[#C9A94E]/20 min-h-[48px]">
+```
+
+**Everything else in ServiceAreaSection is clean:**
+- Map: `hidden md:block` ✅
+- Decorative elements: `hidden md:block` ✅
+- City grid: `grid-cols-2` on mobile ✅
+- Section padding: `py-10 md:py-24` ✅
+- Heading: `text-3xl` ✅
+- CTA: `min-h-[48px]` ✅
+
+---
+
+### FooterSection.tsx — 1 change
+
+**Change 1: Add touch-target sizing to contact action links (M-2)**
+
+The phone and email links are bare `<a>` tags with no padding — roughly ~20px tap height. These are primary actions on mobile (call, email).
+
+```tsx
+// BEFORE (contact list, around line 91)
+<ul className="space-y-3 text-sm">
+  <li>
+    <a href={`tel:${COMPANY_PHONE_E164}`} className="transition hover:text-white">
+      {COMPANY_PHONE}
+    </a>
+  </li>
+  <li><a href={`mailto:${COMPANY_EMAIL}`} className="transition hover:text-white">{COMPANY_EMAIL}</a></li>
+  <li className="text-slate-400">Serving Austin and surrounding metro areas</li>
+</ul>
+
+// AFTER
+<ul className="space-y-1 text-sm md:space-y-3">
+  <li>
+    <a href={`tel:${COMPANY_PHONE_E164}`} className="inline-flex min-h-[44px] items-center transition hover:text-white">
+      {COMPANY_PHONE}
+    </a>
+  </li>
+  <li>
+    <a href={`mailto:${COMPANY_EMAIL}`} className="inline-flex min-h-[44px] items-center transition hover:text-white">
+      {COMPANY_EMAIL}
+    </a>
+  </li>
+  <li className="pt-1 text-slate-400">Serving Austin and surrounding metro areas</li>
+</ul>
+```
+
+Rationale: `min-h-[44px]` + `inline-flex items-center` creates a tappable zone without visually bloating the footer. `space-y-1 md:space-y-3` tightens mobile since the min-height now provides the spacing.
+
+**Everything else in FooterSection is clean:**
+- CTA banner: mobile-compressed ✅
+- Grid: stacks on mobile ✅
+- "Built For": `hidden md:block` ✅
+- Nav: 2-column grid on mobile ✅
+- Font weights: `font-normal md:font-light` ✅
+- Copyright: compressed ✅
+- All CTAs have `ctaId` ✅
+
+---
+
+### IncludedSummarySection (in VariantAPublicPage.tsx) — 0 changes
+
+Already fully hardened: `py-6`, `text-2xl`, `p-4`, `gap-3` — all match spec targets. **No changes needed.**
+
+---
+
+## Batch 3 — Form & Panel Polish (QuoteSection + FloatingQuotePanel)
+
+### QuoteSection.tsx — 1 change
+
+**Change 1: Fix bare `font-light` on mobile (M-5 violation)**
+
+```tsx
+// BEFORE (around line 167)
+<p className="mt-3 max-w-md font-light leading-relaxed text-slate-600">
+  Tell us about your project. We review the scope, confirm the right next step, and keep the intake simple.
+</p>
+
+// AFTER
+<p className="mt-3 max-w-md font-normal leading-relaxed text-slate-600 md:font-light">
+  Tell us about your project. We review the scope, confirm the right next step, and keep the intake simple.
+</p>
+```
+
+**Everything else in QuoteSection is clean:**
+- All inputs: `py-4` for 44px+ targets ✅
+- Phone: `inputMode="tel"` + `autoComplete="tel"` ✅
+- Textarea: `enterKeyHint="done"` ✅
+- Submit: `min-h-[48px]` ✅
+- CTAs: `ctaId` + `min-h-[48px]` ✅
+- Image panel: `h-[28vh]` on mobile ✅
+- Sticky bar clearance: CareersSection follows, user can scroll past ✅
+
+---
+
+### FloatingQuotePanel.tsx — 3 changes
+
+**Change 1: Fix select touch targets — `py-3` → `py-4` (M-2)**
+
+```tsx
+// BEFORE — Service Type select (around line 136)
+className="w-full border-b border-slate-300 px-1 py-3 text-sm text-slate-600"
+
+// AFTER
+className="w-full border-b border-slate-300 px-1 py-4 text-sm text-slate-600"
+```
+
+```tsx
+// BEFORE — Timeline select (around line 152)
+className="w-full border-b border-slate-300 px-1 py-3 text-sm text-slate-600"
+
+// AFTER
+className="w-full border-b border-slate-300 px-1 py-4 text-sm text-slate-600"
+```
+
+**Change 2: Enlarge close button touch target (M-2)**
+
+```tsx
+// BEFORE (around line 80)
+<button ref={closeButtonRef} type="button" aria-label="Close quote request panel" onClick={onClose} className="rounded p-2 text-slate-500 hover:bg-slate-100">
+  ✕
+</button>
+
+// AFTER
+<button ref={closeButtonRef} type="button" aria-label="Close quote request panel" onClick={onClose} className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100">
+  ✕
+</button>
+```
+
+**Change 3: Add `enterKeyHint` to textarea (M-6)**
+
+```tsx
+// BEFORE (around line 160)
+<textarea
+  id={`${fieldPrefix}-description`}
+  name="description"
+  /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+  className="w-full border-b border-slate-300 px-1 py-4 text-sm"
+  rows={3}
+
+// AFTER
+<textarea
+  id={`${fieldPrefix}-description`}
+  name="description"
+  enterKeyHint="done"
+  /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+  className="w-full border-b border-slate-300 px-1 py-4 text-sm"
+  rows={3}
+```
+
+---
+
+### BeforeAfterSlider.tsx — 0 changes
+
+Already well-hardened:
+- `py-10 md:py-32` ✅
+- `aspect-[4/3] md:aspect-[16/9]` ✅
+- Decorative grid: `hidden md:block` ✅
+- Tab buttons: `min-h-[44px]` ✅
+- Touch events: full handler chain ✅
+- Slider handle: 44px ✅
+- Info grid: `p-3 md:p-5` ✅
+
+**No changes needed.**
+
+---
+
+## Batch 4 — Dynamic Import Skeletons (VariantAPublicPage.tsx)
+
+**M-7 compliance:** Three dynamic sections have no loading fallback. This means a flash of empty space before they hydrate.
+
+```tsx
+// BEFORE
+const BeforeAfterSlider = dynamic(
+  () => import("./BeforeAfterSlider").then((module) => module.BeforeAfterSlider),
+);
+const TestimonialSection = dynamic(
+  () => import("./TestimonialSection").then((module) => module.TestimonialSection),
+);
+const QuoteSection = dynamic(() => import("./QuoteSection").then((module) => module.QuoteSection));
+
+// AFTER
+const BeforeAfterSlider = dynamic(
+  () => import("./BeforeAfterSlider").then((module) => module.BeforeAfterSlider),
+  { loading: () => <SectionSkeleton /> },
+);
+const TestimonialSection = dynamic(
+  () => import("./TestimonialSection").then((module) => module.TestimonialSection),
+  { loading: () => <SectionSkeleton /> },
+);
+const QuoteSection = dynamic(
+  () => import("./QuoteSection").then((module) => module.QuoteSection),
+  { loading: () => <SectionSkeleton /> },
+);
+```
+
+Add this minimal skeleton component above the `VariantAPublicPage` function:
+
+```tsx
+function SectionSkeleton() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center bg-white" aria-hidden="true">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-slate-500" />
+    </div>
+  );
+}
+```
+
+---
+
+## Summary
+
+| Batch | File | Changes | Type |
+|---|---|---|---|
+| 2 | ServiceAreaSection.tsx | 1 (add `ctaId`) | F-25 compliance |
+| 2 | FooterSection.tsx | 1 (contact link touch targets) | M-2 compliance |
+| 2 | IncludedSummarySection | 0 — verified clean | — |
+| 3 | QuoteSection.tsx | 1 (`font-light` → responsive) | M-5 compliance |
+| 3 | FloatingQuotePanel.tsx | 3 (2 selects + close button + enterKeyHint) | M-2, M-6 compliance |
+| 3 | BeforeAfterSlider.tsx | 0 — verified clean | — |
+| 4 | VariantAPublicPage.tsx | 1 (dynamic import skeletons) | M-7 compliance |
+| **Total** | | **7 changes across 4 files** | |
+
+# Batch 4 (Revised) — §13 Micro-Refinements Audit
+
+Great news: **the prior MOBILE-ELEVATION pass already resolved all four §13.1 high-impact items.** I can see the evidence in comments throughout the code. Here's the verification and the remaining gaps.
+
+---
+
+## §13.1 Verification — All Already Fixed
+
+| Item | §13 Recommendation | Current Code | Status |
+|---|---|---|---|
+| Mobile Menu links | All links must call `closeMobileMenu` | `primaryLinks.slice(2).map` all have `onClick={closeMobileMenu}`, service/industry links inside `<details>` also have it | ✅ Already fixed |
+| Service Spread response promise | Expose on mobile | `MOBILE-ELEVATION: H-6` block with `md:hidden` renders `{service.responsePromise}` below description | ✅ Already fixed |
+| Hero "Call Now" ghost button | Glassmorphism for visibility | `MOBILE-ELEVATION: P-3` — `border-white/40 bg-white/15 shadow-lg shadow-black/10 backdrop-blur-md` | ✅ Already fixed |
+| Authority Bar "Licensed & Insured" | Entrance animation | `MOBILE-ELEVATION: P-4` — `transition duration-700` with `transitionDelay: "600ms"` | ✅ Already fixed |
+
+---
+
+## §13.2 Verification — Typography Already Fixed
+
+| Item | §13 Recommendation | Current Code | Status |
+|---|---|---|---|
+| Hero sub-headline weight | `font-normal` or `font-medium` on mobile | `MOBILE-ELEVATION: P-9` — `font-normal` on mobile, `md:font-light` | ✅ Already fixed |
+| ServiceSpread description | Same | `font-normal ... md:font-light` | ✅ Already fixed |
+| Footer CTA description | Same | `font-normal ... md:font-light` | ✅ Already fixed |
+
+---
+
+## Actual Remaining Changes
+
+Only **one F-25 compliance gap** and **one minor polish item** remain across all four files:
+
+### Change 1: ServiceSpreadSection.tsx — Missing `ctaId` on 5 QuoteCTA instances (F-25 compliance)
+
+Each service card has a QuoteCTA without tracking instrumentation. This is 5 untracked conversion points.
+
+```tsx
+// BEFORE (inside ServiceSpreadItem, around line 177)
+<QuoteCTA
+  className={`cta-outline-dark gap-3 ${
+    isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+  }`}
+  style={{ transitionDelay: "400ms" }}
+>
+  Quote This Service
+  <span aria-hidden="true">→</span>
+</QuoteCTA>
+
+// AFTER
+<QuoteCTA
+  ctaId={`service_${service.anchor}_quote`}
+  className={`cta-outline-dark gap-3 ${
+    isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+  }`}
+  style={{ transitionDelay: "400ms" }}
+>
+  Quote This Service
+  <span aria-hidden="true">→</span>
+</QuoteCTA>
+```
+
+This produces 5 distinct, trackable CTA IDs:
+- `service_service-post-construction_quote`
+- `service_service-final-clean_quote`
+- `service_service-commercial_quote`
+- `service_service-move_quote`
+- `service_service-windows_quote`
+
+---
+
+### Change 2: PublicHeader.tsx — Logo weight on mobile (§13.2 polish — optional)
+
+The text-only logo at `text-xl` with default weight can feel light on mobile, especially against the busy header background.
+
+```tsx
+// BEFORE (around line 97)
+<p className="font-serif text-xl tracking-tight text-white md:text-3xl">{COMPANY_SHORT_NAME}</p>
+
+// AFTER
+<p className="font-serif text-xl font-semibold tracking-tight text-white md:text-3xl md:font-normal">{COMPANY_SHORT_NAME}</p>
+```
+
+`font-semibold` on mobile adds visual weight without affecting the desktop rendering. `md:font-normal` preserves the current desktop appearance exactly.
+
+---
+
+## No Changes Needed
+
+| File | Reason |
+|---|---|
+| **HeroSection.tsx** | All §13 items pre-resolved by MOBILE-ELEVATION pass |
+| **AuthorityBar.tsx** | All §13 items pre-resolved by MOBILE-ELEVATION pass |
+
+---
+
+## Complete Change Summary — All Batches (2–4)
+
+| Batch | File | Changes | Type |
+|---|---|---|---|
+| 2 | ServiceAreaSection.tsx | 1 — add `ctaId` | F-25 |
+| 2 | FooterSection.tsx | 1 — contact link touch targets | M-2 |
+| 2 | IncludedSummarySection | 0 — verified clean | — |
+| 3 | QuoteSection.tsx | 1 — `font-light` → responsive | M-5 |
+| 3 | FloatingQuotePanel.tsx | 3 — selects + close button + enterKeyHint | M-2, M-6 |
+| 3 | BeforeAfterSlider.tsx | 0 — verified clean | — |
+| 4 | VariantAPublicPage.tsx | 1 — dynamic import skeletons | M-7 |
+| 4 | ServiceSpreadSection.tsx | 1 — add `ctaId` to 5 QuoteCTAs | F-25 |
+| 4 | PublicHeader.tsx | 1 — logo weight (optional) | §13.2 |
+| 4 | HeroSection.tsx | 0 — verified clean | — |
+| 4 | AuthorityBar.tsx | 0 — verified clean | — |
+| **Total** | **11 files reviewed** | **9 changes across 6 files** | |
+
+# Batch F — Final QA Viewport Sweep
+
+## Execution Checklist
+
+**Purpose:** Verify every homepage section passes mobile standards across the required device matrix. This is the last gate before R-00 is marked ✅ Complete.
+
+**Method:** For each viewport width, scroll the entire homepage top-to-bottom. Check every item in each section block. Mark pass/fail with notes.
+
+**Tools needed:**
+- Chrome DevTools → Device Toolbar (responsive mode)
+- Or real devices if available (iPhone SE, iPhone 14/15 Pro)
+- Screenshot tool for before/after evidence (Acceptance Criteria #6)
+
+---
+
+## 1) Viewport Matrix
+
+| Width | Represents | Priority |
+|---|---|---|
+| **320px** | iPhone SE / smallest production target | 🔴 Must pass — this is where everything breaks |
+| **375px** | iPhone 13 mini / common baseline | 🔴 Must pass |
+| **393px** | Pixel 7 / common Android | 🟡 Should pass |
+| **412px** | Pixel 6 / Samsung Galaxy | 🟡 Should pass |
+| **430px** | iPhone 15 Pro Max | 🟡 Should pass |
+| **768px** | iPad mini / `md:` breakpoint boundary | 🔴 Must pass — verify desktop layout activates cleanly |
+
+---
+
+## 2) Global Checks (Run Once Per Viewport)
+
+Run these at **every** viewport width before section-by-section checks.
+
+| # | Check | What to Look For | Pass Criteria |
+|---|---|---|---|
+| G-1 | **No horizontal overflow** | Scroll right — does anything extend past viewport edge? | No horizontal scrollbar at any scroll position |
+| G-2 | **Sticky bar visible** | Scroll past hero — does sticky bar appear? | Bar visible, both buttons readable, no text wrap |
+| G-3 | **Sticky bar text** | Read both CTA labels | "Call" and "Free Quote" — no wrapping, no truncation |
+| G-4 | **AI trigger position** | Check bottom-right floating button | Does NOT overlap sticky bar CTAs. Gap ≥ 8px |
+| G-5 | **Menu open → widgets hidden** | Tap hamburger menu | Sticky bar + AI trigger both disappear |
+| G-6 | **Menu close → widgets return** | Close menu | Sticky bar + AI trigger reappear |
+| G-7 | **No clipped text anywhere** | Full scroll, read every heading and body line | No text cut off by container edges |
+| G-8 | **Safe area (notch devices)** | Check header top, sticky bar bottom | Content not hidden behind notch or home indicator |
+
+### Recording Template
+
+```
+Viewport: ___px
+Date: ___
+Tester: ___
+
+G-1 Overflow:     ☐ Pass  ☐ Fail  Notes: ___
+G-2 Sticky bar:   ☐ Pass  ☐ Fail  Notes: ___
+G-3 Sticky text:  ☐ Pass  ☐ Fail  Notes: ___
+G-4 AI trigger:   ☐ Pass  ☐ Fail  Notes: ___
+G-5 Menu hides:   ☐ Pass  ☐ Fail  Notes: ___
+G-6 Menu shows:   ☐ Pass  ☐ Fail  Notes: ___
+G-7 Clipped text: ☐ Pass  ☐ Fail  Notes: ___
+G-8 Safe areas:   ☐ Pass  ☐ Fail  Notes: ___
+```
+
+---
+
+## 3) Section-by-Section Checks
+
+### 3.1 Header
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| HDR-1 | Logo visible and readable | Text not truncated, not overlapping nav button |
+| HDR-2 | "Free Quote" button | Fully visible, `min-h-[44px]`, text not wrapping |
+| HDR-3 | Hamburger button | ≥ 44px tap target, visible icon |
+| HDR-4 | Mobile menu opens | Panel appears, scrollable if content overflows |
+| HDR-5 | Menu links work | Tap each — navigates to section AND closes menu |
+| HDR-6 | Services/Industries expand | `<details>` opens, sub-links visible and tappable |
+| HDR-7 | Call CTA in menu | Tap target ≥ 44px, triggers phone dialer |
+
+### 3.2 Hero
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| HERO-1 | Headline readable | All 3 lines visible, no overlap, `clamp()` sizing works |
+| HERO-2 | Subtitle visible | Below headline, not clipped |
+| HERO-3 | "Get a Free Quote" button | Full width or auto, `min-h-[48px]`, label complete |
+| HERO-4 | "Call Now" button | Glassmorphism visible against background image, tappable |
+| HERO-5 | Badge hidden | No "Austin Metro • Post-Construction • Commercial" pill on mobile |
+| HERO-6 | Service chips hidden | No "Final Clean" / "Turnovers" chips on mobile |
+| HERO-7 | Inline trust bar visible | 3 items (Licensed & Insured, 1-Hr Response, Habla Español) |
+| HERO-8 | Trust bar fits | No wrapping that creates 3+ lines at 320px |
+| HERO-9 | Content centered | No dead space above or below content block |
+| HERO-10 | Absolute trust bar hidden | Bottom trust strip NOT visible on mobile |
+
+### 3.3 AuthorityBar
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| AUTH-1 | 2×2 grid layout | 4 stat cells in 2 columns, not stacked vertically |
+| AUTH-2 | Icons hidden | No SVG icons on mobile |
+| AUTH-3 | Numbers readable | `text-2xl`, not overflowing cells |
+| AUTH-4 | "Licensed & Insured" cell | Renders at same size as animated stats |
+| AUTH-5 | Counter animation | Numbers animate up on scroll into view |
+| AUTH-6 | Bottom trust bar | Stars + text visible, not overflowing |
+
+### 3.4 IncludedSummarySection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| INC-1 | Section padding | Visually compact (`py-6`) |
+| INC-2 | Heading size | `text-2xl`, not larger |
+| INC-3 | Cards | 3 cards stacked, `p-4`, `gap-3` between them |
+| INC-4 | Card text | Title and description fully readable |
+
+### 3.5 ServiceSpreadSection (×5 service cards)
+
+Check **each of the 5 service cards:**
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| SVC-1 | Image height | `h-40` — compact, not full-viewport |
+| SVC-2 | Image overlay badges | Hidden on mobile |
+| SVC-3 | Image overlay response promise | Hidden on mobile |
+| SVC-4 | Content padding | `p-4` — tight but readable |
+| SVC-5 | Title size | `text-2xl`, not `text-5xl` |
+| SVC-6 | Response promise (inline) | Visible below description in gold text with dot |
+| SVC-7 | Bullets | Visible, tight spacing (`space-y-1.5`) |
+| SVC-8 | Desktop panel | Hidden on mobile (`hidden md:block`) |
+| SVC-9 | "Quote This Service" CTA | Visible, tappable, text not wrapping |
+
+### 3.6 OfferAndIndustrySection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| IND-1 | Section padding | `py-10` — compact |
+| IND-2 | Cards | Stacked, no decorative elements visible |
+| IND-3 | Icons | Small (`h-10 w-10`) |
+| IND-4 | Chips | Inline, not multi-row wrapping |
+| IND-5 | Overall height | Visibly shorter than pre-hardening (no 3-screen cards) |
+
+### 3.7 BeforeAfterSlider
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| BA-1 | Section padding | `py-10` on mobile |
+| BA-2 | Aspect ratio | `aspect-[4/3]` — taller than desktop's 16:9 |
+| BA-3 | Slider drag | Touch-drag works smoothly |
+| BA-4 | "Drag to compare" hint | Visible on first load, disappears after interaction |
+| BA-5 | Tab buttons | All 3 visible, `min-h-[44px]`, active state clear |
+| BA-6 | Info grid below | 4 cells stack or fit without overflow |
+| BA-7 | Decorative grid | Hidden on mobile |
+
+### 3.8 TestimonialSection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| TEST-1 | Card padding | `px-5 py-6` — compact |
+| TEST-2 | Role text | `tracking-normal` — no awkward wrapping |
+| TEST-3 | Min height | `min-h-0` — no forced height on mobile |
+| TEST-4 | Nav dots | Visible, tappable |
+
+### 3.9 TimelineSection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| TL-1 | Rail/dots hidden | No vertical rail or dot markers on mobile |
+| TL-2 | Images hidden | No step images on mobile |
+| TL-3 | Step spacing | `mb-5` between steps |
+| TL-4 | Inline kicker | Detail text visible below description |
+| TL-5 | No indent | Steps flush with container edge |
+
+### 3.10 AboutSection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| ABT-1 | Image height | `h-56` — fixed, not viewport-height |
+| ABT-2 | No `min-h-[70vh]` | Mobile should NOT enforce 70vh minimum |
+| ABT-3 | Content padding | `px-6 py-10` |
+| ABT-4 | Font weight | `font-normal` on mobile, not `font-light` |
+
+### 3.11 ServiceAreaSection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| SA-1 | Map hidden | No SVG map or dot visualization on mobile |
+| SA-2 | Decorative elements hidden | Grid pattern + radial glow both hidden |
+| SA-3 | City grid | 2-column layout, all currently configured cities visible |
+| SA-4 | City cards | Compact, dot + name + distance readable |
+| SA-5 | Region legend | 3 dots with labels, fits on one line |
+| SA-6 | CTA | "Check Availability" button, `min-h-[48px]` |
+| SA-7 | Section padding | `py-10` on mobile |
+
+### 3.12 QuoteSection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| QT-1 | Image panel | `h-[28vh]` — compact header image |
+| QT-2 | Form inputs | All have `py-4` — 44px+ touch targets |
+| QT-3 | Select dropdowns | Tappable, open native picker |
+| QT-4 | Textarea | `enterKeyHint="done"` — keyboard shows "Done" |
+| QT-5 | Submit button | `min-h-[48px]`, full width |
+| QT-6 | Bottom CTAs | Both visible, `min-h-[48px]` |
+| QT-7 | Font weight | Body text `font-normal` on mobile |
+| QT-8 | Form clears sticky bar | When focused, sticky bar doesn't obscure active input |
+
+### 3.13 CareersSection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| CAR-1 | Section padding | `py-12` |
+| CAR-2 | Heading size | `text-3xl` |
+| CAR-3 | Body text | `text-sm` |
+| CAR-4 | Perk padding | `px-5 py-4` |
+
+### 3.14 FooterSection
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| FTR-1 | CTA banner | Compact: `px-5 py-6`, heading `text-xl` |
+| FTR-2 | "Built For" chips | Hidden on mobile |
+| FTR-3 | Grid | Single column stack |
+| FTR-4 | Nav links | 2-column grid |
+| FTR-5 | Contact links | Phone + email both have `min-h-[44px]` tap targets |
+| FTR-6 | Copyright | Compact margins, readable text |
+| FTR-7 | All CTAs have `ctaId` | "Get Your Free Quote" + "Or call" both instrumented |
+
+---
+
+## 4) Skeleton Loading Check
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| SK-1 | Scroll to BeforeAfterSlider location | Spinner skeleton visible during load |
+| SK-2 | Scroll to TestimonialSection location | Spinner skeleton visible during load |
+| SK-3 | Scroll to QuoteSection location | Spinner skeleton visible during load |
+| SK-4 | All skeletons | Center-aligned, `min-h-[40vh]`, no layout shift on load |
+
+**Test method:** Throttle network to "Slow 3G" in DevTools → reload page → scroll slowly to each dynamic section.
+
+---
+
+## 5) Screenshot Evidence Capture
+
+**Required per Acceptance Criteria #6:**
+
+Capture before/after for each major section at **320px** and **375px** minimum.
+
+| Section | 320px Screenshot | 375px Screenshot |
+|---|---|---|
+| Header + Hero | ☐ | ☐ |
+| AuthorityBar | ☐ | ☐ |
+| IncludedSummary | ☐ | ☐ |
+| ServiceSpread (card 1) | ☐ | ☐ |
+| OfferAndIndustry | ☐ | ☐ |
+| BeforeAfterSlider | ☐ | ☐ |
+| Testimonial | ☐ | ☐ |
+| Timeline | ☐ | ☐ |
+| About | ☐ | ☐ |
+| ServiceArea | ☐ | ☐ |
+| QuoteSection | ☐ | ☐ |
+| Careers | ☐ | ☐ |
+| Footer | ☐ | ☐ |
+
+---
+
+## 6) Desktop Regression Check (768px+)
+
+**Required per Acceptance Criteria #7:**
+
+At **768px** and **1280px**, verify:
+
+| # | Check | Pass Criteria |
+|---|---|---|
+| DR-1 | Hero | Badge visible, service chips visible, absolute trust bar visible |
+| DR-2 | AuthorityBar | 4-column layout, icons visible |
+| DR-3 | ServiceSpread | Side-by-side image + content, overlays visible, desktop panel visible |
+| DR-4 | Map | SVG map visible with dots and connections |
+| DR-5 | Footer | 4-column grid, "Built For" chips visible |
+| DR-6 | All font weights | `font-light` active where specified |
+| DR-7 | All animations | fadeUp, counters, slide-in all trigger |
+| DR-8 | Desktop nav | Dropdown menus work on hover/click |
+
+---
+
+## 7) Build Verification (Acceptance Criteria #8)
+
+Run after all changes from Batches 2–4 are applied:
+
+```bash
+npx tsc --noEmit
+npm run lint
+npx next build
+```
+
+| Check | Result | Notes |
+|---|---|---|
+| `tsc --noEmit` | ☐ Pass ☐ Fail | |
+| `npm run lint` | ☐ Pass ☐ Fail | |
+| `npx next build` | ☐ Pass ☐ Fail | |
+
+---
+
+## 8) Acceptance Gate Summary
+
+| # | Criteria | Status |
+|---|---|---|
+| 1 | All Batch A–E changes applied and building | ☐ |
+| 2 | Homepage mobile scroll reduced by >40% | ☐ (measure at 375px) |
+| 3 | No horizontal overflow at 320–430px | ☐ |
+| 4 | Sticky CTA + AI trigger + menu layering deterministic | ☐ |
+| 5 | All CTAs meet 44px minimum touch target | ☐ |
+| 6 | Before/after screenshots captured | ☐ |
+| 7 | Desktop renders identically (zero regression at 768px+) | ☐ |
+| 8 | `tsc`, `lint`, `build` all pass | ☐ |
+
+**When all 8 boxes are checked:** R-00 is ✅ Complete. Update Master Spec 4.0 §3.0 status and proceed to Pass 1 completion (§4).
+
+---
+
+## 9) Failure Protocol
+
+If any check fails:
+
+1. **Log it** — section, viewport, description, screenshot
+2. **Classify** — blocking (overflow, broken CTA, inaccessible input) vs. polish (spacing slightly off)
+3. **Fix blocking items** before re-running the failed viewport
+4. **Defer polish items** to a post-launch micro-pass unless they violate §3 non-negotiables
+5. **Re-run** only the failed viewport + the 320px viewport (smallest always re-verified)
+6. 

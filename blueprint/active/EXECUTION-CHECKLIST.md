@@ -1,7 +1,7 @@
 # Execution Checklist
 
 Source of truth: Master-Spec-4.0 §4, §6, §13
-Last updated: 2026-03-21
+Last updated: 2026-04-02
 
 Rule: Complete each pass in order. Do not begin a later pass until all items in the current pass are closed with evidence.
 
@@ -36,11 +36,28 @@ Rule: Complete each pass in order. Do not begin a later pass until all items in 
 
 | # | Item | Status | Evidence / Date |
 |---|---|---|---|
-| 1 | `NEXT_PUBLIC_EMPLOYEE_INVENTORY=false` confirmed in code | ☐ | .env.example check |
-| 2 | `/#industries` hash anchors confirmed (no dedicated routes) | ☐ | Route audit |
-| 3 | User manual accuracy check against final build state | ☐ | Manual reviewed, deltas noted |
+| 1 | `NEXT_PUBLIC_EMPLOYEE_INVENTORY=false` confirmed in code | ✅ | Added to lib/env.ts and filtered in EmployeePortalTabs.tsx (2026-03-22) |
+| 2 | `/#industries` hash anchors confirmed (no dedicated routes) | ✅ | Verified in PublicHeader.tsx and OfferAndIndustrySection.tsx (2026-03-22) |
+| 3 | User manual accuracy check against final build state | ⏸ | File not found in workspace (2026-03-22) |
 
 **Exit gate:** All three rows marked ✅. Launch scope frozen.
+
+---
+
+## Priority Override — R-00 Homepage Mobile UX/UI/Functional Hardening
+
+Source spec: `HOMEPAGE-MOBILE-UX-UI-FUNCTIONAL-HARDENING-SPEC.md`
+
+| Batch | Scope | Status | Evidence / Date |
+|---|---|---|---|
+| A | Foundation layers (safe-area, z-index, sticky/mobile assistant coordination) | ✅ | Public chrome + assistant updates validated in code (2026-04-02) |
+| B | Header + Hero structural mobile fixes | ✅ | Header/menu behavior and hero mobile restructuring validated in code (2026-04-02) |
+| C | Heavy layout restructure set (Authority, ServiceSpread, Offer/Industry, Timeline) | ✅ | Responsive spacing and mobile composition validated in code (2026-04-02) |
+| D | Content section mobile trims (Testimonials, About, Careers) | ✅ | Mobile density and readability updates validated in code (2026-04-02) |
+| E | Remaining targeted fixes (ServiceArea, Footer, QuoteSection, FloatingQuotePanel) | ✅ | CTA ID, touch targets, and input ergonomics validated in code (2026-04-02) |
+| F | QA + perceived performance polish | ✅ | Dynamic section skeleton fallbacks present in Variant A page (2026-04-02) |
+
+**Exit gate:** All batches A-F marked ✅ and no mobile blockers at 320px/375px/430px.
 
 ---
 
@@ -52,18 +69,19 @@ Build in this order (see Master Spec §13 for rationale):
 
 | Order | ID | Feature | Effort | Status | Ship Date |
 |---|---|---|---|---|---|
-| 1 | F-25 | CTA taxonomy + funnel instrumentation | M (1-2 days) | ☐ | |
-| 2 | F-02 | Lead auto-acknowledgment | S (3-4 hrs) | ☐ | |
-| 3 | F-03 | Lead aging alerts | M (1 day) | ☐ | |
-| 4 | F-05 | Simplified sidebar grouping | S (2-3 hrs) | ☐ | |
-| 5 | F-01 | Morning Briefing dashboard | L (2-3 days) | ☐ | |
-| 6 | F-04 | Quick Quote templates | M (1-2 days) | ☐ | |
-| 7 | F-11 | Map/navigation link (employee) | XS (30 min) | ☐ | |
-| 8 | F-12 | Job-day summary (employee) | M (1 day) | ☐ | |
+| 1 | F-25 | CTA taxonomy + funnel instrumentation | M (1-2 days) | ✅ | 2026-03-22 |
+| 2 | F-02 | Lead auto-acknowledgment | S (3-4 hrs) | ✅ | 2026-03-22 |
+| 3 | F-03 | Lead aging alerts | M (1 day) | ✅ | 2026-03-22 |
+| 4 | F-05 | Simplified sidebar grouping | S (2-3 hrs) | ✅ | 2026-03-22 |
+| 5 | F-01 | Morning Briefing dashboard | L (2-3 days) | ✅ | 2026-03-22 |
+| 6 | F-04 | Quick Quote templates | M (1-2 days) | ✅ | 2026-04-02 |
+| 7 | F-11 | Map/navigation link (employee) | XS (30 min) | ✅ | 2026-03-22 |
+| 8 | F-12 | Job-day summary (employee) | M (1 day) | ✅ | 2026-03-22 |
 
 ### Schema prerequisite
 
 Migration 1 (Lead Lifecycle Fields) must land before F-01, F-03, and F-12 can be completed. See Master Spec §10.
+**Status:** ✅ Migration 0020 applied (2026-03-22).
 
 ---
 
@@ -71,10 +89,10 @@ Migration 1 (Lead Lifecycle Fields) must land before F-01, F-03, and F-12 can be
 
 | Order | ID | Feature | Effort | Content Needed | Status | Ship Date |
 |---|---|---|---|---|---|---|
-| 1 | F-17 | Confirmation page | S (2-3 hrs) | None | ☐ | |
-| 2 | F-23 | Service-page objection modules | S (3-4 hrs) | 3-5 Q&As per service | ☐ | |
-| 3 | F-24 | Pricing/SLA guidance | S (3-4 hrs) | Pricing ranges + SLAs | ☐ | |
-| 4 | F-22 | Service-area route depth | L (2-3 days) | City descriptions + proof | ☐ | |
+| 1 | F-17 | Confirmation page | S (2-3 hrs) | None | ✅ | 2026-03-22 |
+| 2 | F-23 | Service-page objection modules | S (3-4 hrs) | 3-5 Q&As per service | ✅ | 2026-04-02 |
+| 3 | F-24 | Pricing/SLA guidance | S (3-4 hrs) | Pricing ranges + SLAs | ✅ | 2026-04-02 |
+| 4 | F-22 | Service-area route depth | L (2-3 days) | City descriptions + proof | ✅ | 2026-04-02 |
 
 ### Content prerequisite
 
@@ -88,8 +106,8 @@ Start after P0 ships.
 
 | ID | Feature | Effort | Status | Ship Date |
 |---|---|---|---|---|
-| F-06 | One-tap dispatch | M | ☐ | |
-| F-07 | Post-job automation chain | L | ☐ | |
+| F-06 | One-tap dispatch | M | ✅ | 2026-04-03 |
+| F-07 | Post-job automation chain | L | 🟡 | 2026-04-03 |
 | F-08 | Simple revenue tracker | M | ☐ | |
 | F-09 | Help tooltips + first-login tour | S | ☐ | |
 | F-13 | Photo requirements (employee) | M | ☐ | |
@@ -103,6 +121,20 @@ Start after P0 ships.
 Migration 2 (Payment & Quote Templates) must land before F-04, F-07, F-08.
 Migration 3 (Instrumentation & Onboarding) must land before F-09, F-25.
 Migration 4 (Employee & Automation) must land before F-13, F-18, F-20, F-32.
+
+F-07 progress evidence (2026-04-03):
+- `post_job_sequence` schema landed via migration 0022.
+- Auto-start wired from completion report route into `startPostJobSequence`.
+- Manual admin trigger route added (`/api/post-job-sequence`).
+- Scheduler route added (`/api/post-job-scheduler`) for due-step execution.
+- Inbound rating route added (`/api/post-job-rating`) for 1-5 SMS parsing and branch logic.
+- Runtime settings persistence added via migration 0023 (`automation_settings` row for `post_job`).
+- Admin settings API added (`/api/post-job-settings`) with admin auth and normalized persistence.
+- Admin configuration UI added (`PostJobAutomationSettingsClient`) and wired into Configuration module.
+- Acceptance runbook added: [Production-workspace/docs/post-job-automation-acceptance-runbook.md](Production-workspace/docs/post-job-automation-acceptance-runbook.md).
+- Preflight command added: `npm run preflight:f07` (env + DNS + HTTPS readiness).
+- Automated precheck added: `npm run smoke:f07` (script: `src/lib/post-job-smoke-tests.ts`).
+- Evidence template added: [Production-workspace/docs/evidence/f07-evidence-template.md](Production-workspace/docs/evidence/f07-evidence-template.md).
 
 ---
 

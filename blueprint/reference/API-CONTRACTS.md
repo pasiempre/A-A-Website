@@ -1,6 +1,6 @@
 # API Contracts & Specifications
 
-**Last Updated**: March 20, 2026  
+**Last Updated**: April 2, 2026  
 **Framework**: Next.js API Routes (`src/app/api/`)  
 **Database**: Supabase (see DB-SCHEMA-SUMMARY.md)  
 **Authentication**: Supabase Auth (via middleware.ts)
@@ -23,6 +23,10 @@ Session context references: `SESSION-LOG.md`, `PICKUP-GUIDE.md`
 | `/api/employment-application` | POST | Submit job application form | 🟡 Rate-limited, no email delivery | `employment-application/route.ts` |
 | `/api/notification-dispatch` | POST | Batch send queued notifications | ✅ Complete | `notification-dispatch/route.ts` |
 | `/api/conversion-event` | POST | Track conversion metrics | ✅ Complete | `conversion-event/route.ts` |
+| `/api/post-job-sequence` | POST | Manually start post-job sequence (admin) | ✅ Complete | `post-job-sequence/route.ts` |
+| `/api/post-job-scheduler` | POST | Execute due post-job automation steps (cron) | ✅ Complete | `post-job-scheduler/route.ts` |
+| `/api/post-job-rating` | POST | Inbound customer rating webhook (Twilio) | ✅ Complete | `post-job-rating/route.ts` |
+| `/api/post-job-settings` | GET/PATCH | Read/update post-job runtime settings (admin) | ✅ Complete | `post-job-settings/route.ts` |
 | `/api/ai-assistant` | POST | AI chatbot (basic fallback) | 🟡 Fallback only | `ai-assistant/route.ts` |
 | `/api/quickbooks-sync` | POST | Sync to QuickBooks financials | 🔴 Simulated | `quickbooks-sync/route.ts` |
 

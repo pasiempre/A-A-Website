@@ -1,6 +1,6 @@
 # Master Spec 4.0 — Current State
 
-Last Updated: 2026-03-21
+Last Updated: 2026-04-03
 Audit Mode: Post-3.0 deep normalization pass
 Scope Target: Remaining work, execution plan, validated upgrade roadmap
 
@@ -42,12 +42,28 @@ Status legend:
   - Route upgrades in `src/app/api/quote-request/route.ts` and `src/app/api/ai-assistant/route.ts`
 - ✅ **Product decisions resolved** (inventory gate + industry routes — see §3.2).
 - ✅ **User manual delivered** (`A&A-Cleaning-Platform-User-Manual.md`).
+- 🟡 **F-07 implementation advanced** (post-job sequence foundations + execution routes):
+  - `src/lib/post-job-sequence.ts`
+  - `src/lib/post-job-settings.ts`
+  - `src/app/api/post-job-sequence/route.ts`
+  - `src/app/api/post-job-scheduler/route.ts`
+  - `src/app/api/post-job-rating/route.ts`
+  - `src/app/api/post-job-settings/route.ts`
+  - `src/components/admin/PostJobAutomationSettingsClient.tsx`
+  - `src/app/api/completion-report/route.ts` (auto-trigger integration)
+  - `supabase/migrations/0022_post_job_sequence_and_payments.sql`
+  - `supabase/migrations/0023_post_job_automation_settings.sql`
+- ✅ **F-07 schema/runtime validation progressed**:
+  - Applied remote migrations: `0021_quote_templates.sql`, `0022_post_job_sequence_and_payments.sql`, `0023_post_job_automation_settings.sql`, `0024_jobs_title_compatibility.sql`
+  - `npm run preflight:f07` passes (env + DNS + HTTPS)
+  - `npm run smoke:f07` passes (8/8)
+  - Added runtime hardening in `src/app/api/post-job-rating/route.ts`, `src/app/api/post-job-settings/route.ts`, `src/lib/post-job-settings.ts`
 
 ### 1.2 Verified Build State
 
 - ✅ `npx tsc --noEmit` passes.
 - ✅ `npx next build` passes.
-- ✅ `npm run lint` — 0 errors. 1 pre-existing warning in `src/lib/quickbooks.ts` (`networkError` unused). Fix: prefix with underscore or remove.
+- ✅ `npm run lint` passes.
 
 ### 1.3 Drift Corrected by 4.0
 
@@ -77,9 +93,23 @@ Status legend:
 
 ## 3) Remaining Work Register (Execution-Only)
 
+### 3.0 R-00 — Homepage Mobile UX/UI/Functional Hardening (Highest Priority)
+
+**State:** 🟡 Implemented in code (Batches A-E complete); Batch F evidence pack pending
+
+**Priority directive:** This is the top execution priority before normal roadmap progression.
+
+**Implementation detail source:** `HOMEPAGE-MOBILE-UX-UI-FUNCTIONAL-HARDENING-SPEC.md`
+
+**Scope boundary:** Public homepage mobile experience (`/`) only.
+
+**Acceptance gate:** All mobile acceptance criteria in the hardening spec pass across the required device matrix with before/after evidence (Batch F). Batch E completed 2026-03-22; Batch F evidence is still an open documentation task.
+
+---
+
 ### 3.1 R-01 — Credential-Gated Manual Validation
 
-**State:** 🟡 Not yet executed
+**State:** 🟡 Partially executed
 
 **Why it remains:** Cannot be proven by static build/lint.
 
@@ -92,6 +122,11 @@ Status legend:
 | 3 | QuickBooks OAuth callback + sync | Intuit | Token exchange + invoice creation in sandbox |
 | 4 | Sentry capture quality | Sentry | Event with tags, metadata, runtime context |
 | 5 | Rate-limit burst → deterministic 429 | Upstash | Response headers + 429 on request 6 |
+
+**Progress update (2026-04-03):**
+- ✅ Preflight baseline completed: env + DNS + HTTPS reachability.
+- ✅ F-07 foundation smoke completed: 8/8 passing after schema reconciliation.
+- 🟡 Remaining items are provider/device evidence scenarios in the table above.
 
 **Acceptance gate:** End-to-end pass log with timestamp, tester, environment, and evidence per scenario.
 
@@ -141,6 +176,11 @@ Status legend:
 
 ## 4) Multi-Pass Execution Plan
 
+### Priority Override — Must Execute First
+
+- Complete R-00 (homepage mobile hardening) before continuing the standard pass flow.
+- Treat R-00 completion evidence as a launch-quality gate for public conversion readiness.
+
 ### Pass 1 — Stability & Security Confirmation
 
 **Status: Substantially complete. Two owner-pending items remain.**
@@ -165,6 +205,10 @@ Status legend:
 - Capture failure evidence and remediation items.
 - Re-run smoke checks after each fix.
 
+**Progress update (2026-04-03):**
+- Preflight + focused smoke are complete.
+- Provider/device evidence scenarios remain open (Twilio/Sentry/QuickBooks/Upstash live proofs).
+
 ### Pass 3 — Release Policy Finalization
 
 - Confirm R-02 decisions are implemented in code (inventory flag + anchor links).
@@ -187,6 +231,7 @@ Status legend:
 | 3 | Scope creep: mixing feature roadmap with launch gates | Passes 1-3 must close before Pass 4 begins |
 | 4 | Documentation drift: 3.0 vs 4.0 inconsistency | 4.0 is canonical; 3.0 is archive only |
 | 5 | Conversion underweight: ops features ship without matching public conversion depth | P0 includes 4 public conversion features (F-22–F-25) with equal priority to ops features |
+| 6 | Sequence collision: same contact receives overlapping automations from F-07/F-18/F-20/F-32/F-33 | Enforce global orchestration policy in §11 (single active customer sequence; newest intent wins) |
 
 ---
 
@@ -199,7 +244,7 @@ Status legend:
 | 1 | Code/build gates (`tsc`, `lint`, `build`) | ✅ Complete |
 | 2 | Product decisions signed | ✅ Complete (§3.2) |
 | 3 | Secrets hygiene signed (rotation + env parity) | 🟡 Two items pending (§3.3) |
-| 4 | Credential-gated runbook executed with evidence | 🟡 Not yet executed (§3.1) |
+| 4 | Credential-gated runbook executed with evidence | 🟡 Partial — preflight + F-07 smoke complete; provider/device proofs pending (§3.1) |
 
 When all four pass: system is launch-ready at operational level. Feature roadmap (§8) begins.
 
@@ -208,7 +253,7 @@ When all four pass: system is launch-ready at operational level. Feature roadmap
 ## 7) Code Health Audit
 
 Audit Date: 2026-03-21
-Full findings: See `CODE-HEALTH-AUDIT.md`
+Full findings: See `../reference/CODE-HEALTH-AUDIT.md`
 
 **Summary:** 15 hotspots identified across maintainability, developer velocity, CPU, bundle, reliability, and network categories. No launch-blocking issues. Two findings are resolved by P0 features (F-25 resolves CTA duplication, F-01 + F-05 resolve AdminShell concentration). Remaining items are mapped to post-launch tech debt sprints.
 
@@ -282,6 +327,7 @@ All features must pass `tsc + lint + build` before merge.
 ### 8.1 Admin — "Don't Make Me Hunt For It"
 
 #### F-01: Morning Briefing Dashboard (P0)
+**Status:** 🟢 Implemented (2026-03-22)
 
 **Problem:** Dashboard shows metrics. Operator needs actions.
 
@@ -312,6 +358,10 @@ All features must pass `tsc + lint + build` before merge.
 - Default view inside `AdminShell`
 - Action buttons deep-link into relevant modules
 - Time-aware greeting: morning / afternoon / evening
+
+**Implementation note (2026-04-02):**
+- The “Yesterday’s Wins” dollar metric may use an interim proxy until a finalized completed-job revenue source is wired.
+- Treat strict completed-work revenue semantics as a follow-up enhancement (align with F-08 revenue tracker scope), not a blocker for F-01 usability delivery.
 
 **Resolves audit finding:** §7.2B #8 (AdminShell module concentration) — briefing becomes the primary surface, reducing reliance on monolithic shell navigation.
 
@@ -368,9 +418,18 @@ All features must pass `tsc + lint + build` before merge.
 - Add `last_contacted_at` + `followup_reminder_count` to `leads` table
 - Cron runs every 30 min; deduplicates via reminder count
 
+**Acceptance criteria:**
+1. Lead reminders fire at 1h, 4h, and 24h only once per threshold for each lead.
+2. 48h transition marks lead `At Risk` and surfaces in Morning Briefing.
+3. If `last_contacted_at` is updated before a threshold, pending reminders for that threshold do not fire.
+4. Quiet-hours policy is respected for admin-facing SMS messages.
+5. Validation method: cron simulation + reminder-count query + notification log verification.
+
 ---
 
 #### F-04: Quick Quote Templates (P0)
+
+**Status:** 🟢 Implemented (2026-04-02)
 
 **Problem:** Building quotes from scratch is slow and error-prone.
 
@@ -421,9 +480,18 @@ Select template → pre-fills service type, description, line items → adjust q
 
 **Resolves audit finding:** §7.2B #8 (AdminShell module concentration) — clearer IA reduces cognitive load.
 
+**Acceptance criteria:**
+1. Sidebar renders only the three top-level groups (Daily Work, Business, Settings).
+2. Existing destination routes remain reachable without deep-link regressions.
+3. Mobile/tablet navigation remains usable with no horizontal overflow at 320px.
+4. First-click access time to top tasks (Leads, Jobs, Review) is reduced versus baseline navigation.
+5. Validation method: visual regression pass + route click-through checklist.
+
 ---
 
 #### F-06: One-Tap Job Dispatch (P1)
+
+**Status:** ✅ Implemented (2026-04-03)
 
 **Problem:** Quote accepted → multiple steps across modules to create + assign + notify.
 
@@ -445,6 +513,8 @@ Select template → pre-fills service type, description, line items → adjust q
 
 #### F-07: Post-Job Automation Chain (P1)
 
+**Status:** 🟡 In progress (2026-04-03)
+
 **Problem:** After completion, admin must manually: review photos → follow up with customer → track payment.
 
 **Solution:** Automated sequence triggered by employee marking job complete.
@@ -464,6 +534,17 @@ Select template → pre-fills service type, description, line items → adjust q
 - Inbound SMS webhook parses 1-5 rating replies
 - Google review link configurable in Settings
 - `paid_at` + `payment_method` fields on ticket record
+
+**Implementation snapshot (2026-04-03):**
+- Sequence bootstrap implemented and auto-triggered from QA-approved completion flow.
+- Admin immediate notification + customer completion email implemented.
+- Scheduler route implemented for due-step processing.
+- Inbound rating reply route implemented with low-rating/admin-alert and high-rating/review-invite branching.
+- Settings-backed runtime controls implemented across chain (DB-backed config + admin API + admin UI module).
+
+**Open gaps before marking complete:**
+- Run credential-gated end-to-end validation with evidence (real SMS delivery, parse, branch, and reminders).
+- Note: foundational validation is now green (`preflight:f07` and `smoke:f07` pass after migration alignment).
 
 ---
 
@@ -489,6 +570,13 @@ Select template → pre-fills service type, description, line items → adjust q
 - Weekly summary in Morning Briefing (F-01)
 - Auto-mark overdue after configurable threshold
 
+**Acceptance criteria:**
+1. Weekly totals match underlying ticket aggregates for completed, paid, and unpaid values.
+2. Mark-as-paid action updates `payment_status`, `paid_at`, and reflects immediately in UI totals.
+3. Overdue status transition runs deterministically from configured threshold.
+4. Empty-state weeks render with clear zero-value messaging.
+5. Validation method: seeded ticket set + aggregate query comparison + UI verification.
+
 ---
 
 #### F-09: Inline Help Tooltips + First-Login Tour (P1)
@@ -501,6 +589,13 @@ Select template → pre-fills service type, description, line items → adjust q
 - 5-step guided overlay on first admin login
 - Skippable, replayable from Settings
 - `has_completed_tour` flag on admin profile
+
+**Acceptance criteria:**
+1. First-login tour auto-starts once per profile when `has_completed_tour=false`.
+2. Skip action persists state and does not re-open tour on next login unless user replays manually.
+3. Replay control from Settings launches tour reliably.
+4. Tooltip content is accessible by keyboard and touch with proper focus behavior.
+5. Validation method: profile-flag toggling + interaction test on desktop and tablet.
 
 ---
 
@@ -596,6 +691,8 @@ Close Rate (MTD): 28% ⚠️ (target: 30%)
 
 #### F-11: Map & Directions Link (P0)
 
+**Status:** 🟢 Implemented (2026-04-03 verification)
+
 **Problem:** Employee sees address but must copy-paste into maps app.
 
 **Solution:** "📍 Navegación" button on every job card.
@@ -617,6 +714,8 @@ One tap → directions. No copy-paste, no wrong turns.
 
 #### F-12: Job-Day Summary View (P0)
 
+**Status:** 🟡 Implemented with dependency caveat (2026-04-03 verification)
+
 **Problem:** Employee sees job list with no sequencing. Must figure out "what's first?"
 
 **Solution:** Daily timeline at top of "Mis Trabajos."
@@ -634,6 +733,8 @@ One tap → directions. No copy-paste, no wrong turns.
 Current = highlighted. Completed = grayed + checkmark. Next = clearly marked.
 
 **Schema dependency:** Requires `assignments.scheduled_start` (`timestamptz`) or equivalent planned-start field. Without this field, ordering falls back to non-operational sorting and cannot represent intended execution time reliably.
+
+**Current limitation note:** Until Migration 1 is applied end-to-end, F-12 should be treated as functionally degraded (timeline UI present, operational ordering not yet guaranteed).
 
 **Acceptance criteria:**
 1. Employee sees jobs in chronological order for the selected day.
@@ -728,6 +829,8 @@ Admin dispatch view shows: `📍 Checked in at location (8:02 AM)`
 
 #### F-17: Instant Confirmation Page (P0)
 
+**Status:** 🟢 Implemented (2026-04-03 verification)
+
 **Problem:** After quote submission, customer sees generic "thank you." Missed conversion reinforcement.
 
 **Solution:** Dedicated confirmation page with next-steps and continued engagement.
@@ -750,6 +853,10 @@ While you wait:
 
 #### F-22: Service-Area Route Depth (P0)
 
+**Status:** 🟢 Implemented (2026-04-02)
+
+**Content status:** 🟡 Implementation framework is live; owner/content sign-off is still required to confirm city-level copy and proof density are not placeholder-thin.
+
 **Problem:** Service-area pages exist as dynamic routes but content is thin. Customers searching "cleaning services in [City]" land on pages without local proof, local CTAs, or local trust signals.
 
 **Solution:** Fully populated city pages with:
@@ -771,6 +878,10 @@ While you wait:
 ---
 
 #### F-23: Service-Page Objection Modules (P0)
+
+**Status:** 🟢 Implemented (2026-04-02)
+
+**Content status:** 🟡 Module system is live; owner/content sign-off is still required to confirm service-specific objections are production-final.
 
 **Problem:** All objections are handled on one FAQ page. Customers on a specific service page (e.g., post-construction) leave without seeing answers to their specific concerns.
 
@@ -805,6 +916,10 @@ A: "We photograph everything before and after. If anything
 
 #### F-24: Public Pricing/SLA Guidance (P0)
 
+**Status:** 🟢 Implemented (2026-04-02)
+
+**Content status:** 🟡 Component framework is live; owner/content sign-off is still required to confirm pricing ranges and SLA commitments are approved for public publication.
+
 **Problem:** No pricing signals anywhere on the site. Enterprise buyers (property managers, GCs) need budget confidence before requesting a quote. Without it, they assume you're either too expensive or not serious enough.
 
 **Solution:** Pricing guidance blocks on service pages and a dedicated "How Pricing Works" section.
@@ -836,6 +951,8 @@ Starting from $X.XX per square foot
 ---
 
 #### F-25: CTA Taxonomy + Funnel Instrumentation (P0)
+
+**Status:** 🟢 Implemented in public conversion surface (2026-04-03 verification)
 
 **Problem:** CTAs are abundant but inconsistently named, positioned, and tracked. Can't tell which CTA on which page drives the most conversions. Can't A/B test because there's no baseline.
 
@@ -1114,45 +1231,53 @@ Free weather API (OpenWeatherMap), once-daily call per service area. Display onl
 
 ## 9) Feature Roadmap — Priority Matrix
 
+### 9.0 P0 Completion Snapshot (Reconciled 2026-04-03)
+
+| Bucket | Count | Features |
+|---|---|---|
+| ✅/🟢 Implemented | 9 | F-01, F-04, F-11, F-12, F-17, F-22, F-23, F-24, F-25 |
+| 🟡 Implemented with caveat | 1 | F-12 (depends on `assignments.scheduled_start` for operational ordering) |
+| ❌ Remaining P0 build work | 3 | F-02, F-03, F-05 |
+
+Estimated remaining P0 delivery: ~2-3 developer days (excluding provider-credential validation and owner-run content sign-off).
+
 ### P0 — Pre-Launch / Immediate Post-Launch (12 features)
 
-| ID | Feature | Surface | Effort | Dependencies | Revenue Plan Alignment |
-|---|---|---|---|---|---|
-| F-25 | CTA taxonomy + instrumentation | Public | M (1-2 days) | None (build first) | §12.1.5, §18 |
-| F-02 | Lead auto-acknowledgment | API/Notifications | S (3-4 hrs) | Twilio + Resend configured | §13.5 P0 #3 |
-| F-03 | Lead aging alerts | API/Notifications | M (1 day) | F-02 + lead lifecycle migration | §13.1 |
-| F-05 | Simplified sidebar grouping | Admin | S (2-3 hrs) | None | — |
-| F-01 | Morning Briefing dashboard | Admin | L (2-3 days) | F-03 fields + data queries | — |
-| F-04 | Quick Quote templates | Admin | M (1-2 days) | Quote template schema | — |
-| F-17 | Confirmation page | Public | S (2-3 hrs) | F-25 event coverage | — |
-| F-23 | Service-page objection modules | Public | S (3-4 hrs) | Content drafted | §12.1.4 |
-| F-24 | Pricing/SLA guidance | Public | S (3-4 hrs) | Content drafted | §12.1.3, §13.5 |
-| F-22 | Service-area route depth | Public | L (2-3 days) | Content + structured data | §12.1.1, §13.5 |
-| F-11 | Map/navigation link | Employee | XS (30 min) | None | — |
-| F-12 | Job-day summary | Employee | M (1 day) | Scheduled-start field | — |
-
-Estimated P0 total: ~12-16 developer days (single-developer baseline, excluding content-production lead time).
+| ID | Feature | Status | Surface | Remaining Effort | Dependencies | Revenue Plan Alignment |
+|---|---|---|---|---|---|---|
+| F-25 | CTA taxonomy + instrumentation | 🟢 Implemented | Public | — | None | §12.1.5, §18 |
+| F-02 | Lead auto-acknowledgment | ❌ Not implemented | API/Notifications | S (3-4 hrs) | Twilio + Resend configured | §13.5 P0 #3 |
+| F-03 | Lead aging alerts | ❌ Not implemented | API/Notifications | M (1 day) | F-02 + lead lifecycle migration | §13.1 |
+| F-05 | Simplified sidebar grouping | ❌ Not implemented | Admin | S (2-3 hrs) | None | — |
+| F-01 | Morning Briefing dashboard | 🟢 Implemented | Admin | — | Lead lifecycle fields improve data quality | — |
+| F-04 | Quick Quote templates | 🟢 Implemented | Admin | — | Quote template schema landed | — |
+| F-17 | Confirmation page | 🟢 Implemented | Public | — | F-25 event coverage | — |
+| F-23 | Service-page objection modules | 🟢 Implemented | Public | Content sign-off pending | Content finalized for production | §12.1.4 |
+| F-24 | Pricing/SLA guidance | 🟢 Implemented | Public | Content sign-off pending | Content finalized for production | §12.1.3, §13.5 |
+| F-22 | Service-area route depth | 🟢 Implemented | Public | Content sign-off pending | Structured data + city content quality check | §12.1.1, §13.5 |
+| F-11 | Map/navigation link | 🟢 Implemented | Employee | — | None | — |
+| F-12 | Job-day summary | 🟡 Implemented with caveat | Employee | Migration 1 dependency | `assignments.scheduled_start` | — |
 
 ### P1 — First 30 Days Post-Launch (16 features)
 
-| ID | Feature | Surface | Effort | Dependencies | Revenue Plan Alignment |
-|---|---|---|---|---|---|
-| F-06 | One-tap dispatch | Admin | M | F-04 stable + assignment flows | — |
-| F-07 | Post-job automation chain | API/Notifications | L | post-job sequence schema + webhook handling | §12.2.3 |
-| F-08 | Simple revenue tracker | Admin | M | payment fields migration | — |
-| F-09 | Help tooltips + tour | Admin | S | profile flag migration | — |
-| F-13 | Photo requirements | Employee | M | photo requirements schema | — |
-| F-14 | Completion lockout | Employee | M | F-13 complete | — |
-| F-15 | Time logging visibility | Employee + Admin | M | accurate assignment/timestamp data | — |
-| F-18 | Quote follow-up sequence | API/Notifications | M | quote follow-up table + event signals | — |
-| F-20 | Customer reactivation | API/Notifications | S-M | customer last-job field | §13.6 #4 |
-| F-26 | Proof library / portfolio | Public | L | portfolio table + content assets | §12.3.1 |
-| F-27 | Campaign landing templates | Public | M-L | content variants + template scaffolding | §12.3.3 |
-| F-28 | Recurring revenue emphasis | Public | M | recurring content + calculator inputs | §13.5, §15 |
-| F-29 | SLA performance dashboard | Admin | M | lead timestamps + KPI thresholds | §12.4.1, §6 |
-| F-30 | Capacity throttle signal | Admin | M | capacity threshold + dispatch availability data | §12.4.2 |
-| F-32 | Multi-touch lead nurture | API/Notifications | M | nurture table + stop conditions | §13.5 |
-| F-33 | Review generation workflow | API/Notifications | M | F-07 chain + review tracking | §12.2.3, §13.1 |
+| ID | Feature | Status | Surface | Effort | Dependencies | Revenue Plan Alignment |
+|---|---|---|---|---|---|---|
+| F-06 | One-tap dispatch | ✅ Implemented | Admin | — | F-04 stable + assignment flows | — |
+| F-07 | Post-job automation chain | 🟡 In progress | API/Notifications | L | post-job sequence schema + webhook handling | §12.2.3 |
+| F-08 | Simple revenue tracker | ❌ Not implemented | Admin | M | payment fields migration | — |
+| F-09 | Help tooltips + tour | ❌ Not implemented | Admin | S | profile flag migration | — |
+| F-13 | Photo requirements | ❌ Not implemented | Employee | M | photo requirements schema | — |
+| F-14 | Completion lockout | ❌ Not implemented | Employee | M | F-13 complete | — |
+| F-15 | Time logging visibility | ❌ Not implemented | Employee + Admin | M | accurate assignment/timestamp data | — |
+| F-18 | Quote follow-up sequence | ❌ Not implemented | API/Notifications | M | quote follow-up table + event signals | — |
+| F-20 | Customer reactivation | ❌ Not implemented | API/Notifications | S-M | customer last-job field | §13.6 #4 |
+| F-26 | Proof library / portfolio | ❌ Not implemented | Public | L | portfolio table + content assets | §12.3.1 |
+| F-27 | Campaign landing templates | ❌ Not implemented | Public | M-L | content variants + template scaffolding | §12.3.3 |
+| F-28 | Recurring revenue emphasis | ❌ Not implemented | Public | M | recurring content + calculator inputs | §13.5, §15 |
+| F-29 | SLA performance dashboard | ❌ Not implemented | Admin | M | lead timestamps + KPI thresholds | §12.4.1, §6 |
+| F-30 | Capacity throttle signal | ❌ Not implemented | Admin | M | capacity threshold + dispatch availability data | §12.4.2 |
+| F-32 | Multi-touch lead nurture | ❌ Not implemented | API/Notifications | M | nurture table + stop conditions | §13.5 |
+| F-33 | Review generation workflow | ❌ Not implemented | API/Notifications | M | F-07 chain + review tracking | §12.2.3, §13.1 |
 
 Estimated P1 total: ~18-26 developer days (single-developer baseline, excluding external API/tooling onboarding).
 
@@ -1182,6 +1307,17 @@ Estimated P1 total: ~18-26 developer days (single-developer baseline, excluding 
 
 Migrations are grouped by sprint and sequenced by dependency. Each migration should be an idempotent SQL file in `supabase/migrations/`.
 
+### 10.0 Applied Remote Migrations (Shipped)
+
+- ✅ `0021_quote_templates.sql`
+- ✅ `0022_post_job_sequence_and_payments.sql`
+- ✅ `0023_post_job_automation_settings.sql`
+- ✅ `0024_jobs_title_compatibility.sql`
+
+These are already applied remotely and should not be treated as pending creation work.
+
+### 10.1 Remaining Migration Work (Execution Queue)
+
 ### Migration 1: Lead Lifecycle Fields (Blocks: F-01, F-03, F-12)
 
 - `leads.last_contacted_at` (`timestamptz`, nullable)
@@ -1189,14 +1325,7 @@ Migrations are grouped by sprint and sequenced by dependency. Each migration sho
 - `leads.source` (`text`, nullable)
 - `assignments.scheduled_start` (`timestamptz`, nullable) or equivalent planned start field
 
-### Migration 2: Payment & Quote Templates (Blocks: F-04, F-07, F-08)
-
-- New table: `quote_templates`
-- `tickets.paid_at` (`timestamptz`, nullable)
-- `tickets.payment_method` (`text`, nullable)
-- `tickets.payment_status` (`enum`: `pending`/`invoiced`/`paid`/`overdue`)
-- `tickets.payment_amount` (`numeric`, nullable)
-- New table: `post_job_sequence`
+**Priority note:** Migration 1 is now the highest-impact schema item because it unblocks full operational correctness for F-12 and supports F-03/F-01 data quality.
 
 ### Migration 3: Instrumentation & Onboarding (Blocks: F-09, F-25)
 
@@ -1250,6 +1379,22 @@ Migrations are grouped by sprint and sequenced by dependency. Each migration sho
 
 ## 11) Notification Templates Required by Feature Roadmap
 
+### 11.0 Global Delivery and Orchestration Rules
+
+- Quiet hours window: 9:00 PM to 7:00 AM in the business operating timezone until per-contact timezone support is introduced.
+- Quiet-hours scope: mandatory for admin-facing SMS; customer-facing SMS uses quiet hours by default unless explicitly marked transactional-immediate.
+- Sequence orchestration policy: one active customer-facing automation sequence per contact at a time; newest intent wins and older overlapping sequences are paused.
+- Sequence precedence when overlaps occur: F-07/F-33 (post-job experience) > F-18 (quote follow-up) > F-32 (lead nurture) > F-20 (reactivation).
+- All deferred sends must preserve audit metadata showing original due time, defer reason, and delivered time.
+
+### Dispatch Lifecycle
+
+| Feature | Template ID | Channel | Trigger |
+|---|---|---|---|
+| F-06 | `crew_dispatch_notice` | SMS | One-tap dispatch creates assignment and notifies crew |
+
+If implementation uses an existing assignment-dispatch template ID, map it explicitly to `crew_dispatch_notice` in this registry to prevent naming drift.
+
 ### Lead Lifecycle
 
 | Feature | Template ID | Channel | Trigger |
@@ -1301,17 +1446,18 @@ Migrations are grouped by sprint and sequenced by dependency. Each migration sho
 | F-20 | `customer_reactivation_60d` | SMS (to admin) | 60 days since last job |
 | F-20 | `customer_reactivation_90d` | SMS | 90 days since last job |
 
-**Total notification templates: 22**
+**Total notification templates: 23**
 
 ---
 
 ## 12) Canonical Use
 
 - **`Master-Spec-4.0`** is the single source of truth for active execution and roadmap.
+- **`HOMEPAGE-MOBILE-UX-UI-FUNCTIONAL-HARDENING-SPEC.md`** is the implementation source for R-00 and the canonical mobile homepage hardening checklist.
 - **`Master-Spec-3.0`** is archive/reference only. Do not update.
 - **`User-Manual.md`** is the operator-facing document. Update when features from §8 land.
 - **`90-Day-Revenue-Plan.md`** is the business strategy companion. Cross-referenced in §8 and §9 via revenue plan section numbers.
-- **`GLOSSARY.md`** is the shared terminology source for planning and execution docs.
+- **`../reference/GLOSSARY.md`** is the shared terminology source for planning and execution docs.
 - Update this spec at each pass completion and after each feature ships.
 
 ### Revenue Plan Cross-References
@@ -1335,49 +1481,30 @@ Migrations are grouped by sprint and sequenced by dependency. Each migration sho
 ```
 NOW
  │
+ ├─ Close R-00 evidence gate
+ │   └─ Complete Batch F before/after evidence across device matrix
+ │
  ├─ Close Pass 1 (2 pending items: Upstash revocation, Vercel env)
  │
  ├─ Execute Pass 2 (R-01 credential-gated runbook)
  │
  ├─ Execute Pass 3 (inventory flag in code, user manual accuracy check)
  │
- ├─ BEGIN FEATURE ROADMAP (Pass 4)
+ ├─ BEGIN FEATURE ROADMAP (Pass 4) — Remaining P0 only
  │
- │   P0 Sprint — Operations Track
- │   ├─ F-01  Morning Briefing dashboard
+ │   Immediate P0 Remaining
  │   ├─ F-02  Lead auto-acknowledgment
  │   ├─ F-03  Lead aging alerts
- │   ├─ F-04  Quick Quote templates
  │   ├─ F-05  Simplified sidebar grouping
- │   ├─ F-11  Map/navigation link (employee)
- │   └─ F-12  Job-day summary (employee)
+ │   └─ Migration 1 (`assignments.scheduled_start`, lead lifecycle fields)
  │
- │   P0 Sprint — Conversion Track (parallel)
- │   ├─ F-17  Confirmation page
- │   ├─ F-22  Service-area route depth
- │   ├─ F-23  Service-page objection modules
- │   ├─ F-24  Pricing/SLA guidance
- │   └─ F-25  CTA taxonomy + funnel instrumentation
- │
- │   P1 Sprint — Operations Track
- │   ├─ F-06  One-tap dispatch
- │   ├─ F-07  Post-job automation chain
- │   ├─ F-08  Simple revenue tracker
- │   ├─ F-09  Help tooltips + first-login tour
- │   ├─ F-13  Photo requirements (employee)
- │   ├─ F-14  Completion lockout (employee)
- │   ├─ F-15  Time logging visibility (employee + admin)
- │   ├─ F-29  SLA performance dashboard
- │   └─ F-30  Capacity throttle signal
- │
- │   P1 Sprint — Conversion + Automation Track (parallel)
- │   ├─ F-18  Quote follow-up sequence
- │   ├─ F-20  Customer reactivation alerts
- │   ├─ F-26  Proof library / portfolio hub
- │   ├─ F-27  Campaign landing templates
- │   ├─ F-28  Recurring revenue emphasis
- │   ├─ F-32  Multi-touch lead nurture
- │   └─ F-33  Review generation workflow
+ │   Then continue P1 queue
+ │   ├─ F-07  Post-job automation chain completion + evidence
+ │   ├─ F-08  Revenue tracker
+ │   ├─ F-09  Tooltips + tour
+ │   ├─ F-13/F-14/F-15 employee quality loop
+ │   ├─ F-18/F-20/F-32/F-33 automation stack
+ │   └─ F-26/F-27/F-28 conversion growth items
  │
  │   P2 Backlog
  │   ├─ F-10  Smart crew suggestions
@@ -1389,24 +1516,16 @@ NOW
  └─ Performance hardening (R-04) when launch window allows
 ```
 
-### Recommended P0 Build Sequence (Within Sprint)
+### Recommended Remaining P0 Build Sequence
 
-For maximum early impact within the P0 sprint, build in this order:
+For maximum impact with current reality (most P0 already shipped), execute in this order:
 
 | Order | Feature | Rationale |
 |---|---|---|
-| 1 | F-25 (CTA taxonomy) | Foundation — everything else measures against this |
+| 1 | Migration 1 | Unlocks operational ordering for F-12 and data support for F-03/F-01 |
 | 2 | F-02 (Lead auto-ack) | Immediate revenue protection — no more silent leads |
 | 3 | F-03 (Lead aging) | Compounds F-02 — automated follow-up safety net |
 | 4 | F-05 (Sidebar) | Low effort, high UX impact — admin instantly less intimidating |
-| 5 | F-01 (Morning Briefing) | Depends on data from F-03 fields — build after schema lands |
-| 6 | F-04 (Quote templates) | Needs Morning Briefing context to be most useful |
-| 7 | F-17 (Confirmation page) | Quick public win after conversion instrumentation is live |
-| 8 | F-23 (Objection modules) | Content work — can happen in parallel with code features |
-| 9 | F-24 (Pricing/SLA) | Content work — same parallel track |
-| 10 | F-22 (Service-area depth) | Largest scope P0 item — tackle last with most runway |
-| 11 | F-11 (Map link) | 5-minute employee win — slot anywhere |
-| 12 | F-12 (Job-day summary) | Employee UX — after admin P0s are stable |
 
 ---
 
@@ -1420,3 +1539,154 @@ For maximum early impact within the P0 sprint, build in this order:
 | Quarterly | Full spec review; archive stale assumptions and re-rank backlog | All |
 
 Rule: if a KPI threshold in the revenue plan is missed for 3 consecutive weeks, trigger an out-of-cycle review of feature priority ordering and launch-vs-growth tradeoffs.
+
+## 15) Mobile Standards (Cross-Feature)
+
+### 15.0 Purpose
+The homepage mobile hardening (R-00) established the baseline. This section ensures every new feature — public pages, admin views accessed on tablets, employee field app, and any new public routes — is built to the same mobile standard from day one. Retrofitting is 3-5x more expensive than building mobile-first.
+
+15.1 Mandatory Build Rules (All Features)
+Every feature in §8 that touches a user-facing surface must satisfy these before merge:
+
+| # | Rule | Verification |
+|---|---|---|
+| M-1 | No horizontal overflow at 320px viewport width | Manual check or automated viewport test |
+| M-2 | All interactive elements ≥ 44px touch target (buttons, links, form controls) | Measure in devtools |
+| M-3 | All text meets WCAG AA contrast (4.5:1 body, 3:1 large text) | Contrast checker on all bg/fg pairs |
+| M-4 | No heading larger than text-3xl on mobile (hero pages exempt at clamp()) | Class audit |
+| M-5 | Body text uses font-normal on mobile, font-light permitted only at md: and above | Class audit |
+| M-6 | Form inputs include appropriate inputMode, autoComplete, and enterKeyHint attributes | Code review |
+| M-7 | Dynamic/lazy-loaded sections include skeleton loading fallbacks | Code review |
+| M-8 | Mobile layout changes gated behind responsive breakpoints (`md:`, `lg:`) — desktop unaffected | Visual regression check |
+| M-9 | Sticky/fixed elements respect `env(safe-area-inset-*)` and `--z-*` CSS variable system | Code review |
+| M-10 | Carousel/card-set patterns support touch swipe gestures on mobile | Manual device test |
+15.2 Feature-Specific Mobile Guidance
+These notes apply to specific upcoming features and should be referenced when those features enter development:
+
+| Feature | Mobile Consideration |
+|---|---|
+| F-17 (Confirmation page) | This page receives traffic immediately after form submit and is often viewed on mobile. It must load fast (no heavy images above fold), display the reference number prominently, and keep all "while you wait" CTAs thumb-reachable. Prefer a single-column layout with no horizontal elements. |
+| F-22 (Service-area city pages) | Each city page is a potential Google organic landing page. Mobile-first is mandatory: hero, CTA, and local proof should be above the fold on a 375px viewport. Structured data must render on the server (not client-side). |
+| F-23 (Objection modules) | FAQ blocks on service pages must use an accordion/disclosure pattern on mobile. Do not render all Q&As expanded, to avoid scroll fatigue. |
+| F-24 (Pricing/SLA guidance) | Pricing tables must not require horizontal scroll on mobile. Stack columns vertically or use card-based layout. SLA commitments should be scannable with icon plus short text. |
+| F-25 (CTA taxonomy) | The shared CTAButton component must include `active:scale-[0.98]` tactile feedback, `min-h-[44px]` or `min-h-[48px]`, and `whitespace-nowrap` by default. Test labels at 320px to prevent wrapping. |
+| F-26 (Portfolio/proof library) | Image-heavy gallery should use blur placeholders (`placeholder="blur"`), lazy loading below fold, and a mobile grid (2 columns, not 3 or 4). Filter tabs should be horizontally scrollable, not wrapping. |
+| F-27 (Campaign landing pages) | These are the highest-conversion mobile pages. Keep the quote form above the fold, minimize or hide navigation, and avoid decorative elements that push the form down. Target: form visible within one scroll on iPhone SE. |
+| F-28 (Recurring calculator) | Numeric fields should use `inputMode="numeric"`. Results should update live without requiring submit. Savings comparison must remain clear at 320px (prefer simple before/after display over multi-column table). |
+| F-19 (Customer status page) | This page is opened from SMS on phones and must remain functional without JavaScript (SSR status steps). No login means no app shell: keep it as a lightweight content page for smallest viewport. |
+15.3 Mobile Testing Matrix (All Features)
+Before any public-facing feature merges:
+
+| Viewport | Represents | Required Check |
+|---|---|---|
+| 320px | iPhone SE / small Android | No overflow, no clipped text, CTAs visible |
+| 375px | iPhone 13 mini / standard | Primary layout verification |
+| 393px | Pixel 7 / common Android | Android-specific rendering |
+| 430px | iPhone 15 Pro Max | Large phone edge case |
+| 768px | iPad mini / breakpoint boundary | Verify `md:` breakpoint transitions cleanly |
+15.4 Mobile Performance Budgets
+| Metric | Target | Tool |
+|---|---|---|
+| LCP (Largest Contentful Paint) | < 2.5s on 4G | Lighthouse mobile audit |
+| CLS (Cumulative Layout Shift) | < 0.1 | Lighthouse mobile audit |
+| FID (First Input Delay) | < 100ms | Web Vitals |
+| Total JS shipped to mobile | < 200KB gzipped (initial load) | next build analysis |
+| Hero image mobile size | < 80KB | Next.js Image optimization |
+15.5 Component Patterns — Mobile Reference
+When building new mobile UI, prefer these established patterns:
+
+| Pattern | Use When | Reference Implementation |
+|---|---|---|
+| Scroll-snap carousel | Multiple similar cards (services, portfolio, case studies) | ServiceSpreadSection (post-elevation) |
+| Accordion/disclosure | Multi-item content that is too tall when expanded (FAQ, timeline, specs) | TimelineSection (post-elevation) |
+| Tap-to-expand card | Cards with hidden detail content on mobile | OfferAndIndustrySection (post-elevation) |
+| Horizontal scroll tabs | Filter/category selection with 3+ options | BeforeAfterSlider tabs (post-elevation) |
+| Inline trust strip | Trust signals that should flow with content (not absolute-positioned) | HeroSection mobile trust bar |
+| Dual-layout component | When mobile and desktop need fundamentally different compositions | HeroSection (inline vs. absolute trust bar) |
+| Skeleton loader | Any dynamically imported section | VariantAPublicPage dynamic imports |
+15.6 Cross-References
+| This Section | References |
+|---|---|
+| §15.1 M-1 through M-10 | Derived from HOMEPAGE-MOBILE-UX-UI-FUNCTIONAL-HARDENING-SPEC.md §3 |
+| §15.2 Feature guidance | Maps to §8 feature definitions |
+| §15.4 Performance budgets | Feeds into R-04 (Performance Hardening Pass) |
+| §15.5 Component patterns | Established by MOBILE-ELEVATION-AUDIT.md recommendations |
+
+## 16) 2026-04-03 Deep Reconciliation Addendum (Codebase vs 4.0)
+
+### 16.1 Full Analysis Findings (Current Codebase)
+
+This pass reconciled Master Spec 4.0 claims against active code and migrations.
+
+| Area | Finding | Evidence |
+|---|---|---|
+| F-01 Morning Briefing | Implemented and active in admin overview module with greeting, action feed, schedule, and waiting quotes. | `src/components/admin/OverviewDashboard.tsx` |
+| F-25 CTA taxonomy/instrumentation | Implemented for public surface via shared CTA component requiring `ctaId` and firing `cta_click` analytics metadata. | `src/components/public/variant-a/CTAButton.tsx`, `src/components/public/variant-a/QuoteCTA.tsx` |
+| F-11 Map & directions | Implemented in employee assignment card with direct Google Maps launch. | `src/components/employee/EmployeeAssignmentCard.tsx` |
+| F-12 Job-day summary | Implemented (`JobDayTimeline`) with day grouping and current/completed markers; currently degraded until `assignments.scheduled_start` is fully landed. | `src/components/employee/EmployeeTicketsClient.tsx` |
+| F-17 Confirmation page | Route present and generated in build output. | `src/app/(public)/quote/success/page.tsx` |
+| F-22/F-23/F-24 public conversion set | Implemented with dynamic service-area routes + service FAQ/pricing content modules + LocalBusiness/FAQ schema usage. | `src/app/(public)/service-area/[slug]/page.tsx`, `src/lib/service-faqs.ts`, `src/lib/service-pricing.ts`, service detail routes |
+| F-07 post-job chain foundations | Implemented and validated at foundation level; schema/runtime now aligned after migrations 0021-0024. | `src/lib/post-job-sequence.ts`, `src/lib/post-job-settings.ts`, `src/app/api/post-job-*/route.ts`, `supabase/migrations/0022_*.sql`, `0023_*.sql`, `0024_*.sql` |
+| R-00 mobile hardening | Implemented in code with explicit annotations across public components and global styles; Batch F evidence pack still pending. | Multiple `MOBILE-HARDENING` / `MOBILE-ELEVATION` markers in `src/components/public/**` and `src/styles/globals.css` |
+
+### 16.2 In-Session Completion Checklist (Checked + Context)
+
+This checklist tracks the concrete changes completed in the current execution cycle and verifies they are reflected in active truth.
+
+- [x] **Post-job settings PATCH hardening**
+  - Indicator: invalid numeric payloads no longer silently coerce and reset settings.
+  - Context: finite-number parsing guard added before merge/normalize path.
+  - Evidence: `src/app/api/post-job-settings/route.ts`
+
+- [x] **Post-job settings default URL alignment**
+  - Indicator: default review URL now prefers `NEXT_PUBLIC_SITE_URL` before legacy fallback.
+  - Context: prevents inconsistent environment fallback behavior.
+  - Evidence: `src/lib/post-job-settings.ts`
+
+- [x] **Webhook signature enforcement hardening**
+  - Indicator: fail-closed verification path when unsigned mode is not explicitly enabled.
+  - Context: rejects missing signature/missing auth token configuration mismatch.
+  - Evidence: `src/app/api/post-job-rating/route.ts`
+
+- [x] **Deterministic matching for inbound ratings**
+  - Indicator: matching now resolves to the most recent pending rating request for shared customer phone scenarios.
+  - Context: reduces accidental routing when multiple jobs share a phone number.
+  - Evidence: `src/app/api/post-job-rating/route.ts`
+
+- [x] **Schema reconciliation for post-job execution**
+  - Indicator: remote DB now includes required post-job and settings tables.
+  - Context: pushed migrations after compatibility fixes for helper-function dependencies.
+  - Evidence: `supabase/migrations/0021_quote_templates.sql`, `supabase/migrations/0022_post_job_sequence_and_payments.sql`, `supabase/migrations/0023_post_job_automation_settings.sql`
+
+- [x] **Compatibility migration for jobs title parity**
+  - Indicator: runtime and smoke tests no longer fail on missing `jobs.title`.
+  - Context: legacy/partial remote schema normalized.
+  - Evidence: `supabase/migrations/0024_jobs_title_compatibility.sql`
+
+- [x] **F-07 preflight verification passed**
+  - Indicator: env + DNS + HTTPS checks passed for Supabase target host.
+  - Context: resolved prior connectivity blocker.
+  - Evidence: `npm run preflight:f07` execution log
+
+- [x] **F-07 smoke verification passed (8/8)**
+  - Indicator: post-job sequence/settings foundations validated with cleanup.
+  - Context: confirms scheduler/rating/idempotency foundational readiness.
+  - Evidence: `npm run smoke:f07` execution log, `src/lib/post-job-smoke-tests.ts`
+
+- [x] **Evidence artifact updated**
+  - Indicator: template now records 2026-04-03 preflight/smoke outcomes.
+  - Context: active closure documentation kept in sync with executed validation.
+  - Evidence: `docs/evidence/f07-evidence-template.md`
+
+- [x] **Regression checks passed after all changes**
+  - Indicator: lint + build remain green after runtime and migration updates.
+  - Context: no new compile/lint regressions introduced.
+  - Evidence: `npm run lint`, `npm run build`
+
+### 16.3 Remaining Items After This Addendum
+
+The remaining launch-gate work is now concentrated in provider/device evidence and owner-run secret operations.
+
+- Upstash token rotation closure in production controls.
+- Production environment parity confirmation (hosting provider dashboard).
+- Credential/device evidence for Twilio, Sentry, and QuickBooks end-to-end scenarios.

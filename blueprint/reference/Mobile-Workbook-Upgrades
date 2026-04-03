@@ -1,0 +1,1689 @@
+All files received and indexed. Here's the final tracker:
+
+| Category | Count | Status |
+|---|---|---|
+| Section components | 13/13 | ✅ Complete (incl. TestimonialSection fix) |
+| Chrome/infrastructure | 7/7 | ✅ Complete |
+| Shared utilities | 0/4 | Not needed — behavior clear from usage |
+
+I have everything. Starting the full mobile elevation audit now. Given the depth, I'll deliver it in **two parts** — Part 1 (Critical + High-Impact) now, Part 2 (Polish + Implementation Roadmap) next — to avoid timeout.
+
+---
+
+# Mobile Elevation Audit — Part 1
+
+## Audit Scope
+Every component on the public homepage (`/`), evaluated against the mobile experience at 320–430px viewports. This is **not** about fixing bugs — the hardening pass handled that. This is about taking a **functional mobile page** and making it feel like a **top-tier production site** that competes with the best service-business mobile experiences.
+
+---
+
+## Tier 1 — Critical Gaps (Actively Hurting Conversion)
+
+### C-1: ServiceSpreadSection — 5 Full Cards = Scroll Death
+
+**Problem:** Five service cards rendered sequentially at full height is the single biggest mobile UX problem on this page. Even compressed, each card is ~445px (160px image + 285px content). That's **~2,225px of similar-looking content** with no navigation, no variation, and no way to skip to a relevant service. Users lose orientation and either scroll past everything or bail.
+
+**What top sites do:** Service sections on mobile use one of three patterns:
+- **Horizontal swipeable carousel** — show one card at a time, swipe between
+- **Tabbed interface** — service type tabs at top, content switches below
+- **Compact summary grid** — 2-column card grid showing just title + icon, tap to expand
+
+**Recommended approach: Horizontal swipe carousel with peek**
+
+```
+┌─────────────────────────┐
+│  [image h-40]           │
+│  ┌───────────────────┐  │
+│  │ 01                │  │
+│  │ Post-Construction │  │
+│  │ Clean             │  │
+│  │                   │  │
+│  │ description...    │  │
+│  │                   │  │
+│  │ [Quote This →]    │  │
+│  └───────────────────┘  │
+│         ● ○ ○ ○ ○       │  ← dot indicators
+│    ← swipe →            │
+└─────────────────────────┘
+```
+
+**Implementation sketch:**
+- Wrap service items in a scroll-snap container on mobile only (`md:` removes it)
+- Each card = `snap-center min-w-full` on mobile
+- Add dot indicators + swipe gesture support (CSS `scroll-snap-type: x mandatory`)
+- Keep desktop layout untouched (`md:flex-row` stacked cards)
+- Show 5–10px of next card edge ("peek") to signal swipeability
+
+**Impact:** Reduces this section from ~2,225px to ~500px visible + swipeable. This alone recovers **~1,700px** of scroll distance and replaces passive scrolling with active engagement.
+
+**Effort:** Medium (1–2 days). Pure CSS scroll-snap + responsive gate.
+
+---
+
+### C-2: QuoteSection — Image Panel Wastes Prime Mobile Real Estate
+
+**Problem:** The `h-[28vh]` image panel occupies ~187px on an iPhone SE before any form content appears. The user scrolled to the quote section with intent to fill out a form — and the first thing they see is a decorative photo with chips and a heading they've already committed to ("Let's Talk About Your Project"). On mobile, the conversion form should be **immediately visible**.
+
+**What top sites do:** On mobile, the best lead-gen forms either:
+- Remove the image entirely and go full-width form
+- Use a thin accent bar or trust strip instead of an image
+- Place the image **after** the form as a visual reward
+
+**Recommended approach:**
+- **Mobile:** Hide the image panel entirely (`hidden md:block`). Replace with a compact trust strip (the 3 expectation items, reformatted as a single horizontal row).
+- **Desktop:** Unchanged (side-by-side split remains).
+
+```
+Mobile view:
+┌───────────────────────────┐
+│ ⏱ Direct follow-up        │
+│ 📋 Commercial + turnover   │  ← compact trust strip
+│ ✓ Clear scope first       │
+├───────────────────────────┤
+│ Request a Quote            │
+│ [form fields...]           │
+│ [Submit Quote Request]     │
+└───────────────────────────┘
+```
+
+**Impact:** Recovers ~187px and puts the form immediately in view when user scrolls to `#quote`. Direct conversion impact.
+
+**Effort:** Small (2–3 hours). Responsive hide + restructured trust strip.
+
+---
+
+### C-3: TestimonialSection — No Swipe Support
+
+**Problem:** Mobile users instinctively swipe left/right to navigate between cards in a carousel-like UI. The testimonial section shows one card with arrow buttons and dots — but doesn't respond to swipe gestures. This is the **single most expected mobile interaction pattern** for card carousels, and its absence makes the section feel non-native.
+
+**Recommended approach:** Add touch swipe detection:
+- Track `touchstart` and `touchend` X coordinates
+- If delta > 50px, trigger `goToTestimonial` in the swipe direction
+- Keep existing arrow buttons and dots as fallback
+
+**Implementation sketch:**
+```tsx
+const touchStartX = useRef(0);
+
+onTouchStart={(e) => {
+  touchStartX.current = e.touches[0].clientX;
+}}
+onTouchEnd={(e) => {
+  const delta = e.changedTouches[0].clientX - touchStartX.current;
+  if (Math.abs(delta) > 50) {
+    delta > 0
+      ? goToTestimonial((active - 1 + testimonials.length) % testimonials.length)
+      : goToTestimonial((active + 1) % testimonials.length);
+  }
+}}
+```
+
+**Impact:** Transforms a passive section into an interactive one. Users engage instead of scroll past. Standard expectation on every mobile carousel.
+
+**Effort:** XS (30 minutes). Pure event handlers, no structural change.
+
+---
+
+### C-4: CTA Label Inconsistency Creates Decision Fatigue
+
+**Problem:** The page currently has **10+ distinct CTA labels** across sections:
+
+| Location | Label |
+|---|---|
+| Hero | "Get a Free Quote" |
+| Hero | "Call Now: (512)..." |
+| Service cards (×5) | "Quote This Service →" |
+| Industries header | "Talk Through Your Scope →" |
+| Industry cards (×3) | "Discuss Your Project →" |
+| Service Area | "Check Availability in Your Area →" |
+| About | "Start Your Project →" |
+| Quote section form | "Submit Quote Request" |
+| Quote section below | "Prefer to call?" |
+| Footer banner | "Get Your Free Quote" |
+| Sticky bar | "Free Quote" / "Call" |
+
+That's **13 different CTA labels** leading to essentially the same action (open quote form or call). On mobile, where every scroll-height matters, this creates decision fatigue and dilutes urgency. The user doesn't know which one is "the real one."
+
+**What top sites do:** 2–3 CTA labels max, used consistently:
+- **Primary:** "Get a Free Quote" (everywhere it appears)
+- **Secondary:** "Call Now" (phone action)
+- **Contextual variation:** Only when genuinely different (e.g., "See Open Positions" for careers)
+
+**Recommended approach:**
+- Standardize on **"Get a Free Quote"** for all quote-opening CTAs
+- Standardize on **"Call Now"** for all phone CTAs
+- Remove the "Learn More About Us" CTA below the quote form (sends users *away* from conversion)
+- Keep only genuinely different CTAs: "See Open Positions" (careers), "See the Difference" (B&A)
+
+**Impact:** Reduces cognitive load, strengthens brand consistency, improves conversion clarity. This aligns with F-25 (CTA Taxonomy) from the feature roadmap.
+
+**Effort:** Small (1–2 hours). Copy changes across components.
+
+---
+
+## Tier 2 — High-Impact Upgrades
+
+### H-1: Add Swipeable Horizontal Scroll to Before/After Tab Buttons
+
+**Problem:** The three tab buttons ("Commercial Office", "Apartment Turn", "Post-Construction") wrap to two rows at narrow widths. This looks like broken layout, not intentional design.
+
+**Recommended approach:** Horizontal scroll strip with gradient fade edges:
+
+```tsx
+<div className="relative md:flex md:flex-wrap md:gap-2">
+  {/* Gradient fade hint - right edge */}
+  <div className="pointer-events-none absolute right-0 top-0 z-10 h-full w-8 bg-gradient-to-l from-white to-transparent md:hidden" />
+  
+  <div className="flex gap-2 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-1 md:flex-wrap md:overflow-visible">
+    {pairs.map((pair, idx) => (
+      <button
+        key={pair.tag}
+        className="snap-start shrink-0 ..."
+      >
+        {pair.tag}
+      </button>
+    ))}
+  </div>
+</div>
+```
+
+**Impact:** Clean, native-feeling tab navigation. Supports any number of tabs without wrapping. Standard pattern for filter/tab strips on mobile.
+
+**Effort:** XS (30 min).
+
+---
+
+### H-2: IncludedSummarySection — Add Visual Anchors
+
+**Problem:** Three identical-looking text cards with no visual differentiation. Users skim past because nothing catches the eye.
+
+**Recommended approach:** Add numbered step indicators or icons:
+
+```
+┌─ 01 ──────────────────────┐
+│ Scope-Driven Planning      │
+│ We align crew, service...  │
+└────────────────────────────┘
+┌─ 02 ──────────────────────┐
+│ Detail-Level Delivery      │
+│ From rough clean to...     │
+└────────────────────────────┘
+```
+
+**Implementation:** Add a step number or small icon to each card. Even just a large serif number (`text-2xl font-serif text-slate-200`) in the top-left corner creates visual hierarchy that makes the cards scannable.
+
+**Impact:** Section goes from "block of text" to "clear 3-step value prop." Small visual change, significant comprehension improvement.
+
+**Effort:** XS (15 min).
+
+---
+
+### H-3: Section Transition Treatments
+
+**Problem:** The page alternates between navy (#0A1628) and warm white (#FAFAF8) sections. On mobile, these transitions are abrupt — one section ends, the next begins with a completely different background. This breaks the "premium" feel.
+
+**Recommended approach:** Add subtle SVG wave or angled dividers between contrasting sections. Not decorative — functional visual breathing room.
+
+```css
+/* Example: subtle angle divider */
+.section-divider-down {
+  position: relative;
+}
+.section-divider-down::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 40px;
+  background: inherit;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 60%);
+}
+```
+
+Apply between: Hero → AuthorityBar, AuthorityBar → IncludedSummary, BeforeAfter → Testimonials, Testimonials → Timeline, ServiceArea → QuoteSection.
+
+**Impact:** Elevates the entire scroll experience from "sections stacked" to "cohesive journey." This is what separates template-quality from production-quality.
+
+**Effort:** Small (2–3 hours). CSS-only, no component logic changes.
+
+---
+
+### H-4: Lazy-Loaded Sections Need Loading Fallbacks
+
+**Problem:** Four sections use `dynamic()` imports with no loading state:
+- `BeforeAfterSlider` — no fallback
+- `TestimonialSection` — no fallback
+- `QuoteSection` — no fallback
+- `ExitIntentOverlay` — `{ ssr: false }` only
+
+When these chunks load on slow connections, the user sees a content jump (layout shift) or a blank space.
+
+**Recommended approach:** Add skeleton placeholders:
+
+```tsx
+const BeforeAfterSlider = dynamic(
+  () => import("./BeforeAfterSlider").then((m) => m.BeforeAfterSlider),
+  {
+    loading: () => (
+      <div className="bg-white py-12 md:py-32">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="h-6 w-40 animate-pulse rounded bg-slate-200" />
+          <div className="mt-4 h-10 w-72 animate-pulse rounded bg-slate-200" />
+          <div className="mt-8 aspect-[16/9] w-full animate-pulse rounded-3xl bg-slate-100" />
+        </div>
+      </div>
+    ),
+  }
+);
+```
+
+**Impact:** Eliminates layout shift (CLS improvement), creates perception of speed, maintains visual flow during chunk loading.
+
+**Effort:** Small (1–2 hours). One skeleton per dynamic section.
+
+---
+
+### H-5: Testimonials — Add Star Ratings + Source Badges
+
+**Problem:** Testimonials show quote + name + role but no star rating and no verification source. On mobile, where trust must be established faster, users need visual shorthand for "these are real and positive."
+
+**Recommended approach:**
+```
+┌────────────────────────────────┐
+│  ★★★★★  Post-Construction     │
+│                                │
+│  "A&A Cleaning has been our    │
+│   go-to subcontractor..."      │
+│                                │
+│  👤 Marcus Torres              │
+│     Project Manager            │
+│     Austin Metro               │
+└────────────────────────────────┘
+```
+
+Add `★★★★★` (already used in AuthorityBar — reuse the pattern) above or beside the tag badge. Optionally add a small "Google Review" or "Verified Client" micro-badge.
+
+**Impact:** Instantly communicates quality before the user reads the quote text. Standard on every service business site with testimonials.
+
+**Effort:** XS (20 min).
+
+---
+
+### H-6: Expose Response Promise on Mobile in ServiceSpread
+
+**Problem:** The hardening spec §13.1 flagged this: the "Response Promise" (e.g., "Call-back target: under 1 hour") is hidden on mobile in both the image overlay AND the content panel. This is a **key trust signal** that's completely invisible to mobile users.
+
+**Recommended approach:** Add a compact response promise line below the description on mobile:
+
+```tsx
+{/* Mobile-only response promise */}
+<p className="mt-2 flex items-center gap-2 text-xs text-[#C9A94E] md:hidden">
+  <span className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />
+  {service.responsePromise}
+</p>
+```
+
+**Impact:** Restores a conversion-critical trust signal that's currently invisible to ~70%+ of users (mobile traffic). Zero desktop impact.
+
+**Effort:** XS (15 min). Single line addition per service card, gated behind `md:hidden`.
+
+---
+
+### H-7: Footer Navigation — 2-Column Layout on Mobile
+
+**Problem:** 8 navigation links stacked vertically = ~280px of single-column text. Wastes space and looks sparse.
+
+**Recommended approach:**
+```tsx
+<ul className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:grid-cols-1 md:gap-x-0">
+```
+
+This puts links in a 2-column grid on mobile, halving the vertical space to ~140px while keeping everything tappable.
+
+**Impact:** ~140px saved, looks more intentional and organized.
+
+**Effort:** XS (5 min). Single class change.
+
+---
+
+### H-8: Add Scroll-Position CTA Trigger
+
+**Problem:** The sticky bar shows "Call" + "Free Quote" from page load. There's no intelligence about when these CTAs appear — they compete with the hero CTAs on the first viewport.
+
+**What top sites do:** The sticky bar appears **after** the user scrolls past the hero (or past the first CTA). This prevents CTA stacking on the first screen and creates a "chase" effect — the CTA follows the user once they've shown scroll intent.
+
+**Recommended approach:**
+```tsx
+// In PublicChrome.tsx
+const [showStickyBar, setShowStickyBar] = useState(false);
+
+useEffect(() => {
+  const onScroll = () => {
+    setShowStickyBar(window.scrollY > window.innerHeight * 0.8);
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+  return () => window.removeEventListener("scroll", onScroll);
+}, []);
+
+// On the sticky bar div:
+className={`... transition-transform duration-300 ${
+  showStickyBar ? "translate-y-0" : "translate-y-full"
+}`}
+```
+
+**Impact:** Cleaner hero viewport, no CTA stacking, bar entrance creates urgency through motion. Standard pattern on high-converting mobile landing pages.
+
+**Effort:** Small (30 min).
+
+---
+
+# Mobile Elevation Audit — Part 2
+
+## Tier 3 — Polish Layer (Good → Premium)
+
+### P-1: Scroll-Reveal Animations Are Monotonous
+
+**Problem:** Every section uses the same animation: `translateY + opacity`. Hero, AuthorityBar, ServiceSpread, OfferAndIndustry, Timeline, About, Careers — all identical `translate-y-8 opacity-0 → translate-y-0 opacity-100`. After the third section, the animation becomes invisible because the brain tunes out repeated patterns. The "premium" feel flattens into "template" feel.
+
+**What top sites do:** Vary animation types by content purpose:
+- **Hero text:** Staggered fade-up (you already have this — it's great)
+- **Stats/numbers:** Scale-in or count-up (you have count-up — good)
+- **Cards:** Stagger with slight offset per card (partially done)
+- **Images:** Subtle parallax or reveal-wipe
+- **Blockquotes:** Fade-in with no translation (text should feel like it "appears," not "moves")
+- **CTAs:** No entrance animation — they should already be visible when the user needs them
+
+**Recommended changes (mobile-specific):**
+
+| Section | Current | Recommended |
+|---|---|---|
+| AuthorityBar stats | translateY | Already good (count-up). No change needed. |
+| IncludedSummary cards | None (instant) | Staggered fade-in with 80ms delay per card |
+| ServiceSpread (if carousel) | translateY per card | Slide-in from right on swipe |
+| OfferAndIndustry cards | translateY | Staggered scale-up from 0.95 → 1.0 (subtler, more "card-like") |
+| Testimonial quote | translateX + scale | Keep — this works well for a carousel |
+| Timeline steps | translateY | Alternate: odd steps from left, even from right (already done on desktop — enable on mobile too) |
+| About blockquote | translateY | Fade-only (no translation) — quotes should feel grounded |
+| Before/After slider | translateY | Clip-reveal from center outward (matches the slider interaction metaphor) |
+
+**Key principle:** Animations should **communicate content type**, not just signal "this appeared." Movement direction = relationship direction. Scale = emphasis. Fade-only = stability.
+
+**Effort:** Medium (1 day). Mostly class changes on existing `ScrollReveal` / `useInViewOnce` patterns.
+
+---
+
+### P-2: Industry Cards — Hover Effects Don't Translate to Mobile
+
+**Problem:** The `OfferAndIndustrySection` cards have rich hover states: `-translate-y-2`, shadow changes, border color shifts, scale changes on non-hovered cards (`opacity-80 scale-[0.98]`), icon scale-up, gradient top-bar reveal. **None of this works on mobile.** Touch devices don't have hover. The cards look static and flat compared to their desktop versions.
+
+**Recommended approach:** Replace hover interactions with scroll-triggered and tap-triggered states:
+
+1. **On scroll into view:** Stagger the card entrance with slight scale (0.95 → 1.0) + opacity. Already partially done.
+
+2. **Active/expanded state on tap:** When user taps a card on mobile, expand it slightly to reveal the hidden outcome quote (currently `hidden md:flex`). This turns the cards into **tap-to-expand** interactive elements.
+
+```
+Collapsed (default):
+┌────────────────────────┐
+│ 🏗️ Walkthrough-Ready    │
+│ General Contractors     │
+│ 200+ closeouts          │
+│ [pain point text]       │
+│ Best for: Final Walk... │
+│ [Discuss Your Project →]│
+│            ▼ More       │
+└────────────────────────┘
+
+Expanded (on tap):
+┌────────────────────────┐
+│ 🏗️ Walkthrough-Ready    │
+│ General Contractors     │
+│ 200+ closeouts          │
+│ [pain point text]       │
+│ ─────────────────────── │
+│ Best for:               │
+│ • Final Walkthroughs    │
+│ • Multi-Trade Closeouts │
+│ • Schedule-Sensitive    │
+│ ─────────────────────── │
+│ "A&A helps tighten the  │
+│  final presentation..." │
+│ [Discuss Your Project →]│
+└────────────────────────┘
+```
+
+**Implementation:**
+```tsx
+const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+
+// On the card:
+onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+
+// Show outcome quote when expanded (mobile only):
+<div className={`overflow-hidden transition-all duration-300 md:flex ${
+  expandedIndex === index ? "max-h-40 opacity-100 mt-4" : "max-h-0 opacity-0"
+} md:max-h-none md:opacity-100`}>
+  {/* outcome quote content */}
+</div>
+```
+
+**Impact:** Recovers hidden content, adds interactivity, replaces non-functional hover states. Mobile users get the full value proposition per industry without the cards being permanently expanded (which would add ~400px of scroll).
+
+**Effort:** Small-Medium (3–4 hours).
+
+---
+
+### P-3: Hero "Call Now" Button Needs Stronger Contrast
+
+**Problem:** The `cta-light` class on the "Call Now" button renders as a semi-transparent bordered button over a photo background. Depending on the hero image brightness at that point, the button can virtually disappear. The hardening spec §13.1 flagged this.
+
+**Recommended approach:** Apply glassmorphism with stronger boundary:
+
+```tsx
+// Replace cta-light with a custom class for hero:
+className="inline-flex items-center justify-center rounded-md border border-white/40 bg-white/15 px-8 py-3.5 text-xs font-bold uppercase tracking-[0.18em] text-white shadow-lg shadow-black/10 backdrop-blur-md transition duration-300 hover:bg-white hover:text-[#0A1628] min-h-[48px] w-full sm:w-auto md:py-4"
+```
+
+Key changes from current `cta-light`:
+- `border-white/30` → `border-white/40` (stronger border)
+- Add `shadow-lg shadow-black/10` (lifts off background)
+- `backdrop-blur` → `backdrop-blur-md` (stronger blur = more readable)
+- `bg-white/10` → `bg-white/15` (slightly more opaque)
+
+**Impact:** "Call Now" becomes reliably visible regardless of hero image brightness. Direct conversion improvement for the phone-call conversion path.
+
+**Effort:** XS (10 min). Single class update.
+
+---
+
+### P-4: AuthorityBar "Licensed & Insured" — Entrance Animation
+
+**Problem:** Three stats animate with count-up. The "Licensed & Insured" cell sits static while its neighbors animate. This creates a visual "dead spot" in an otherwise dynamic row. Flagged in §13.1.
+
+**Recommended approach:** Add a subtle fade-up entrance with a delay that places it after the second counter finishes:
+
+```tsx
+<div className={`${dividerCellClass} flex flex-col items-center justify-center ... transition duration-700 ${
+  isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
+}`}
+style={{ transitionDelay: isVisible ? "600ms" : "0ms" }}
+>
+```
+
+**Impact:** Eliminates the dead spot. The row feels cohesive and fully animated.
+
+**Effort:** XS (5 min). Add transition classes + delay.
+
+---
+
+### P-5: Image Loading Strategy — Blur Placeholder
+
+**Problem:** Below-fold images (service spread ×5, about section, careers, quote panel, before/after) load without placeholders. On slow mobile connections, users see either a blank space or a sudden pop-in. Next.js Image supports `placeholder="blur"` with `blurDataURL` but it's not used anywhere.
+
+**Recommended approach:** Add blur placeholders to all below-fold images:
+
+```tsx
+<Image
+  src={service.image}
+  alt="..."
+  fill
+  quality={68}
+  placeholder="blur"
+  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDA..."
+  sizes="(max-width: 768px) 100vw, 58vw"
+  className="object-cover"
+/>
+```
+
+For generating blur data URLs, either:
+- Use `plaiceholder` package at build time
+- Or use a tiny 8×8 dominant-color JPEG as a static placeholder
+
+**Impact:** Eliminates content pop-in, creates a smooth loading experience, improves perceived performance significantly on mobile. This is standard on every production Next.js site.
+
+**Effort:** Small-Medium (2–3 hours including generating blur data for ~10 images).
+
+---
+
+### P-6: Vertical Rhythm — Inconsistent Section Gaps
+
+**Problem:** The spacing between sections varies without clear logic:
+
+| Transition | Gap |
+|---|---|
+| Hero → AuthorityBar | 0px (direct stack) |
+| AuthorityBar → IncludedSummary | border-b only |
+| IncludedSummary → ServiceSpread | border-b only |
+| ServiceSpread → OfferAndIndustry | 0px |
+| OfferAndIndustry → BeforeAfter | 0px |
+| BeforeAfter → Testimonials | 0px |
+| Testimonials → Timeline | 0px |
+| Timeline → About | border-b |
+| About → ServiceArea | 0px |
+| ServiceArea → Quote | 0px |
+| Quote → Careers | border-b |
+| Careers → Footer | 0px |
+
+Some sections use `border-b`, some stack flush. The visual rhythm is irregular.
+
+**Recommended approach:** Define a consistent inter-section rhythm:
+- **Same-background transitions** (white → white, navy → navy): `border-b` divider, no gap
+- **Contrasting transitions** (white → navy or vice versa): No border needed, the color change IS the divider. Optionally add the wave/angle dividers from H-3.
+- Remove `border-b` from sections that transition to a different background color (it's redundant and adds a visible line that fights with the color change)
+
+**Files to update:**
+- `ServiceSpreadSection`: Remove `border-b` (transitions to lighter OfferAndIndustry)
+- `QuoteSection`: Remove `border-b` (transitions to dark Careers)
+- Keep `border-b` on: IncludedSummary (white → white), AuthorityBar (same-tone)
+
+**Impact:** Subtle but meaningful. The page feels intentional rather than assembled.
+
+**Effort:** XS (15 min). Border class additions/removals.
+
+---
+
+### P-7: Mobile Menu — Close on Any Link Tap
+
+**Problem:** Flagged in §13.1: FAQ and Careers links in the mobile menu don't close the menu after navigation. The `closeMobileMenu` function IS called on service/industry links and the call button via `onClick={closeMobileMenu}`, but the `primaryLinks.slice(2)` loop (About, Service Area, FAQ, Careers) also correctly calls `onClick={closeMobileMenu}`.
+
+**Wait — re-reading the code:** Actually, looking at the current code, all links DO call `closeMobileMenu`. The `<a>` tags in the `primaryLinks.slice(2).map()` block all have `onClick={closeMobileMenu}`. Same for service links and industry links. **This issue appears to be already fixed.**
+
+**However**, there's a subtlety: the service/industry `<details>` elements stay expanded after clicking a sub-link. When the menu re-opens, previously expanded sections are still open. Minor but creates stale state.
+
+**Fix:** Reset details state on menu close:
+
+```tsx
+const closeMobileMenu = () => {
+  setIsMobileMenuOpen(false);
+  // Collapse all details elements
+  document.querySelectorAll('#mobile-nav-panel details[open]')
+    .forEach(el => el.removeAttribute('open'));
+};
+```
+
+**Effort:** XS (5 min).
+
+---
+
+### P-8: AI Assistant Trigger — Tooltip on First Visit
+
+**Problem:** The blue circle button in the bottom-right has no label visible to the user. It has an aria-label ("Open quote assistant") but visually it's just a circle with an icon. First-time visitors don't know what it does, so they ignore it.
+
+**Recommended approach:** Show a one-time tooltip bubble on first page visit:
+
+```
+                    ┌─────────────────────┐
+                    │ Need a quick quote?  │
+                    │ Ask our assistant →  │
+                    └──────────┬──────────┘
+                               │
+                          [ 🤖 button ]
+```
+
+Implementation:
+- Show tooltip 3 seconds after page load
+- Dismiss on tap anywhere or after 5 seconds
+- Store dismissal in `sessionStorage` so it doesn't show again
+- Gate behind mobile viewport only (`md:hidden` on the tooltip)
+
+**Impact:** Increases awareness of the AI assistant feature. Users who notice it are more likely to engage.
+
+**Effort:** Small (30–45 min).
+
+---
+
+### P-9: Typography Weight on Mobile
+
+**Problem:** Flagged in §13.2: sub-headlines using `text-[15px]` with default font weight appear thin on mobile screens, especially at lower brightness. The hero subtitle, section descriptions, and card descriptions all use `font-light` (`font-weight: 300`), which on mobile renders noticeably thinner than on desktop due to sub-pixel rendering differences.
+
+**Recommended approach:** Bump mobile body text from `font-light` to `font-normal` on key elements:
+
+```tsx
+// Hero subtitle
+className="... font-light md:font-light text-[15px] ..."
+// Change to:
+className="... font-normal md:font-light text-[15px] ..."
+```
+
+Target elements (all currently `font-light`):
+- Hero subtitle (`p` below h1)
+- Service description text
+- Industry pain point text
+- About section paragraphs
+- Timeline step body text
+- Careers description
+- Footer CTA banner description
+
+**Impact:** Noticeably more legible on mobile without affecting desktop. This is a standard mobile typography accommodation.
+
+**Effort:** XS (15 min). Add `font-normal md:font-light` pattern to ~8 elements.
+
+---
+
+### P-10: Progressive Disclosure for Timeline on Mobile
+
+**Problem:** All 4 timeline steps are fully expanded on mobile. Each step shows number + title + full description = ~205px per step = ~820px total. On desktop, the alternating left-right layout with images creates visual variety. On mobile, it's four identical text blocks stacked vertically.
+
+**Recommended approach:** Accordion pattern — show title + step number, tap to expand description:
+
+```
+Mobile (collapsed):
+┌──────────────────────────┐
+│ 01  Request a Quote    ▼ │
+├──────────────────────────┤
+│ 02  We Assess          ▼ │
+├──────────────────────────┤
+│ 03  We Clean           ▼ │
+├──────────────────────────┤
+│ 04  You Walk Through   ▼ │
+└──────────────────────────┘
+
+Mobile (step 1 expanded):
+┌──────────────────────────┐
+│ 01  Request a Quote    ▲ │
+│                          │
+│ Submit our form or call  │
+│ directly. We review the  │
+│ request quickly...       │
+│                          │
+│ ⚡ Fast intake           │
+├──────────────────────────┤
+│ 02  We Assess          ▼ │
+├──────────────────────────┤
+│ 03  We Clean           ▼ │
+├──────────────────────────┤
+│ 04  You Walk Through   ▼ │
+└──────────────────────────┘
+```
+
+**Implementation:**
+```tsx
+const [expandedStep, setExpandedStep] = useState<string | null>("01"); // First open by default
+
+// In TimelineStep, on mobile:
+<div className="md:hidden">
+  <button onClick={() => setExpandedStep(
+    expandedStep === step.number ? null : step.number
+  )}>
+    <span>{step.number}</span>
+    <span>{step.title}</span>
+    <span>{expandedStep === step.number ? "▲" : "▼"}</span>
+  </button>
+  <div className={`overflow-hidden transition-all duration-300 ${
+    expandedStep === step.number ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+  }`}>
+    <p>{step.body}</p>
+  </div>
+</div>
+
+// Keep full desktop layout:
+<div className="hidden md:block">
+  {/* existing desktop layout */}
+</div>
+```
+
+**Impact:** Reduces from ~820px to ~280px (collapsed) with interactive expansion. Users engage with the content they care about.
+
+**Effort:** Medium (3–4 hours). Dual layout (mobile accordion + desktop full).
+
+---
+
+---
+
+## Prioritized Implementation Roadmap
+
+### Sprint Sizing Reference
+- **XS:** 5–30 min | **S:** 1–3 hours | **M:** 3–8 hours | **L:** 1–2 days
+
+### Wave 1 — Highest Impact, Lowest Effort (Do This Week)
+
+These are the changes that deliver the most visible improvement with the least risk and effort.
+
+| # | Item | Effort | Impact | Type |
+|---|---|---|---|---|
+| C-3 | Testimonial swipe gestures | XS | High | Interaction |
+| H-6 | Expose response promise on mobile (ServiceSpread) | XS | High | Trust signal |
+| P-3 | Hero "Call Now" glassmorphism | XS | Medium | Conversion |
+| P-4 | AuthorityBar "Licensed" entrance animation | XS | Low-Med | Polish |
+| P-9 | Typography weight bump on mobile | XS | Medium | Legibility |
+| H-7 | Footer nav 2-column grid | XS | Low | Layout |
+| P-7 | Mobile menu details reset on close | XS | Low | Bug fix |
+| H-5 | Testimonial star ratings | XS | Medium | Trust signal |
+| P-6 | Vertical rhythm cleanup (border-b logic) | XS | Low-Med | Polish |
+
+**Estimated total: ~2–3 hours. Zero structural risk.**
+
+### Wave 2 — High Impact, Small-Medium Effort (This Sprint)
+
+| # | Item | Effort | Impact | Type |
+|---|---|---|---|---|
+| H-2 | IncludedSummary visual anchors (step numbers) | XS | Medium | Comprehension |
+| C-4 | CTA label standardization | S | High | Conversion clarity |
+| H-8 | Scroll-triggered sticky bar | S | High | Conversion |
+| P-8 | AI assistant tooltip on first visit | S | Medium | Feature awareness |
+| C-2 | QuoteSection — hide image on mobile | S | High | Conversion |
+| H-1 | Before/After tab horizontal scroll | S | Medium | Interaction |
+| H-4 | Skeleton loading states for dynamic sections | S | Medium | Perceived perf |
+
+**Estimated total: ~6–8 hours.**
+
+### Wave 3 — High Impact, Medium Effort (Next Sprint)
+
+| # | Item | Effort | Impact | Type |
+|---|---|---|---|---|
+| C-1 | ServiceSpread → horizontal swipe carousel | M-L | **Very High** | Layout transform |
+| P-2 | Industry cards tap-to-expand | S-M | High | Interaction |
+| P-10 | Timeline accordion on mobile | M | Medium-High | Layout transform |
+| H-3 | Section transition dividers | S | Medium | Visual polish |
+| P-5 | Image blur placeholders | S-M | Medium | Perf/polish |
+| P-1 | Animation variety by section type | M | Medium | Polish |
+
+**Estimated total: ~3–4 days.**
+
+---
+
+## Impact Summary
+
+| Wave | Effort | Key Wins |
+|---|---|---|
+| **Wave 1** | 2–3 hrs | Swipe gestures, trust signals restored, legibility, minor polish |
+| **Wave 2** | 6–8 hrs | Conversion clarity, smart sticky bar, skeleton states, form UX |
+| **Wave 3** | 3–4 days | Service carousel (biggest single improvement), accordion patterns, image perf |
+| **All waves** | ~5–6 days | Transforms the mobile experience from "hardened" to "premium production" |
+
+## Estimated Scroll Reduction (Waves 1–3 Combined)
+
+| Change | Scroll Saved |
+|---|---|
+| C-1: Service carousel | ~1,700px |
+| C-2: Quote image hidden | ~187px |
+| P-10: Timeline accordion | ~540px |
+| P-2: Industry tap-to-expand (partial) | ~200px |
+| H-7: Footer 2-col nav | ~140px |
+| **Total additional reduction** | **~2,767px** |
+
+Combined with hardening pass (~8,600px saved), total reduction from original would be: **~11,367px from ~16,550px original = ~69% total reduction.**
+
+---
+
+## Dependency Map
+
+```
+Wave 1 (no dependencies — all independent)
+  │
+  ├── C-3 (swipe) — standalone
+  ├── H-6 (response promise) — standalone
+  ├── P-3 (hero CTA) — standalone
+  ├── P-9 (typography) — standalone
+  └── ... all independent
+  
+Wave 2
+  │
+  ├── C-4 (CTA labels) → aligns with F-25 roadmap item
+  ├── H-8 (sticky bar scroll) → touches PublicChrome.tsx
+  ├── C-2 (quote image) → touches QuoteSection.tsx
+  └── H-4 (skeletons) → touches VariantAPublicPage.tsx
+  
+Wave 3
+  │
+  ├── C-1 (carousel) → major ServiceSpreadSection rewrite (mobile only)
+  │   └── Must preserve desktop layout exactly
+  ├── P-2 (industry expand) → requires expandedIndex state
+  │   └── Must preserve desktop hover behavior
+  └── P-10 (timeline accordion) → requires expandedStep state
+      └── Must preserve desktop alternating layout
+```
+
+---
+
+## What I'd Build First
+
+If I had to pick the **single highest-ROI change** from this entire audit, it's:
+
+> **C-1: Convert ServiceSpread to a horizontal swipe carousel on mobile.**
+
+It eliminates the single biggest mobile UX problem (2,200px of monotonous scroll), replaces passive consumption with active interaction, and is achievable with pure CSS scroll-snap gated behind a responsive breakpoint — zero desktop regression risk.
+
+Second highest: **H-8 (scroll-triggered sticky bar)** + **C-2 (hide quote image on mobile)**. Together they take ~1 hour and directly improve conversion.
+
+# Mobile Elevation Audit — Part 3: Deep Technical Pass
+
+## Audit Method
+
+I re-read every file line by line looking specifically for: dead code, unused configuration, redundancies, performance waste, accessibility failures, mobile-specific functional gaps, and structural issues the UX pass didn't cover.
+
+---
+
+## Category 1: Dead Configuration & Unused Theme Extensions
+
+### DC-1: `tailwind.config.ts` — Extensive Unused Custom Theme
+
+The config defines custom extensions that are **never referenced** in any component:
+
+| Config Section | Defined Values | Used in Components? |
+|---|---|---|
+| `colors.navy`, `colors.gold`, `colors.royal`, `colors.warm`, `colors.dark-panel` | 10+ custom colors | **No** — all components use literal hex: `bg-[#0A1628]`, `text-[#C9A94E]`, etc. |
+| `fontSize.micro`, `fontSize.kicker` | 2 custom sizes | **No** — components use `text-[10px]`, `text-[11px]` |
+| `letterSpacing.kicker`, `.wide`, `.wider`, `.label`, `.chips` | 5 custom values | **No** — components use `tracking-[0.18em]`, `tracking-[0.24em]` |
+| `borderRadius.panel`, `.card` | 2 custom values | **No** — components use `rounded-3xl`, `rounded-2xl` |
+| `boxShadow.panel-soft`, `.panel-dark`, `.hero-glow`, `.cta-blue` | 4 custom shadows | **No** — components use `shadow-[0_28px_90px_...]` inline |
+| `backgroundImage.dot-pattern`, `.gold-radial` | 2 custom BGs | **No** — components use inline `style={{ backgroundImage: "..." }}` |
+| `backgroundSize.dots`, `.dots-sm`, `.dots-lg` | 3 custom sizes | **No** |
+| `animation.fade-up`, `.ken-burns`, `.bounce-subtle` | 3 custom animations | **No** — components use inline `style={{ animation: "..." }}` |
+
+**Impact:** Not a bundle issue (Tailwind tree-shakes unused utilities), but it's a **maintenance trap**. New developers will assume these tokens are the design system and try to use them, only to find every component uses hardcoded values instead.
+
+**Recommendation for Gemini:**
+
+> **Option A (Clean):** Remove all unused extensions from `tailwind.config.ts`. Keep only `fontFamily.serif` which IS used via `font-serif` class.
+>
+> **Option B (Adopt):** Migrate components to use the defined tokens. Replace `bg-[#0A1628]` with `bg-navy`, `text-[#C9A94E]` with `text-gold`, etc. across all files. This is a larger effort but creates a real design system.
+>
+> **Recommended: Option A now, Option B as post-launch tech debt.** The config cleanup is safe and fast. Token adoption is a refactor that should happen when the design system stabilizes.
+
+---
+
+### DC-2: `globals.css` + `tailwind.config.ts` — Duplicate Keyframe Definitions
+
+Three keyframes are defined in **both** files:
+
+| Keyframe | In `globals.css` `@keyframes` | In `tailwind.config.ts` `keyframes` |
+|---|---|---|
+| `heroFadeUp` | ✅ | ✅ |
+| `heroKenBurns` | ✅ | ✅ |
+| `heroBounceSubtle` | ✅ | ✅ |
+
+Components use the CSS versions via inline `style={{ animation: "heroFadeUp..." }}` and the CSS class `.hero-bounce-subtle`. The Tailwind versions (`animate-fade-up`, `animate-ken-burns`, `animate-bounce-subtle`) are **never used**.
+
+**Recommendation:** Remove the `animation` and `keyframes` sections from `tailwind.config.ts`. Keep them only in `globals.css` where they're actually consumed.
+
+---
+
+## Category 2: Redundancies & Bloat
+
+### R-1: Safe-Area Padding — Triple Application Risk
+
+Safe area insets are applied at **three levels**:
+
+| Level | File | Code | Applies To |
+|---|---|---|---|
+| Body | `globals.css` | `padding-top: env(safe-area-inset-top)` | Entire page flow |
+| Header | `PublicHeader.tsx` | `style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}` | Fixed-position header |
+| Sticky bar | `PublicChrome.tsx` | `paddingBottom: "calc(env(safe-area-inset-bottom) + 0.75rem)"` | Fixed-position bar |
+
+**The problem:** The header is `position: fixed`, so body padding doesn't affect it — that's fine. But the body's `padding-top: env(safe-area-inset-top)` pushes ALL page content down by ~47px on notched phones. The hero section starts at the top of the page flow (after body padding), so there's a 47px gap between the actual screen top and where the hero image begins. The hero uses `min-h-[100svh]` which means it's 100% of the *small viewport height*, measured from its starting position — so the hero extends 47px below the visible viewport.
+
+**In practice:** This probably isn't visible because the hero image uses `fill` + `object-cover` and the content is centered with `justify-center`. But it's technically wasteful and could cause edge-case issues.
+
+**Recommendation:** Remove the body-level `padding-top: env(safe-area-inset-top)` from `globals.css`. The header handles its own safe area. Content below the header is pushed down by the header's height anyway (content has `scroll-mt-32` for scroll offsets). Keep `padding-bottom: env(safe-area-inset-bottom)` on body since the sticky bar doesn't cover all bottom content.
+
+```css
+/* globals.css — CHANGE */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    /* REMOVE: padding-top: env(safe-area-inset-top); */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+```
+
+---
+
+### R-2: Hidden Desktop-Only DOM on Mobile
+
+Multiple components render significant JSX that's `hidden` on mobile via `display: none`. While this doesn't cause network requests for images (Next.js respects `display: none`), it does mean React parses, diffs, and maintains virtual DOM nodes that are never seen.
+
+**Inventory of hidden mobile content:**
+
+| Component | Hidden Element | Approx. JSX Lines | Impact |
+|---|---|---|---|
+| `ServiceSpreadSection` (×5 cards) | `ServiceIcon` + `icon-tile` wrapper | ~15 per card = 75 | Low |
+| `ServiceSpreadSection` (×5 cards) | Image overlay badges (top) | ~8 per card = 40 | Low |
+| `ServiceSpreadSection` (×5 cards) | Image overlay response promise (bottom) | ~5 per card = 25 | Low |
+| `ServiceSpreadSection` (×5 cards) | Content panel (response + chips) | ~15 per card = 75 | Low |
+| `ServiceSpreadSection` (×5 cards) | `proofLine` + `signal-line` | ~3 per card = 15 | Low |
+| `ServiceAreaSection` | Entire SVG map + dots + interactions | ~100 | Medium |
+| `OfferAndIndustrySection` (×3 cards) | Gradient overlay + top bar + outcome quote | ~20 per card = 60 | Low |
+| `TimelineSection` (×4 steps) | Step images + rail + dots | ~20 per step = 80 | Low |
+| `HeroSection` | Badge pill + service chips + desktop trust bar | ~15 | Low |
+| **Total** | | **~485 lines** | |
+
+**Recommendation:** For the largest offender (`ServiceAreaSection` map — ~100 lines), consider wrapping in a conditional render:
+
+```tsx
+{/* Only render map on md+ to avoid unnecessary vDOM on mobile */}
+{typeof window !== 'undefined' && window.innerWidth >= 768 && (
+  <div className="relative w-full max-w-md ...">
+    {/* map content */}
+  </div>
+)}
+```
+
+**However**, this introduces hydration issues with SSR. The safer pattern is:
+
+```tsx
+const [isDesktop, setIsDesktop] = useState(false);
+useEffect(() => {
+  setIsDesktop(window.matchMedia("(min-width: 768px)").matches);
+}, []);
+
+{isDesktop && (
+  <div className="relative w-full max-w-md ...">
+    {/* map content */}
+  </div>
+)}
+```
+
+**Realistic recommendation:** Leave the `hidden md:block` pattern as-is for smaller elements. Only apply conditional rendering to the ServiceAreaSection map (biggest single block). The performance gain from eliminating ~485 lines of hidden vDOM is marginal compared to the complexity cost. **Flag for post-launch.**
+
+---
+
+### R-3: `IncludedSummarySection` — Data Array Recreated Every Render
+
+```tsx
+function IncludedSummarySection() {
+  // This recreates on every render:
+  const summaryItems = [
+    { title: "Scope-Driven Planning", description: "..." },
+    { title: "Detail-Level Delivery", description: "..." },
+    { title: "Fast Communication", description: "..." },
+  ];
+```
+
+**Fix:** Move to module scope:
+
+```tsx
+const SUMMARY_ITEMS = [
+  { title: "Scope-Driven Planning", description: "..." },
+  { title: "Detail-Level Delivery", description: "..." },
+  { title: "Fast Communication", description: "..." },
+] as const;
+
+function IncludedSummarySection() {
+  // Use SUMMARY_ITEMS
+```
+
+Minor but it's the correct pattern used by every other section (e.g., `services`, `areas`, `testimonials`, `steps` are all module-level).
+
+---
+
+### R-4: BeforeAfterSlider — Global Event Listeners Always Active
+
+```tsx
+useEffect(() => {
+  const onMouseMove = (e: MouseEvent) => onMove(e.clientX);
+  const onTouchMove = (e: TouchEvent) => { ... };
+  const onEnd = () => { ... };
+
+  // These are ALWAYS registered while component is mounted:
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onEnd);
+  window.addEventListener("touchmove", onTouchMove, { passive: true });
+  window.addEventListener("touchend", onEnd);
+  // ...
+```
+
+Four global listeners fire on every mouse/touch event even when the user isn't dragging. The `isDraggingRef` check exits early, but the event handler functions still execute and the browser still dispatches events.
+
+**Fix:** Only attach listeners when drag starts, detach on end:
+
+```tsx
+const startDrag = useCallback((clientX: number) => {
+  isDraggingRef.current = true;
+  setIsDragging(true);
+  updatePosition(clientX);
+
+  const onMouseMove = (e: MouseEvent) => updatePosition(e.clientX);
+  const onTouchMove = (e: TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch) updatePosition(touch.clientX);
+  };
+  const onEnd = () => {
+    isDraggingRef.current = false;
+    setIsDragging(false);
+    window.removeEventListener("mousemove", onMouseMove);
+    window.removeEventListener("mouseup", onEnd);
+    window.removeEventListener("touchmove", onTouchMove);
+    window.removeEventListener("touchend", onEnd);
+  };
+
+  window.addEventListener("mousemove", onMouseMove);
+  window.addEventListener("mouseup", onEnd);
+  window.addEventListener("touchmove", onTouchMove, { passive: true });
+  window.addEventListener("touchend", onEnd);
+}, [updatePosition]);
+```
+
+Remove the existing always-on `useEffect` for global listeners.
+
+**Impact:** Eliminates 4 continuous global event listeners. Meaningful on mobile where touch events fire at 60fps during any scroll.
+
+---
+
+### R-5: Intersection Observer Proliferation
+
+Current observer count on a full page render:
+
+| Source | Count |
+|---|---|
+| `AuthorityBar` | 1 |
+| `ServiceSpreadSection` (5 items) | 5 |
+| `OfferAndIndustrySection` | 1 |
+| `BeforeAfterSlider` | 1 |
+| `TestimonialSection` | 1 |
+| `TimelineSection` (1 parent + 4 steps) | 5 |
+| `AboutSection` (3+ ScrollReveal instances) | 3+ |
+| `CareersSection` (4+ ScrollReveal instances) | 4+ |
+| `ServiceAreaSection` | 1 |
+| `QuoteSection` | 1 |
+| **Total** | **~23+** |
+
+Each `useInViewOnce` and `ScrollReveal` creates its own `IntersectionObserver`. Modern browsers handle this fine, but 23+ observers is excessive.
+
+**Recommendation for post-launch:** Create a shared `IntersectionObserver` manager that registers all elements on a single observer with a callback map. Standard pattern:
+
+```tsx
+// Shared singleton observer
+const observerCallbacks = new Map<Element, () => void>();
+const sharedObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      observerCallbacks.get(entry.target)?.();
+      sharedObserver.unobserve(entry.target);
+      observerCallbacks.delete(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+```
+
+**Flag for post-launch. Not blocking.**
+
+---
+
+## Category 3: Mobile-Specific Functional Issues
+
+### MF-1: Touch Target Failures — Testimonial Navigation
+
+**Critical.** These elements fail the 44px minimum touch target requirement from the hardening spec §3.2:
+
+| Element | Current Size | Required | Gap |
+|---|---|---|---|
+| Testimonial prev/next arrows | `h-8 w-8` (32×32) | 44×44 | **12px short** |
+| Testimonial dot indicators | `h-2 w-2` to `h-2 w-12` (8×8 to 8×48) | 44×44 | **36px short vertically** |
+
+**Fix for arrows:**
+```tsx
+className="flex h-11 w-11 items-center justify-center ..."
+// Changed from h-8 w-8
+```
+
+**Fix for dots — add padding-based tap area:**
+```tsx
+<button
+  key={idx}
+  type="button"
+  aria-label={`View testimonial ${idx + 1}`}
+  onClick={() => goToTestimonial(idx)}
+  className="relative flex h-11 items-center justify-center px-1"
+>
+  <span className={`block h-2 rounded-full transition-all duration-500 ${
+    idx === visibleIndex ? "w-12 bg-[#C9A94E]" : "w-2 bg-slate-600"
+  }`} />
+</button>
+```
+
+The visual dot stays small, but the tap target wrapping it is 44px tall.
+
+---
+
+### MF-2: `onMouseEnter`/`onMouseLeave` on Touch Devices
+
+Two components use hover state tracking that behaves unpredictably on mobile:
+
+**`OfferAndIndustrySection`:**
+```tsx
+onMouseEnter={() => setHoveredIndex(index)}
+onMouseLeave={() => setHoveredIndex(null)}
+```
+On mobile tap, `mouseenter` fires → card gets hover style → `mouseleave` may or may not fire depending on next interaction → stale visual state.
+
+**`ServiceAreaSection`** (city cards):
+```tsx
+onMouseEnter={() => setHoveredArea(area.name)}
+onMouseLeave={() => setHoveredArea(null)}
+```
+Same issue, though less visible because the hover effect is just a border color change.
+
+**Fix:** Gate hover handlers behind a media query check or use CSS-only hover:
+
+```tsx
+// Option A: CSS-only hover (preferred — zero JS overhead)
+// Remove onMouseEnter/onMouseLeave from cards
+// Replace JS hover classes with CSS:
+className="... hover:md:-translate-y-2 hover:md:shadow-2xl ..."
+
+// Option B: JS guard
+const supportsHover = typeof window !== 'undefined' 
+  && window.matchMedia("(hover: hover)").matches;
+
+onMouseEnter={supportsHover ? () => setHoveredIndex(index) : undefined}
+onMouseLeave={supportsHover ? () => setHoveredIndex(null) : undefined}
+```
+
+**Recommendation:** Option A (CSS `hover:md:` prefix) for OfferAndIndustry since the hover effects are purely visual. This eliminates JS state management for hover entirely. Option B for ServiceAreaSection only if the map dot interaction needs to stay linked to card hover.
+
+---
+
+### MF-3: ExitIntentOverlay — Never Triggers on Mobile
+
+The `ExitIntentOverlay` only listens for `mouseleave` events, which don't fire on mobile. The overlay will **never show** to mobile users — ~60-70% of traffic sees nothing.
+
+**Recommendation:** Add a mobile-specific trigger. The safest mobile exit intent patterns:
+
+```tsx
+// Add to the existing useEffect:
+
+// Mobile: trigger on rapid scroll-up (user heading back to top = leaving intent)
+const handleScroll = () => {
+  if (window.scrollY > 600) {
+    hasScrolledRef.current = true;
+  }
+  
+  // Mobile exit intent: rapid upward scroll
+  if (
+    !hasShownRef.current &&
+    hasScrolledRef.current &&
+    timeOnPageRef.current > 10_000 &&
+    !sessionStorage.getItem("aa_exit_intent_shown")
+  ) {
+    const scrollDelta = window.scrollY - lastScrollY.current;
+    if (scrollDelta < -200) { // Fast upward scroll
+      hasShownRef.current = true;
+      sessionStorage.setItem("aa_exit_intent_shown", "1");
+      setIsVisible(true);
+    }
+  }
+  lastScrollY.current = window.scrollY;
+};
+```
+
+**Alternatively**, if mobile exit intent is intentionally disabled (it can feel intrusive), add a comment documenting the decision so future developers don't "fix" it.
+
+---
+
+### MF-4: FloatingQuotePanel — No Post-Submit UX
+
+After successful form submission, the panel shows a green feedback message but remains open. The user must manually tap the ✕ button. On mobile, where the panel is full-screen, this is friction.
+
+**Recommendation:** Auto-close with delay after success:
+
+```tsx
+// In FloatingQuotePanel, add effect watching feedback:
+useEffect(() => {
+  if (feedback?.type === "success") {
+    const timer = setTimeout(() => onClose(), 2000);
+    return () => clearTimeout(timer);
+  }
+}, [feedback, onClose]);
+```
+
+The 2-second delay lets the user read the success message before the panel slides away.
+
+---
+
+### MF-5: Sticky Bar Remains Interactive Behind Quote Panel
+
+The sticky bar (z-30) is technically tappable behind the FloatingQuotePanel (z-50) because the `inert` attribute is only applied to the `mainRef` div, and the sticky bar is a **sibling** of that div, not inside it.
+
+```tsx
+// Current structure in PublicChrome:
+<div ref={mainRef}>        ← gets inert
+  <PublicHeader />
+  <div className="pb-24 md:pb-0">
+    {children}
+    <FooterSection />
+  </div>
+</div>
+
+<FloatingQuotePanel />      ← z-50
+<AIQuoteAssistant />
+<ScrollToTopButton />
+
+<div className="floating-widget fixed bottom-0 ...">  ← z-30, NOT inside mainRef
+  {/* sticky bar — NOT marked inert */}
+</div>
+```
+
+**Fix:** Move the sticky bar inside `mainRef`, or explicitly hide it when the panel is open:
+
+```tsx
+<div
+  className={`floating-widget fixed bottom-0 ... transition-opacity duration-200 ${
+    isQuoteOpen ? "pointer-events-none opacity-0" : ""
+  }`}
+>
+```
+
+---
+
+### MF-6: QuoteSection Form Spacing — Too Generous on Mobile
+
+The form uses `space-y-6` (24px) between all fields. With 7 field groups (name, company, phone/email row, service/timeline row, description, feedback, submit), that's 6 × 24px = 144px of whitespace between fields. On mobile, this makes the form feel longer than necessary.
+
+**Recommendation:**
+```tsx
+className="surface-panel mt-6 space-y-4 p-6 md:mt-10 md:space-y-6 md:p-7"
+// Changed space-y-6 → space-y-4 on mobile, md:space-y-6 preserves desktop
+```
+
+**Saves:** ~48px within the form.
+
+---
+
+### MF-7: AI Assistant Textarea — Missing `enterKeyHint`
+
+The QuoteSection textarea has `enterKeyHint="done"` (added in Batch E), but the AI Assistant textarea does not:
+
+```tsx
+// AIQuoteAssistant.tsx
+<textarea
+  ref={inputRef}
+  rows={2}
+  value={input}
+  // Missing: enterKeyHint="send"
+```
+
+For a chat interface, `enterKeyHint="send"` is the correct hint (shows "Send" on the mobile keyboard return key).
+
+---
+
+## Category 4: Accessibility Gaps
+
+### A-1: Color Contrast Failures
+
+| Text Color | Background | Ratio | WCAG AA (small text) | Location |
+|---|---|---|---|---|
+| `#C9A94E` (gold) | `#0A1628` (navy) | **4.3:1** | ❌ Fails (needs 4.5) | Kickers in hero, service area, careers, footer |
+| `#64748b` (slate-500) | `#081120` (footer bg) | **4.0:1** | ❌ Fails (needs 4.5) | Footer copyright, contact info, "serving Austin..." |
+| `#94A3B8` (slate-400) | `#0A1628` (navy) | **5.4:1** | ✅ Passes | Testimonial role text, service area descriptions |
+| `#C9A94E` (gold) | `#FAFAF8` (warm) | **2.5:1** | ❌ Fails | Before/After dot in "Prefer to call?" CTA |
+| `#2563EB` (royal) | `#FAFAF8` (warm) | **4.6:1** | ✅ Barely passes | Section kickers on light backgrounds |
+
+**Fixes:**
+- Gold on navy: Lighten gold to `#D4B85E` (bumps to ~5.0:1) OR use gold only for decorative elements (dots, lines) and switch text kickers to `#E2C868` on dark backgrounds
+- Footer text: Change `text-slate-500` to `text-slate-400` on footer dark background
+- Gold dots used as decoration (not text) are exempt from contrast requirements
+
+---
+
+### A-2: Testimonial Carousel Missing ARIA Roles
+
+The testimonial section functions as a carousel but lacks proper carousel ARIA semantics:
+
+**Current:**
+```tsx
+<section ref={ref} id="testimonial-section" className="...">
+```
+
+**Should be:**
+```tsx
+<section ref={ref} id="testimonial-section" aria-roledescription="carousel" aria-label="Client testimonials" className="...">
+
+{/* On the card container: */}
+<div role="group" aria-roledescription="slide" aria-label={`Testimonial ${visibleIndex + 1} of ${testimonials.length}`}>
+
+{/* On the dots: */}
+<div role="tablist" aria-label="Testimonial navigation">
+  <button role="tab" aria-selected={idx === visibleIndex} ...>
+```
+
+---
+
+### A-3: CTA Buttons Missing Tactile Feedback on Mobile
+
+The `cta-primary` class has `hover:-translate-y-0.5` but no `:active` state. On mobile, the only feedback from tapping a button is the browser's default tap highlight (which is often suppressed or invisible on styled elements).
+
+**Fix in `globals.css`:**
+```css
+.cta-primary {
+  @apply ... hover:-translate-y-0.5 active:scale-[0.98] active:shadow-none;
+}
+
+.cta-light {
+  @apply ... hover:-translate-y-0.5 active:scale-[0.98];
+}
+
+.cta-gold {
+  @apply ... hover:-translate-y-0.5 active:scale-[0.98];
+}
+
+.cta-outline-dark {
+  @apply ... hover:-translate-y-0.5 active:scale-[0.97];
+}
+```
+
+This gives every button a subtle press-in feel on tap. Standard mobile pattern.
+
+---
+
+## Category 5: Structural Optimizations
+
+### SO-1: PublicChrome `pb-24` — Oversized Sticky Bar Clearance
+
+The content wrapper has `pb-24` (96px) to clear the sticky bar. The actual sticky bar height:
+- Buttons: `min-h-[48px]`
+- Top padding: `pt-3` (12px)
+- Bottom: `calc(env(safe-area-inset-bottom) + 0.75rem)` ≈ 12px (non-notch) to 46px (notch)
+
+Maximum bar height ≈ 48 + 12 + 46 = **106px** on notched phones.
+
+`pb-24` = 96px, which is actually **less** than the max bar height on notched phones. The safe area bottom on body adds another ~34px, so it works out. But on non-notched phones, `pb-24` + body padding = 96 + 0 = 96px, while the bar is only 48 + 12 + 12 = 72px. That's 24px of wasted space.
+
+**Recommendation:** Keep `pb-24` as-is. The 24px over-clearance is acceptable insurance for device variance. Not worth the risk of content getting clipped behind the sticky bar on an edge-case device.
+
+---
+
+### SO-2: Image Quality Inconsistency
+
+| Image | Quality | File |
+|---|---|---|
+| Hero | 68 | HeroSection |
+| Service images (×5) | 68 | ServiceSpreadSection |
+| Timeline images (×4) | 68 | TimelineSection |
+| Quote panel | 68 | QuoteSection |
+| About | 75 | AboutSection |
+| Careers | 75 | CareersSection |
+| Before/After (×6) | 80 | BeforeAfterSlider |
+
+Before/After uses quality 80 because it's the one section where image detail directly matters (users are comparing visual quality). This makes sense. But About and Careers at 75 vs everything else at 68 is arbitrary.
+
+**Recommendation:** Standardize About and Careers to `quality={68}` to match. The 7-point quality difference is invisible on mobile but affects file size.
+
+---
+
+### SO-3: Section Component Lazy-Loading Strategy
+
+Currently lazy-loaded: `BeforeAfterSlider`, `TestimonialSection`, `QuoteSection`, `ExitIntentOverlay`.
+
+Currently eager (in initial bundle): `HeroSection`, `AuthorityBar`, `IncludedSummarySection`, `ServiceSpreadSection`, `OfferAndIndustrySection`, `TimelineSection`, `AboutSection`, `ServiceAreaSection`, `CareersSection`.
+
+**On a typical mobile session**, the user sees Hero + AuthorityBar + IncludedSummary in the first 2-3 viewports. Everything below that could be deferred.
+
+**Recommendation:** Add to lazy-loaded list:
+```tsx
+const ServiceSpreadSection = dynamic(
+  () => import("./ServiceSpreadSection").then((m) => m.ServiceSpreadSection),
+  { loading: () => <ServiceSpreadSkeleton /> }
+);
+
+const OfferAndIndustrySection = dynamic(
+  () => import("./OfferAndIndustrySection").then((m) => m.OfferAndIndustrySection),
+  { loading: () => <IndustrySkeleton /> }
+);
+```
+
+These are the two largest eager components. Deferring them reduces the initial JS bundle for first paint.
+
+**Note for Gemini:** Each skeleton should match the section's approximate height and background color to prevent layout shift. Use `animate-pulse` on placeholder blocks.
+
+---
+
+## Category 6: Content Flow & Conversion Architecture
+
+### CF-1: Page Section Order — Quote Form Too Late
+
+Current scroll order (numbered by approximate screen on mobile):
+
+```
+1.  Hero
+2.  AuthorityBar
+3.  IncludedSummary
+4-8.  ServiceSpread (5 services)
+9-10. OfferAndIndustry
+11-12. BeforeAfter
+13. Testimonials
+14-15. Timeline
+16. About
+17. ServiceArea
+18-19. QuoteSection  ← Form is HERE (screen 18-19 of 21)
+20. Careers
+21. Footer
+```
+
+The primary conversion action (quote form) is at **screen 18 of 21**. A user who scrolls linearly passes 17 screens before reaching the form. The sticky bar mitigates this, but the page flow itself isn't optimized for conversion.
+
+**Recommended reorder:**
+```
+1.  Hero (CTA: sticky bar appears after)
+2.  AuthorityBar (trust)
+3.  IncludedSummary (process clarity)
+4-8.  ServiceSpread (services)
+9-10. OfferAndIndustry (audience fit)
+11. Testimonials (social proof)
+12-13. BeforeAfter (visual proof)
+14. QuoteSection ← MOVED UP (after proof, before "about us")
+15-16. Timeline (how it works — reinforces for undecided)
+17. About (brand story)
+18. ServiceArea (geography)
+19. Careers
+20. Footer
+```
+
+**Rationale:** After seeing services (what), industries (who), testimonials (trust), and before/after (proof), the user has maximum intent. The quote form should appear at that moment. Timeline, About, ServiceArea, and Careers serve users who need more convincing — they come after the primary conversion opportunity.
+
+**Implementation:** Reorder components in `VariantAPublicPage`:
+```tsx
+<main>
+  <HeroSection />
+  <AuthorityBar />
+  <IncludedSummarySection />
+  <ServiceSpreadSection />
+  <OfferAndIndustrySection />
+  <TestimonialSection />      {/* moved up */}
+  <BeforeAfterSlider />       {/* moved up */}
+  <QuoteSection />            {/* moved up */}
+  <TimelineSection />         {/* moved down */}
+  <AboutSection />
+  <ServiceAreaSection />
+  <CareersSection />
+</main>
+```
+
+**Effort:** XS (5 min — just reorder JSX). **Impact: potentially significant conversion improvement.**
+
+---
+
+### CF-2: "Learn More About Us" CTA Below Quote Form — Anti-Pattern
+
+```tsx
+// QuoteSection.tsx, below the form:
+<a href="#about" className="cta-outline-dark min-h-[48px]">
+  Learn More About Us
+</a>
+```
+
+This link appears immediately after the quote form submit button. A user who has scrolled to the form and is considering submitting is offered an escape route to a section they already scrolled past. This is an anti-conversion pattern.
+
+**Recommendation:** Remove this CTA entirely. Keep only the "Prefer to call?" CTA which serves users who prefer phone over form (still a conversion action).
+
+---
+
+## Category 7: Consolidated Issue Register for Implementation
+
+Organized by priority for Gemini to implement:
+
+### Must-Fix (Functional / Accessibility)
+
+| # | Issue | File(s) | Effort |
+|---|---|---|---|
+| MF-1 | Testimonial touch targets below 44px | `TestimonialSection.tsx` | XS |
+| MF-5 | Sticky bar tappable behind quote panel | `PublicChrome.tsx` | XS |
+| A-1 | Gold-on-navy contrast failure (4.3:1 < 4.5) | `globals.css` or component overrides | XS |
+| A-1 | Footer text contrast failure (4.0:1 < 4.5) | `FooterSection.tsx` | XS |
+| A-3 | No `:
+
+Addition B: Items Missed in Parts 1-3
+These surfaced after reviewing the Master Spec and the full component set together:
+
+B-1: Font Loading Strategy — Unverified
+The Tailwind config references var(--font-serif) and the entire site's premium feel depends on the serif font rendering. No font loading strategy is documented. On mobile with slow connections:
+
+If using next/font: Verify display: swap is set to prevent FOIT (flash of invisible text)
+If using external font CDN: Verify preconnect hints are in the layout <head>
+If self-hosted: Verify font files are in the correct public/ path and properly cached
+Check needed: Look at src/app/layout.tsx for the font import. Add to the audit if display: swap is missing.
+
+Why this matters on mobile: FOIT on a 3G connection means the entire hero headline — the most important conversion text on the page — is invisible for 1-3 seconds while the serif font loads.
+
+B-2: ScrollToTopButton — Never Audited
+This component is dynamically imported in PublicChrome.tsx but was never provided for review. Potential issues:
+
+Could overlap with the AI assistant trigger (both fixed bottom-right)
+Could overlap with the sticky bar
+Needs z-index from the --z-* system
+Needs to respect body[data-mobile-menu-open] hiding rule
+Action for Gemini: Verify ScrollToTopButton positioning doesn't conflict with AIQuoteAssistant trigger (bottom-right, bottom-[7.5rem]) or the sticky bar (bottom-0). If it does, apply the same floating-widget class and z-index system.
+
+B-3: QuoteCTA Component — Never Audited
+Used 10+ times across the site. The source was never provided. Based on usage patterns, it's a wrapper that calls useQuoteAction() onClick. Potential issues:
+
+If it doesn't include min-h-[44px] or min-h-[48px] by default, every usage must manually add it
+If it doesn't include active:scale-[0.98] tactile feedback, no CTA has press feedback
+When F-25 builds the shared CTAButton, it should either replace QuoteCTA or QuoteCTA should wrap CTAButton
+Action for Gemini: Before building F-25, examine QuoteCTA.tsx. If it's a thin wrapper around a button/link, extend it to become the CTAButton with ctaId prop rather than creating a separate component.
+
+B-4: ScrollReveal Component — Animation API Unknown
+Used in AboutSection and CareersSection. Takes hiddenClassName, visibleClassName, threshold, and style props. Without seeing the source:
+
+It likely creates its own IntersectionObserver (adding to the 23+ count in R-5)
+Its animation behavior may not respect prefers-reduced-motion (unlike useInViewOnce which has explicit motion check in AuthorityBar)
+Action for Gemini: Verify ScrollReveal respects prefers-reduced-motion. If not, add the same media query check used in useCountUp.
+
+B-5: Meta Viewport Tag — Unverified
+The standard mobile meta tag must exist in src/app/layout.tsx:
+
+html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+The viewport-fit=cover part is critical — without it, env(safe-area-inset-*) values are always 0px, making all the safe-area work in the hardening pass inert.
+
+Next.js 14+ handles this via the viewport export in layout, but it must be verified:
+
+tsx
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+Action for Gemini: Check src/app/layout.tsx for viewport configuration. If viewportFit: 'cover' is missing, add it. Without this, every env(safe-area-inset-*) usage returns 0px.
+
+B-6: Landscape Orientation — Zero Handling
+No component accounts for landscape orientation on mobile phones. At landscape on an iPhone SE (568×320), the hero section with min-h-[100svh] = 320px tall, which with the header taking ~56px leaves ~264px for content. The vertically-centered hero content (headline + subtitle + CTAs + trust bar) likely exceeds this.
+
+Recommendation: Not a launch blocker, but add to the Batch F QA pass:
+
+Check hero at 568×320 (iPhone SE landscape)
+Check quote form at 844×390 (iPhone 14 Pro landscape)
+If hero overflows, add landscape:min-h-auto landscape:py-8 to the hero section
+B-7: Admin + Employee Mobile Considerations
+The Master Spec §8 features include admin and employee surfaces that will be used on mobile devices:
+
+Admin on tablets (iPad): F-01 Morning Briefing, F-06 One-Tap Dispatch, F-08 Revenue Tracker
+Employee on phones (field): F-11 Map Link, F-12 Job-Day Summary, F-13 Photo Requirements, F-14 Completion Lockout
+The §15 standards proposed above apply to these surfaces too, but they have additional mobile considerations:
+
+Surface	Additional Mobile Need
+Employee photo upload (F-13)	Camera API integration, offline queue (already exists), progress indicator during upload on slow connections
+Employee job timeline (F-12)	Must work at walking speed — large text, high contrast, minimal interaction required to see next job
+Admin Morning Briefing (F-01)	Primary action buttons must be in thumb zone (bottom 40% of screen). "Call Her" button must trigger tel: link, not navigate to a detail page
+Admin dispatch (F-06)	Date/time pickers must use native mobile pickers (type="date", type="time") not custom dropdowns
+Addition C: Implementation Instruction Block for Gemini
+Add this at the very top of the Mobile Work Upgrades document so Gemini has clear operating rules:
+
+markdown
+## Implementation Instructions
+
+Target: Gemini 2.5 Pro via CLI or Workspace
+Codebase: Next.js 14+ / React 18 / Tailwind CSS 3.x / TypeScript
+
+### Operating Rules
+
+1. **Mobile changes must be gated behind responsive breakpoints.**
+   All mobile-specific modifications use Tailwind's mobile-first approach:
+   - Default classes = mobile
+   - `md:` prefix = 768px+ (tablet/desktop override)
+   - `lg:` prefix = 1024px+
+   Desktop must render identically after changes. Zero visual regression above 768px.
+
+2. **Annotate all changes with `/* MOBILE-ELEVATION */` comments.**
+   This distinguishes elevation work from the earlier hardening pass
+   (which used `/* MOBILE-HARDENING */`).
+
+3. **Deliver complete replacement files, not diffs.**
+   Each file should be directly pasteable. Include all existing code —
+   do not omit unchanged sections.
+
+4. **Preserve all existing functionality.**
+   Animations, event handlers, data structures, props interfaces —
+   all must remain intact unless the change specifically modifies them
+   with documented rationale.
+
+5. **Run verification after each file:**
+   - `npx tsc --noEmit` (type check)
+   - `npx next build` (build check)
+   - Visual check at 320px, 375px, 430px, 768px viewports
+
+6. **Implementation order follows the Wave structure in this document.**
+   Wave 1 first (all XS effort, no dependencies), then Wave 2, then Wave 3.
+   Within each wave, items can be done in any order unless a dependency
+   is noted.
+
+7. **When touching a file that has `/* MOBILE-HARDENING */` comments,
+   preserve those comments and their associated changes.** The elevation
+   pass builds on top of the hardening pass — it does not replace it.
+
+8. **Reference files:**
+   - `HOMEPAGE-MOBILE-UX-UI-FUNCTIONAL-HARDENING-SPEC.md` — prior work baseline
+   - `Master-Spec-4.0` §15 — mobile development standards
+   - `CODE-HEALTH-AUDIT.md` — known tech debt (do not fix unrelated items)
+Addition D: Updated Wave Structure With New Findings
+Merge the Part 3 findings into the existing wave structure:
+
+Wave 1 (Updated — add these XS items)
+#	Item	Effort	Source
+MF-1	Testimonial nav touch targets (h-8→h-11, dot padding)	XS	Part 3
+MF-7	AI assistant textarea enterKeyHint="send"	XS	Part 3
+A-3	CTA :active tactile feedback in globals.css	XS	Part 3
+R-3	IncludedSummary data array → module scope	XS	Part 3
+DC-2	Remove duplicate keyframes from tailwind.config.ts	XS	Part 3
+B-5	Verify/add viewportFit: 'cover' in layout.tsx	XS	Addition B
+Wave 2 (Updated — add these S items)
+#	Item	Effort	Source
+MF-5	Hide sticky bar when quote panel open	XS	Part 3
+MF-2	Replace JS hover handlers with CSS hover:md:	S	Part 3
+A-1	Fix gold-on-navy and footer text contrast	XS	Part 3
+R-1	Remove body padding-top: env(safe-area-inset-top)	XS	Part 3
+CF-2	Remove "Learn More About Us" CTA below quote form	XS	Part 3
+MF-3	Add mobile exit intent trigger (scroll-up detection)	S	Part 3
+MF-6	Quote form space-y-4 on mobile (tighter field spacing)	XS	Part 3
+Wave 3 (Updated — add these M items)
+#	Item	Effort	Source
+R-4	BeforeAfterSlider — drag-only event listeners	S	Part 3
+DC-1	Clean unused Tailwind config extensions	S	Part 3
+MF-4	FloatingQuotePanel auto-close on success	XS	Part 3
+CF-1	Section reorder (Quote form moved earlier)	XS	Part 3
+SO-2	Standardize image quality to 68	XS	Part 3
+SO-3	Lazy-load ServiceSpread + OfferAndIndustry with skeletons	M	Part 3
+
+Addition A: Feature Roadmap Collision Map
+Several audit findings directly overlap with or block planned features. Gemini should implement these audit items before or during the corresponding feature to avoid rework:
+
+Audit Item	Collides With Feature	Relationship	Implementation Order
+C-4 (CTA label standardization)	F-25 (CTA taxonomy)	Same work. C-4 is the copy/label decision; F-25 is the instrumentation wrapper.	Do C-4 as part of F-25 — standardize labels when building the shared CTAButton component.
+H-8 (Scroll-triggered sticky bar)	F-25 (CTA taxonomy)	The sticky bar CTAs need ctaId props from F-25. The scroll trigger (H-8) changes when they appear.	Build H-8 into PublicChrome.tsx when F-25 lands its CTAButton.
+CF-1 (Section reorder — Quote form earlier)	F-17 (Confirmation page)	If the quote form moves up in the page, the confirmation page experience must account for the new scroll position (user sees more content below after submitting).	Reorder sections before building F-17.
+MF-3 (ExitIntentOverlay never triggers on mobile)	F-25 (CTA taxonomy)	The exit intent overlay has a CTA that needs instrumentation. But if it never shows on mobile, 60-70% of traffic is unmeasured.	Fix MF-3 (add mobile trigger) before or during F-25 instrumentation.
+H-4 (Skeleton loading states)	SO-3 (Additional lazy-loading)	Skeletons are needed for currently lazy-loaded sections AND for any new sections that become lazy-loaded.	Build skeleton components first, then expand lazy-loading scope.
+P-5 (Image blur placeholders)	F-26 (Portfolio hub)	F-26 is the most image-heavy feature on the roadmap. It must use blur placeholders from day one.	Establish the blur placeholder pattern on existing images before F-26 development starts.
+C-1 (ServiceSpread carousel)	F-23 (Service-page objection modules)	If services become a carousel, each service card may need a "Learn more" deep-link to the service detail page where F-23's objection modules live.	Consider adding service detail routes alongside the carousel conversion.
+MF-4 (FloatingQuotePanel auto-close on success)	F-17 (Confirmation page)	After the panel auto-closes, the user should see the confirmation page content. This needs routing coordination.	Implement MF-4 and F-17 together.
