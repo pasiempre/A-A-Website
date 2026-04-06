@@ -12,6 +12,7 @@ export type ServiceData = {
   image: string;
   bullets: string[];
   reverse?: boolean;
+  href: string;
 };
 
 export const SERVICES: ServiceData[] = [
@@ -26,6 +27,7 @@ export const SERVICES: ServiceData[] = [
     proofLine: "Licensed and insured, with schedules that match contractor timelines.",
     image: "/images/variant-a/service-spread-01.jpg",
     bullets: ["Multifamily buildings", "Commercial offices", "Schools & institutional"],
+    href: "/services/post-construction-cleaning",
   },
   {
     anchor: "service-final-clean",
@@ -39,6 +41,7 @@ export const SERVICES: ServiceData[] = [
     image: "/images/variant-a/service-spread-02.jpg",
     bullets: ["Hardwood floors & tiling", "Fixtures & appliances", "Complete dust removal"],
     reverse: true,
+    href: "/services/final-clean",
   },
   {
     anchor: "service-commercial",
@@ -51,6 +54,7 @@ export const SERVICES: ServiceData[] = [
     proofLine: "Keeps active spaces clean without interrupting daily operations.",
     image: "/images/variant-a/service-spread-03.jpg",
     bullets: ["Office complexes", "Retail environments", "Regular maintenance"],
+    href: "/services/commercial-cleaning",
   },
   {
     anchor: "service-move",
@@ -64,6 +68,7 @@ export const SERVICES: ServiceData[] = [
     image: "/images/variant-a/service-spread-04.jpg",
     bullets: ["Apartment turns", "Deep sanitation", "Property management support"],
     reverse: true,
+    href: "/services/move-in-move-out-cleaning",
   },
   {
     anchor: "service-windows",
@@ -76,6 +81,7 @@ export const SERVICES: ServiceData[] = [
     proofLine: "High-visibility exterior finish work for cleaner handoffs.",
     image: "/images/variant-a/service-spread-05.jpg",
     bullets: ["Exterior facades", "High-reach windows", "Concrete & walkways"],
+    href: "/services/windows-power-wash",
   },
 ];
 
