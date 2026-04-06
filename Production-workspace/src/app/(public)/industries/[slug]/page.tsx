@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { INDUSTRIES, type IndustryData } from "@/data/industries";
 import { SERVICES } from "@/data/services";
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
@@ -464,12 +466,12 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-200 md:text-lg">{content.hero.subtitle}</p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link href={`/?serviceType=${defaultService}#quote-request`} className="cta-primary min-h-[48px]">
+              <QuoteCTA ctaId={`industry_${industry.slug}_hero_quote`} serviceType={defaultService} className="cta-primary min-h-[48px]">
                 Request a Quote
-              </Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/30 bg-white/5 text-white hover:bg-white hover:text-[#0A1628]">
+              </QuoteCTA>
+              <CTAButton ctaId={`industry_${industry.slug}_hero_call`} actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/30 bg-white/5 text-white hover:bg-white hover:text-[#0A1628]">
                 Call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -666,12 +668,12 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
             </p>
 
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href={`/?serviceType=${defaultService}#quote-request`} className="cta-gold min-h-[48px]">
+              <QuoteCTA ctaId={`industry_${industry.slug}_closing_quote`} serviceType={defaultService} className="cta-gold min-h-[48px]">
                 Request a Quote
-              </Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/35 text-white hover:bg-white hover:text-[#0A1628]">
+              </QuoteCTA>
+              <CTAButton ctaId={`industry_${industry.slug}_closing_call`} actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/35 text-white hover:bg-white hover:text-[#0A1628]">
                 Call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2">

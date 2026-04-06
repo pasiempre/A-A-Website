@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import {
   COMPANY_NAME,
   COMPANY_SHORT_NAME,
@@ -498,15 +499,17 @@ export default function ServiceAreaIndexPage() {
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Link href="/contact" className="cta-primary px-6 py-3">
+                    <CTAButton ctaId="service_area_hub_coverage" actionType="link" href="/contact" className="cta-primary px-6 py-3">
                       Request Coverage
-                    </Link>
-                    <a
+                    </CTAButton>
+                    <CTAButton
+                      ctaId="service_area_hub_closing_call"
+                      actionType="call"
                       href={`tel:${COMPANY_PHONE_E164}`}
                       className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60 hover:bg-white/10"
                     >
                       Call {COMPANY_PHONE}
-                    </a>
+                    </CTAButton>
                   </div>
                 </div>
               </div>

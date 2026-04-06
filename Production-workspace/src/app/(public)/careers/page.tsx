@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { EmploymentApplicationForm } from "@/components/public/EmploymentApplicationForm";
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 
 export const metadata: Metadata = {
@@ -63,9 +65,9 @@ export default function CareersPage() {
                 Reach out and we can clarify role expectations and scheduling before you submit.
               </p>
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[44px]">
+                <CTAButton ctaId="careers_sidebar_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[44px]">
                   Call {COMPANY_PHONE}
-                </a>
+                </CTAButton>
                 <Link href="/faq" className="cta-primary min-h-[44px]">
                   View FAQ
                 </Link>
@@ -89,7 +91,7 @@ export default function CareersPage() {
         <div className="mx-auto max-w-6xl px-6 text-sm text-slate-600">
           Looking for project services instead of careers?
           {" "}
-          <Link href="/#quote-request" className="font-semibold text-[#2563EB]">Request a Quote</Link>
+          <QuoteCTA ctaId="careers_bottom_quote" className="min-h-0 font-semibold text-[#2563EB]">Request a Quote</QuoteCTA>
         </div>
       </section>
     </main>

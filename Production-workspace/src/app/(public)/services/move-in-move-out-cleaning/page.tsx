@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { COMPANY_CITY, COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { SERVICE_FAQS } from "@/lib/service-faqs";
 import { getSiteUrl } from "@/lib/site";
@@ -112,8 +114,8 @@ export default function MoveInMoveOutCleaningPage() {
               </ul>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <Link href="/#quote-request" className="cta-primary px-8 py-4">Request a Quote</Link>
-                <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
+                <QuoteCTA ctaId="move_in_out_hero_quote" serviceType="turnover" className="cta-primary px-8 py-4">Request a Quote</QuoteCTA>
+                <CTAButton ctaId="move_in_out_hero_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</CTAButton>
               </div>
             </div>
 
@@ -159,8 +161,8 @@ export default function MoveInMoveOutCleaningPage() {
             <h2 className="font-serif text-3xl tracking-tight text-white md:text-4xl">Need faster move-in readiness across your units?</h2>
             <p className="mt-4 text-base font-light text-slate-300">Share your property type and timeline, and we&apos;ll align service quickly.</p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote-request" className="cta-gold px-8 py-4">Get a Quote</Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white">Or call {COMPANY_PHONE}</a>
+              <QuoteCTA ctaId="move_in_out_closing_quote" serviceType="turnover" className="cta-gold px-8 py-4">Get a Quote</QuoteCTA>
+              <CTAButton ctaId="move_in_out_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="min-h-0 text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white">Or call {COMPANY_PHONE}</CTAButton>
             </div>
           </div>
         </section>

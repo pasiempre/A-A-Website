@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { getSiteUrl } from "@/lib/site";
 import { SERVICE_AREA_BY_SLUG, SERVICE_AREA_CITIES } from "@/lib/service-areas";
@@ -179,8 +181,8 @@ export default async function LocationPage({ params }: LocationPageProps) {
           </ul>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <Link href="/#quote-request" className="cta-primary px-8 py-4">Request a Quote</Link>
-            <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
+            <QuoteCTA ctaId={`city_${location.slug}_hero_quote`} className="cta-primary px-8 py-4">Request a Quote</QuoteCTA>
+            <CTAButton ctaId={`city_${location.slug}_hero_call`} actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</CTAButton>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -329,13 +331,15 @@ export default async function LocationPage({ params }: LocationPageProps) {
             <h2 className="font-serif text-3xl tracking-tight text-white md:text-4xl">Ready to get started in {location.name}?</h2>
             <p className="mt-4 text-base font-light text-slate-300">Same standards, same responsiveness — wherever the project is.</p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote-request" className="cta-gold px-8 py-4">Get a Quote</Link>
-              <a
+              <QuoteCTA ctaId={`city_${location.slug}_closing_quote`} className="cta-gold px-8 py-4">Get a Quote</QuoteCTA>
+              <CTAButton
+                ctaId={`city_${location.slug}_closing_call`}
+                actionType="call"
                 href={`tel:${COMPANY_PHONE_E164}`}
-                className="text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"
+                className="min-h-0 text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"
               >
                 Or call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
           </div>
         </section>

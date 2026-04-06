@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { COMPANY_CITY, COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { SERVICE_FAQS } from "@/lib/service-faqs";
 import { getSiteUrl } from "@/lib/site";
@@ -112,8 +114,8 @@ export default function WindowsPowerWashPage() {
               </ul>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <Link href="/#quote-request" className="cta-primary px-8 py-4">Request a Quote</Link>
-                <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
+                <QuoteCTA ctaId="windows_power_wash_hero_quote" serviceType="specialty" className="cta-primary px-8 py-4">Request a Quote</QuoteCTA>
+                <CTAButton ctaId="windows_power_wash_hero_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</CTAButton>
               </div>
             </div>
 
@@ -159,8 +161,8 @@ export default function WindowsPowerWashPage() {
             <h2 className="font-serif text-3xl tracking-tight text-white md:text-4xl">Ready to improve exterior presentation?</h2>
             <p className="mt-4 text-base font-light text-slate-300">Tell us what needs attention and we&apos;ll align timing and scope.</p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote-request" className="cta-gold px-8 py-4">Get a Quote</Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white">Or call {COMPANY_PHONE}</a>
+              <QuoteCTA ctaId="windows_power_wash_closing_quote" serviceType="specialty" className="cta-gold px-8 py-4">Get a Quote</QuoteCTA>
+              <CTAButton ctaId="windows_power_wash_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="min-h-0 text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white">Or call {COMPANY_PHONE}</CTAButton>
             </div>
           </div>
         </section>

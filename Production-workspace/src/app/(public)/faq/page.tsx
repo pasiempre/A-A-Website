@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import { FAQSection } from "@/components/public/variant-a/FAQSection";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { FAQ_ITEMS } from "@/components/public/variant-a/faq-items";
 import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { getSiteUrl } from "@/lib/site";
@@ -78,7 +80,9 @@ export default function FAQPage() {
                   Find answers about our process, coverage, pricing, and what to expect when working with A&amp;A Cleaning.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <a
+                  <CTAButton
+                    ctaId="faq_hero_call"
+                    actionType="call"
                     href={`tel:${COMPANY_PHONE_E164}`}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-[#0A1628] text-white rounded-lg hover:bg-[#0f2746] transition-colors font-medium"
                   >
@@ -86,7 +90,7 @@ export default function FAQPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                     Call Us
-                  </a>
+                  </CTAButton>
                   <a
                     href="#faq"
                     className="inline-flex items-center gap-2 px-6 py-3 border-2 border-slate-300 text-[#0A1628] rounded-lg hover:border-slate-400 transition-colors font-medium"
@@ -115,7 +119,9 @@ export default function FAQPage() {
                   Get in touch directly with our team. We respond to all inquiries within one hour during business hours.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <a
+                  <CTAButton
+                    ctaId="faq_cta_call"
+                    actionType="call"
                     href={`tel:${COMPANY_PHONE_E164}`}
                     className="cta-primary inline-flex items-center gap-2"
                   >
@@ -123,7 +129,7 @@ export default function FAQPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
                     {COMPANY_PHONE}
-                  </a>
+                  </CTAButton>
                   <a
                     href={`mailto:${COMPANY_EMAIL}`}
                     className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-white/35 px-6 py-3 text-white transition-colors hover:border-white/60 hover:bg-white/10"
@@ -148,15 +154,15 @@ export default function FAQPage() {
                 <p className="text-slate-600 mb-8">
                   Request a quote for your project – same-day response during business hours.
                 </p>
-                <Link
-                  href="/contact"
+                <QuoteCTA
+                  ctaId="faq_closing_quote"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-[#0A1628] text-white rounded-lg hover:bg-[#0f2746] transition-colors font-medium"
                 >
                   Get a Quote
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
-                </Link>
+                </QuoteCTA>
               </div>
             </div>
           </section>

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import {
   COMPANY_CITY,
   COMPANY_NAME,
@@ -260,12 +262,12 @@ export default function AboutPage() {
             </p>
 
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href="/#quote-request" className="cta-gold min-h-[48px]">
+              <QuoteCTA ctaId="about_closing_quote" className="cta-gold min-h-[48px]">
                 Request a Quote
-              </Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/35 text-white hover:bg-white hover:text-[#0A1628]">
+              </QuoteCTA>
+              <CTAButton ctaId="about_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/35 text-white hover:bg-white hover:text-[#0A1628]">
                 Call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
           </div>
         </section>
