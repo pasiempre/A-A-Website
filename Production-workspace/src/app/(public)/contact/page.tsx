@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { ContactPageClient } from "./ContactPageClient";
 import {
   COMPANY_NAME,
@@ -236,8 +235,7 @@ export default function ContactPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <PublicPageShell>
-        <main className="pb-24 md:pb-0">
+      <main>
           <section className="relative overflow-hidden border-b border-slate-200 bg-[#0A1628] pb-20 pt-32 md:pb-24 md:pt-40">
             <div className="pointer-events-none absolute inset-0 opacity-[0.04]" aria-hidden="true">
               <div
@@ -500,8 +498,7 @@ export default function ContactPage() {
               </div>
             </div>
           </section>
-        </main>
-      </PublicPageShell>
+      </main>
     </>
   );
 }

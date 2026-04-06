@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PublicPageShell } from "@/components/public/PublicPageShell";
 import {
   COMPANY_NAME,
   COMPANY_SHORT_NAME,
@@ -147,9 +146,8 @@ export default function TermsOfServicePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <PublicPageShell>
-        <main className="pb-24 md:pb-0">
-          <section className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] pb-14 pt-32 md:pb-18 md:pt-40">
+      <main>
+          <section className="relative overflow-hidden border-b border-slate-200 bg-[#FAFAF8] pb-14 pt-28 md:pb-18 md:pt-36">
             <div className="pointer-events-none absolute inset-0 opacity-[0.025]" aria-hidden="true">
               <div
                 className="h-full w-full"
@@ -684,8 +682,7 @@ export default function TermsOfServicePage() {
               </div>
             </div>
           </section>
-        </main>
-      </PublicPageShell>
+      </main>
     </>
   );
 }

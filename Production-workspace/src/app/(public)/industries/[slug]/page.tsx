@@ -430,7 +430,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
 
-      <main className="bg-[#FAFAF8] pb-24 md:pb-0">
+      <main className="bg-[#FAFAF8]">
         <section className="relative overflow-hidden border-b border-slate-200 bg-[#0A1628] pb-16 pt-28 md:pt-36">
           <Image
             src={content.hero.image}

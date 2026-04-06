@@ -62,7 +62,7 @@ export default function AboutPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
 
-      <main className="bg-[#FAFAF8] pb-24 md:pb-0">
+      <main className="bg-[#FAFAF8]">
         <section className="border-b border-slate-200 bg-white pb-14 pt-28 md:pt-36">
           <div className="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>

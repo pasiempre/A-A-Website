@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function CareersPage() {
   return (
-    <main className="bg-[#FAFAF8] pb-24 md:pb-0">
+    <main className="bg-[#FAFAF8]">
       <section className="border-b border-slate-200 bg-white pb-12 pt-28 md:pt-36">
         <div className="mx-auto max-w-6xl px-6">
           <p className="section-kicker">Careers</p>

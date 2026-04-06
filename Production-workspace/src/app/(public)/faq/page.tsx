@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { FAQSection } from "@/components/public/variant-a/FAQSection";
 import { FAQ_ITEMS } from "@/components/public/variant-a/faq-items";
 import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
@@ -62,10 +61,9 @@ export default function FAQPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <PublicPageShell>
-        <main className="pb-24 md:pb-0">
+      <main>
           {/* Hero Section */}
-          <section className="relative overflow-hidden border-b border-slate-200 bg-white pb-20 pt-32 md:pb-24 md:pt-40">
+          <section className="relative overflow-hidden border-b border-slate-200 bg-white pb-20 pt-28 md:pb-24 md:pt-36">
             <div className="mx-auto max-w-4xl px-6">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3 mb-4">
@@ -189,8 +187,7 @@ export default function FAQPage() {
               </div>
             </div>
           </section>
-        </main>
-      </PublicPageShell>
+      </main>
     </>
   );
 }

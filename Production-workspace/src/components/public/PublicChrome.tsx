@@ -249,6 +249,8 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
           H-8 — bar hidden until user scrolls past hero (showStickyBar).
           Combined: bar only visible when scrolled AND panel closed. */}
       <div
+        role="toolbar"
+        aria-label="Quick actions"
         className={`floating-widget fixed bottom-0 left-0 z-[30] flex w-full gap-3 border-t border-slate-200/50 bg-white/95 px-4 pt-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-transform duration-300 md:hidden ${
           showStickyBar && !isQuoteOpen
             ? "translate-y-0"

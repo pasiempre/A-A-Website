@@ -79,6 +79,8 @@ export function PublicHeader() {
     pathname === "/faq" ||
     pathname === "/about" ||
     pathname === "/careers" ||
+    pathname === "/services" ||
+    pathname.startsWith("/services/") ||
     pathname === "/service-area" ||
     pathname.startsWith("/service-area/");
 
@@ -212,11 +214,11 @@ export function PublicHeader() {
                 ctaId="header_nav_call"
                 actionType="call"
                 href={`tel:${COMPANY_PHONE_E164}`}
-                className="hidden min-h-[40px] items-center rounded-lg border border-white/15 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:border-white/35 hover:bg-white/8 lg:inline-flex"
+                className="hidden min-h-[44px] items-center rounded-lg border border-white/15 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition hover:border-white/35 hover:bg-white/8 lg:inline-flex"
               >
                 Call
               </CTAButton>
-              <QuoteCTA ctaId="header_nav_quote" className="min-h-[40px] rounded-lg bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100">
+              <QuoteCTA ctaId="header_nav_quote" className="min-h-[44px] rounded-lg bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.18em] text-[#0A1628] shadow-sm transition hover:bg-slate-100">
                 Free Quote
               </QuoteCTA>
             </div>
@@ -289,7 +291,7 @@ export function PublicHeader() {
               <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Explore</p>
               <div className="mt-2 space-y-1">
                 <details className="group rounded-xl bg-white/[0.04]">
-                  <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[13px] font-medium text-white">
+                  <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between px-4 py-3 text-[13px] font-medium text-white">
                     <span>Services</span>
                     <span aria-hidden="true" className="text-slate-400 transition-transform group-open:rotate-90">›</span>
                   </summary>
@@ -299,7 +301,7 @@ export function PublicHeader() {
                         key={link.label}
                         href={link.href}
                         onClick={closeMobileMenu}
-                        className="block rounded-lg px-3 py-2 text-sm text-slate-200 transition hover:bg-white/7 hover:text-white"
+                        className="flex min-h-[44px] items-center rounded-lg px-3 text-sm text-slate-200 transition hover:bg-white/7 hover:text-white"
                       >
                         {link.label}
                       </a>
@@ -308,7 +310,7 @@ export function PublicHeader() {
                 </details>
 
                 <details className="group rounded-xl bg-white/[0.04]">
-                  <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[13px] font-medium text-white">
+                  <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between px-4 py-3 text-[13px] font-medium text-white">
                     <span>Industries</span>
                     <span aria-hidden="true" className="text-slate-400 transition-transform group-open:rotate-90">›</span>
                   </summary>
@@ -318,7 +320,7 @@ export function PublicHeader() {
                         key={link.label}
                         href={link.href}
                         onClick={closeMobileMenu}
-                        className="block rounded-lg px-3 py-2 text-sm text-slate-200 transition hover:bg-white/7 hover:text-white"
+                        className="flex min-h-[44px] items-center rounded-lg px-3 text-sm text-slate-200 transition hover:bg-white/7 hover:text-white"
                       >
                         {link.label}
                       </a>
@@ -333,7 +335,7 @@ export function PublicHeader() {
                       key={link.label}
                       href={link.href}
                       onClick={closeMobileMenu}
-                      className="block rounded-xl px-4 py-3 text-[13px] font-medium text-white/95 transition hover:bg-white/6"
+                      className="flex min-h-[44px] items-center rounded-xl px-4 py-3 text-[13px] font-medium text-white/95 transition hover:bg-white/6"
                     >
                       {link.label}
                     </a>
@@ -351,7 +353,7 @@ export function PublicHeader() {
                       key={link.label}
                       href={link.href}
                       onClick={closeMobileMenu}
-                      className="block rounded-xl px-4 py-3 text-[13px] font-medium text-white/95 transition hover:bg-white/6"
+                      className="flex min-h-[44px] items-center rounded-xl px-4 py-3 text-[13px] font-medium text-white/95 transition hover:bg-white/6"
                     >
                       {link.label}
                     </a>
@@ -364,7 +366,7 @@ export function PublicHeader() {
                 {COMPANY_EMAIL}
               </a>
               <p>Serving Austin metro area</p>
-              <p className="mt-1 text-slate-400">© 2026 {COMPANY_SHORT_NAME}</p>
+              <p className="mt-1 text-slate-400">© {new Date().getFullYear()} {COMPANY_SHORT_NAME}</p>
             </div>
           </div>
         </div>
