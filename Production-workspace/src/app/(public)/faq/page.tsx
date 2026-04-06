@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { PublicPageShell } from "@/components/public/PublicPageShell";
 import { FAQSection } from "@/components/public/variant-a/FAQSection";
+import { FAQ_ITEMS } from "@/components/public/variant-a/faq-items";
 import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { getSiteUrl } from "@/lib/site";
 
@@ -32,6 +33,14 @@ export default function FAQPage() {
       "@id": `${baseUrl}/faq#page`,
       name: "Frequently Asked Questions",
       url: `${baseUrl}/faq`,
+      mainEntity: FAQ_ITEMS.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
       breadcrumb: {
         "@type": "BreadcrumbList",
         itemListElement: [
@@ -119,7 +128,7 @@ export default function FAQPage() {
                   </a>
                   <a
                     href={`mailto:${COMPANY_EMAIL}`}
-                    className="cta-outline-dark inline-flex items-center gap-2"
+                    className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-white/35 px-6 py-3 text-white transition-colors hover:border-white/60 hover:bg-white/10"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -149,6 +158,33 @@ export default function FAQPage() {
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                   </svg>
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          <section className="border-t border-slate-200 bg-white py-14 md:py-16">
+            <div className="mx-auto max-w-5xl px-6 text-center">
+              <p className="section-kicker">Keep Exploring</p>
+              <h3 className="mt-3 font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
+                Need More Than Answers?
+              </h3>
+              <p className="mx-auto mt-3 max-w-2xl text-slate-600">
+                Explore our industry-specific pages, coverage map, and company standards to find the right fit for your project.
+              </p>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+                <Link href="/industries/general-contractors" className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]">
+                  General Contractors
+                </Link>
+                <Link href="/industries/property-managers" className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]">
+                  Property Managers
+                </Link>
+                <Link href="/service-area" className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]">
+                  Service Area
+                </Link>
+                <Link href="/about" className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]">
+                  About A&amp;A
                 </Link>
               </div>
             </div>

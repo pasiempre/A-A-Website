@@ -2,8 +2,13 @@
 
 import { createContext, useContext } from "react";
 
+export type QuoteOpenContext = {
+  serviceType?: string;
+  sourceCta?: string;
+};
+
 type QuoteContextValue = {
-  openQuote: () => void;
+  openQuote: (context?: QuoteOpenContext) => void;
 };
 
 export const QuoteContext = createContext<QuoteContextValue | null>(null);

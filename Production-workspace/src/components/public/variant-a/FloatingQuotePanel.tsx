@@ -2,32 +2,71 @@
 
 import { useEffect, useId, useRef } from "react";
 
+import { trackConversionEvent } from "@/lib/analytics";
 import { useQuoteForm } from "./useQuoteForm";
 
 type FloatingQuotePanelProps = {
   isOpen: boolean;
   onClose: () => void;
+  initialServiceType?: string;
 };
 
-export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps) {
+export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: FloatingQuotePanelProps) {
   const fieldPrefix = useId().replace(/:/g, "");
-  const { fields, setters, isSubmitting, feedback, submitLead } = useQuoteForm({
+  const { fields, setters, isSubmitting, feedback, submitLead, markFormStarted, currentStep, canRetry } = useQuoteForm({
     source: "floating_quote_panel",
+    enableTwoStep: true,
   });
   const panelRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const wasOpenRef = useRef(false);
+  const prefillOpenStateRef = useRef(false);
 
   useEffect(() => {
-    if (feedback?.type !== "success") {
-      return;
+    if (!prefillOpenStateRef.current && isOpen && initialServiceType && !fields.serviceType) {
+      setters.setServiceType(initialServiceType);
+    }
+    prefillOpenStateRef.current = isOpen;
+  }, [fields.serviceType, initialServiceType, isOpen, setters]);
+
+  useEffect(() => {
+    const wasOpen = wasOpenRef.current;
+
+    if (wasOpen && !isOpen) {
+      const hasAnyInput =
+        fields.name.trim().length > 0 ||
+        fields.companyName.trim().length > 0 ||
+        fields.phone.trim().length > 0 ||
+        fields.email.trim().length > 0 ||
+        fields.serviceType.trim().length > 0 ||
+        fields.timeline.trim().length > 0 ||
+        fields.description.trim().length > 0;
+
+      if (hasAnyInput && feedback?.type !== "success") {
+        void trackConversionEvent({
+          eventName: "quote_form_abandoned",
+          source: "floating_quote_panel",
+          metadata: {
+            step: currentStep,
+            has_name: Boolean(fields.name.trim()),
+            has_phone: Boolean(fields.phone.trim()),
+            has_service_type: Boolean(fields.serviceType.trim()),
+          },
+        });
+      } else if (!hasAnyInput && feedback?.type !== "success") {
+        void trackConversionEvent({
+          eventName: "quote_panel_bounced",
+          source: "floating_quote_panel",
+          metadata: {
+            step: currentStep,
+            had_initial_service_type: Boolean(initialServiceType),
+          },
+        });
+      }
     }
 
-    const closeTimer = window.setTimeout(() => {
-      onClose();
-    }, 1800);
-
-    return () => window.clearTimeout(closeTimer);
-  }, [feedback, onClose]);
+    wasOpenRef.current = isOpen;
+  }, [currentStep, feedback, fields, initialServiceType, isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -80,7 +119,7 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-[#0A1628]/45 backdrop-blur-sm transition ${isOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
+      className={`fixed inset-0 z-[55] bg-[#0A1628]/45 backdrop-blur-sm transition ${isOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -91,7 +130,7 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
         aria-modal="true"
         aria-labelledby={`${fieldPrefix}-title`}
         /* MOBILE-HARDENING: Safe-area handling and refined mobile padding */
-        className={`absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-white px-6 pb-10 pt-14 transition-transform duration-300 md:p-8 ${
+        className={`absolute right-0 top-0 w-full max-w-md min-h-[50svh] max-h-full overflow-y-auto bg-white px-6 pb-10 pt-14 transition-transform duration-300 md:h-full md:p-8 ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
         style={{
@@ -103,14 +142,20 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
       >
         <div className="mb-8 flex items-center justify-between">
           <h3 id={`${fieldPrefix}-title`} className="font-serif text-2xl text-[#0A1628] md:text-3xl">
-            Detailed Scope Request
+            {currentStep === 1 ? "Get a Free Quote" : "Add Project Details"}
           </h3>
           <button ref={closeButtonRef} type="button" aria-label="Close quote request panel" onClick={onClose} className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100">
             ✕
           </button>
         </div>
 
-        <form className="space-y-5" aria-busy={isSubmitting} onSubmit={(event) => void submitLead(event)}>
+        <form className="space-y-5" aria-busy={isSubmitting} onFocusCapture={markFormStarted} onSubmit={(event) => void submitLead(event)}>
+          <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+            {currentStep === 1
+              ? "Step 1 of 2: Just three fields to get started."
+              : "Step 2 of 2: Optional details to speed up your quote."}
+          </p>
+
           <div aria-hidden="true" className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none">
             <input
               name="website"
@@ -137,19 +182,7 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
               onChange={(event) => setters.setName(event.target.value)}
             />
           </div>
-          <div>
-            <label htmlFor={`${fieldPrefix}-company`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
-              Company Name
-            </label>
-            <input
-              id={`${fieldPrefix}-company`}
-              name="companyName"
-              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
-              className="w-full border-b border-slate-300 px-1 py-4 text-sm"
-              value={fields.companyName}
-              onChange={(event) => setters.setCompanyName(event.target.value)}
-            />
-          </div>
+
           <div>
             <label htmlFor={`${fieldPrefix}-phone`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
               Phone *
@@ -160,7 +193,7 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
               type="tel"
               autoComplete="tel"
               inputMode="tel"
-              pattern="[0-9()\-\s]+"
+              pattern="[0-9()\s-]+"
               /* MOBILE-HARDENING: py-4 for 44px+ touch target */
               className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               required
@@ -168,30 +201,17 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
               onChange={(event) => setters.setPhone(event.target.value)}
             />
           </div>
-          <div>
-            <label htmlFor={`${fieldPrefix}-email`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
-              Email
-            </label>
-            <input
-              id={`${fieldPrefix}-email`}
-              name="email"
-              autoComplete="email"
-              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
-              className="w-full border-b border-slate-300 px-1 py-4 text-sm"
-              type="email"
-              value={fields.email}
-              onChange={(event) => setters.setEmail(event.target.value)}
-            />
-          </div>
+
           <div>
             <label htmlFor={`${fieldPrefix}-service`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
-              Service Type
+              Service Type *
             </label>
             <select
               id={`${fieldPrefix}-service`}
               name="serviceType"
               /* MOBILE-HARDENING: py-4 for 44px+ touch target */
               className="w-full border-b border-slate-300 px-1 py-4 text-sm text-slate-600"
+              required
               value={fields.serviceType}
               onChange={(event) => setters.setServiceType(event.target.value)}
             >
@@ -203,41 +223,74 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
               <option value="window">Windows & Power Wash</option>
             </select>
           </div>
-          <div>
-            <label htmlFor={`${fieldPrefix}-timeline`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
-              Timeline
+
+          {currentStep === 2 ? (
+            <>
+              <div>
+            <label htmlFor={`${fieldPrefix}-company`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
+              Company Name
             </label>
-            <select
-              id={`${fieldPrefix}-timeline`}
-              name="timeline"
-              /* MOBILE-HARDENING: py-4 for 44px+ touch target */
-              className="w-full border-b border-slate-300 px-1 py-4 text-sm text-slate-600"
-              value={fields.timeline}
-              onChange={(event) => setters.setTimeline(event.target.value)}
-            >
-              <option value="">Timeline</option>
-              <option value="asap">ASAP</option>
-              <option value="this_week">This Week</option>
-              <option value="next_2_weeks">Next 2 Weeks</option>
-              <option value="next_month">Next Month</option>
-              <option value="just_getting_quotes">Just Getting Quotes</option>
-            </select>
-          </div>
-          <div>
-            <label htmlFor={`${fieldPrefix}-description`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
-              Project Description
-            </label>
-            <textarea
-              id={`${fieldPrefix}-description`}
-              name="description"
-              enterKeyHint="done"
+            <input
+              id={`${fieldPrefix}-company`}
+              name="companyName"
               /* MOBILE-HARDENING: py-4 for 44px+ touch target */
               className="w-full border-b border-slate-300 px-1 py-4 text-sm"
-              rows={3}
-              value={fields.description}
-              onChange={(event) => setters.setDescription(event.target.value)}
+              value={fields.companyName}
+              onChange={(event) => setters.setCompanyName(event.target.value)}
             />
-          </div>
+              </div>
+              <div>
+                <label htmlFor={`${fieldPrefix}-email`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
+                  Email
+                </label>
+                <input
+                  id={`${fieldPrefix}-email`}
+                  name="email"
+                  autoComplete="email"
+                  /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+                  className="w-full border-b border-slate-300 px-1 py-4 text-sm"
+                  type="email"
+                  value={fields.email}
+                  onChange={(event) => setters.setEmail(event.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor={`${fieldPrefix}-timeline`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
+                  Timeline
+                </label>
+                <select
+                  id={`${fieldPrefix}-timeline`}
+                  name="timeline"
+                  /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+                  className="w-full border-b border-slate-300 px-1 py-4 text-sm text-slate-600"
+                  value={fields.timeline}
+                  onChange={(event) => setters.setTimeline(event.target.value)}
+                >
+                  <option value="">Timeline</option>
+                  <option value="asap">ASAP</option>
+                  <option value="this_week">This Week</option>
+                  <option value="next_2_weeks">Next 2 Weeks</option>
+                  <option value="next_month">Next Month</option>
+                  <option value="just_getting_quotes">Just Getting Quotes</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor={`${fieldPrefix}-description`} className="mb-1 block text-[10px] uppercase tracking-[0.18em] text-slate-600">
+                  Project Description
+                </label>
+                <textarea
+                  id={`${fieldPrefix}-description`}
+                  name="description"
+                  enterKeyHint="done"
+                  /* MOBILE-HARDENING: py-4 for 44px+ touch target */
+                  className="w-full border-b border-slate-300 px-1 py-4 text-sm"
+                  rows={3}
+                  value={fields.description}
+                  onChange={(event) => setters.setDescription(event.target.value)}
+                />
+              </div>
+            </>
+          ) : null}
           {feedback ? (
             <p
               id={`${fieldPrefix}-feedback`}
@@ -253,7 +306,13 @@ export function FloatingQuotePanel({ isOpen, onClose }: FloatingQuotePanelProps)
             aria-describedby={feedback ? `${fieldPrefix}-feedback` : undefined}
             className="w-full rounded-sm bg-[#0A1628] py-3 text-xs font-medium uppercase tracking-[0.18em] text-white hover:bg-[#2563EB] disabled:opacity-70 min-h-[48px]"
           >
-            {isSubmitting ? "Submitting..." : "Send My Quote Request"}
+            {isSubmitting
+              ? "Submitting..."
+              : canRetry
+                ? "Try Again"
+                : currentStep === 1
+                  ? "Continue"
+                  : "Send My Quote Request"}
           </button>
           <p className="text-center text-[10px] uppercase tracking-[0.16em] text-slate-600">Avg. response: under 1 hour</p>
         </form>

@@ -10,6 +10,7 @@ import { COMPANY_PHONE_E164 } from "@/lib/company";
 import { FooterSection } from "./variant-a/FooterSection";
 import { PublicHeader } from "./variant-a/PublicHeader";
 import { QuoteContext } from "./variant-a/QuoteContext";
+import type { QuoteOpenContext } from "./variant-a/QuoteContext";
 import { CTAButton } from "./variant-a/CTAButton";
 
 const FloatingQuotePanel = dynamic(
@@ -30,6 +31,7 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
   const isHomePage = pathname === "/";
 
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
+  const [quoteOpenContext, setQuoteOpenContext] = useState<QuoteOpenContext | undefined>();
   const mainRef = useRef<HTMLDivElement | null>(null);
 
   /* MOBILE-ELEVATION: H-8 — sticky bar hidden until user scrolls past hero (~80vh).
@@ -45,6 +47,143 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!isHomePage || !mainRef.current || typeof window === "undefined") {
+      return;
+    }
+
+    const getViewport = () => (window.innerWidth < 768 ? "mobile" : "desktop");
+    const slugify = (value: string) =>
+      value
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+    const mainElement = mainRef.current.querySelector("main");
+    const allSections = Array.from((mainElement ?? mainRef.current).querySelectorAll("section"));
+    const sectionIndexMap = new Map<Element, number>();
+    allSections.forEach((section, index) => sectionIndexMap.set(section, index + 1));
+
+    const resolveSectionId = (section: Element) => {
+      const htmlSection = section as HTMLElement;
+      if (htmlSection.id) {
+        return htmlSection.id;
+      }
+
+      const labelledBy = htmlSection.getAttribute("aria-labelledby");
+      if (labelledBy) {
+        return labelledBy.replace(/-heading$/, "");
+      }
+
+      const ariaLabel = htmlSection.getAttribute("aria-label");
+      if (ariaLabel) {
+        return slugify(ariaLabel);
+      }
+
+      const dataSectionId = htmlSection.getAttribute("data-section-id");
+      if (dataSectionId) {
+        return dataSectionId;
+      }
+
+      return `section_${sectionIndexMap.get(section) ?? 0}`;
+    };
+
+    const visibleSince = new Map<Element, number>();
+    const threshold = 0.25;
+
+    const sectionObserver = new IntersectionObserver(
+      (entries) => {
+        const now = Date.now();
+
+        for (const entry of entries) {
+          const sectionId = resolveSectionId(entry.target);
+          const shouldBeVisible = entry.isIntersecting && entry.intersectionRatio >= threshold;
+
+          if (shouldBeVisible && !visibleSince.has(entry.target)) {
+            visibleSince.set(entry.target, now);
+            void trackConversionEvent({
+              eventName: "section_view",
+              metadata: {
+                section_id: sectionId,
+                viewport: getViewport(),
+                action: "enter",
+                time_in_view_ms: 0,
+              },
+            });
+          }
+
+          if (!shouldBeVisible && visibleSince.has(entry.target)) {
+            const startedAt = visibleSince.get(entry.target) ?? now;
+            visibleSince.delete(entry.target);
+
+            void trackConversionEvent({
+              eventName: "section_view",
+              metadata: {
+                section_id: sectionId,
+                viewport: getViewport(),
+                action: "exit",
+                time_in_view_ms: Math.max(now - startedAt, 0),
+              },
+            });
+          }
+        }
+      },
+      {
+        threshold: [0, threshold, 1],
+      },
+    );
+
+    allSections.forEach((section) => sectionObserver.observe(section));
+
+    const milestones = [25, 50, 75, 100] as const;
+    const firedMilestones = new Set<number>();
+
+    const trackDepth = () => {
+      const documentHeight = document.documentElement.scrollHeight;
+      const viewportHeight = window.innerHeight;
+      const maxScrollable = documentHeight - viewportHeight;
+
+      const depth =
+        maxScrollable <= 0
+          ? 100
+          : Math.min((window.scrollY / maxScrollable) * 100, 100);
+
+      milestones.forEach((milestone) => {
+        if (depth >= milestone && !firedMilestones.has(milestone)) {
+          firedMilestones.add(milestone);
+          void trackConversionEvent({
+            eventName: "scroll_depth",
+            metadata: {
+              depth: milestone,
+              viewport: getViewport(),
+            },
+          });
+        }
+      });
+    };
+
+    window.addEventListener("scroll", trackDepth, { passive: true });
+    trackDepth();
+
+    return () => {
+      sectionObserver.disconnect();
+      window.removeEventListener("scroll", trackDepth);
+
+      const now = Date.now();
+      visibleSince.forEach((startedAt, section) => {
+        void trackConversionEvent({
+          eventName: "section_view",
+          metadata: {
+            section_id: resolveSectionId(section),
+            viewport: getViewport(),
+            action: "exit",
+            time_in_view_ms: Math.max(now - startedAt, 0),
+          },
+        });
+      });
+    };
+  }, [isHomePage]);
 
   useEffect(() => {
     const mainElement = mainRef.current;
@@ -65,15 +204,23 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
     };
   }, [isQuoteOpen]);
 
-  const openQuote = () => {
+  const openQuote = (context?: QuoteOpenContext) => {
+    setQuoteOpenContext(context);
     void trackConversionEvent({
       eventName: "quote_open_clicked",
       source: isHomePage ? "public_page" : "sub_page",
+      metadata: {
+        service_type: context?.serviceType,
+        source_cta: context?.sourceCta,
+      },
     });
     setIsQuoteOpen(true);
   };
 
-  const closeQuote = () => setIsQuoteOpen(false);
+  const closeQuote = () => {
+    setIsQuoteOpen(false);
+    setQuoteOpenContext(undefined);
+  };
 
   return (
     <QuoteContext.Provider value={{ openQuote }}>
@@ -86,7 +233,11 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
       </div>
 
       <ErrorBoundary>
-        <FloatingQuotePanel isOpen={isQuoteOpen} onClose={closeQuote} />
+        <FloatingQuotePanel
+          isOpen={isQuoteOpen}
+          onClose={closeQuote}
+          initialServiceType={quoteOpenContext?.serviceType}
+        />
       </ErrorBoundary>
       <ErrorBoundary fallback={null}>
         <AIQuoteAssistant />

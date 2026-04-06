@@ -14,6 +14,8 @@ const locationSlugs = [
   "hutto",
 ];
 
+const industrySlugs = ["general-contractors", "property-managers", "commercial-spaces"];
+
 type SitemapEntry = {
   path: string;
   changeFrequency: "daily" | "weekly" | "monthly" | "yearly";
@@ -35,6 +37,11 @@ const pages: SitemapEntry[] = [
   { path: "/services/commercial-cleaning", changeFrequency: "monthly", priority: 0.8 },
   { path: "/services/move-in-move-out-cleaning", changeFrequency: "monthly", priority: 0.8 },
   { path: "/services/windows-power-wash", changeFrequency: "monthly", priority: 0.8 },
+  ...industrySlugs.map((slug) => ({
+    path: `/industries/${slug}`,
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  })),
   ...locationSlugs.map((slug) => ({
     path: `/service-area/${slug}`,
     changeFrequency: "monthly" as const,

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { trackConversionEvent } from "@/lib/analytics";
 import { COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { QuoteCTA } from "./QuoteCTA";
 import { CTAButton } from "./CTAButton";
@@ -10,6 +11,37 @@ import { CTAButton } from "./CTAButton";
 type TrustIcon = "shield" | "clock" | "message";
 
 const SERVICE_SIGNALS = ["Final Clean", "Turnovers"];
+
+function getInitialHeroVariant() {
+  if (typeof window === "undefined") {
+    // Keep SSR and first client paint aligned to avoid hydration mismatches.
+    return true;
+  }
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const queryVariant = searchParams.get("hero");
+
+  if (queryVariant === "compact" || queryVariant === "75") {
+    window.localStorage.setItem("hero_mobile_variant_v2", "compact");
+    return true;
+  }
+
+  if (queryVariant === "default" || queryVariant === "100") {
+    window.localStorage.setItem("hero_mobile_variant_v2", "default");
+    return false;
+  }
+
+  const storedVariant = window.localStorage.getItem("hero_mobile_variant_v2");
+  if (storedVariant === "compact") {
+    return true;
+  }
+  if (storedVariant === "default") {
+    return false;
+  }
+
+  // Default new visitors to compact hero height on mobile.
+  return true;
+}
 
 function TrustGlyph({ icon }: { icon: TrustIcon }) {
   if (icon === "shield") {
@@ -62,11 +94,21 @@ function TrustItem({ icon, label }: { icon: TrustIcon; label: string }) {
 
 export function HeroSection() {
   const [isVisible, setIsVisible] = useState(false);
+  const [isCompactMobileHero] = useState(getInitialHeroVariant);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setIsVisible(true), 220);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    void trackConversionEvent({
+      eventName: "hero_variant_applied",
+      metadata: {
+        variant: isCompactMobileHero ? "compact_75svh" : "default_100svh",
+      },
+    });
+  }, [isCompactMobileHero]);
 
   const fadeUp = (delay: number, duration = 900) =>
     isVisible
@@ -80,7 +122,11 @@ export function HeroSection() {
       : undefined;
 
   return (
-    <section id="hero" aria-labelledby="hero-heading" className="relative min-h-[100svh] overflow-hidden">
+    <section
+      id="hero"
+      aria-labelledby="hero-heading"
+      className={`relative overflow-hidden ${isCompactMobileHero ? "min-h-[75svh] md:min-h-[100svh]" : "min-h-[100svh]"}`}
+    >
       <Image
         src="/images/variant-a/hero.jpg"
         alt="Modern glass-walled office lobby"
@@ -97,7 +143,7 @@ export function HeroSection() {
       {/* MOBILE-HARDENING: justify-center on mobile eliminates dead space above content.
           pb-8 pt-16 on mobile (trust bar is now inline, less clearance needed).
           Desktop md:justify-end md:pb-32 md:pt-40 preserved exactly. */}
-      <div className="relative z-10 mx-auto flex min-h-[100svh] w-full max-w-7xl flex-col items-center justify-center px-6 pb-8 pt-16 text-center md:justify-end md:pb-32 md:pt-40">
+      <div className={`relative z-10 mx-auto flex w-full max-w-7xl flex-col items-center justify-center px-6 pb-8 pt-16 text-center md:justify-end md:pb-32 md:pt-40 ${isCompactMobileHero ? "min-h-[75svh] md:min-h-[100svh]" : "min-h-[100svh]"}`}>
         <div className="max-w-4xl">
           {/* MOBILE-HARDENING: Badge hidden on mobile — text wraps inside rounded-full pill at 375px.
               Desktop md:inline-flex preserved. opacity-0 + fadeUp animation still works on md+. */}
@@ -126,7 +172,7 @@ export function HeroSection() {
 
           {/* MOBILE-ELEVATION: P-9 — font-normal on mobile for legibility, font-light on md+ */}
           <p
-            className="mx-auto mt-3 max-w-2xl text-[15px] font-normal leading-relaxed text-slate-100 opacity-0 md:mt-6 md:font-light md:text-lg"
+            className="mx-auto mt-3 max-w-2xl text-[15px] font-normal leading-relaxed text-slate-100 opacity-0 drop-shadow-[0_1px_3px_rgba(0,0,0,0.5)] md:mt-6 md:font-light md:text-lg"
             style={fadeUp(1420, 900)}
           >
             Post-construction & commercial cleaning across the Austin metro area.
@@ -147,6 +193,7 @@ export function HeroSection() {
           </ul>
 
           <div
+            id="hero-primary-cta"
             className="mt-5 flex w-full max-w-xl flex-col gap-3 opacity-0 sm:mx-auto sm:flex-row sm:justify-center md:mt-10 md:gap-4"
             style={fadeUp(1640, 920)}
           >

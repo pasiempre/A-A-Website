@@ -68,7 +68,7 @@ function QuoteSignalIcon({ kind }: { kind: "response" | "scope" | "coverage" }) 
 export function QuoteSection() {
   const fieldPrefix = useId().replace(/:/g, "");
   const { ref, isVisible } = useInViewOnce<HTMLElement>(0.2);
-  const { fields, setters, isSubmitting, feedback, submitLead } = useQuoteForm({
+  const { fields, setters, isSubmitting, feedback, submitLead, markFormStarted, canRetry } = useQuoteForm({
     source: "quote_section",
   });
 
@@ -133,7 +133,7 @@ export function QuoteSection() {
               Tell us about your project. We review the scope, confirm the right next step, and keep the intake simple.
             </p>
 
-            <form className="surface-panel mt-6 space-y-4 p-6 md:mt-10 md:space-y-6 md:p-7" aria-busy={isSubmitting} onSubmit={(event) => void submitLead(event)}>
+            <form className="surface-panel mt-6 space-y-4 p-6 md:mt-10 md:space-y-6 md:p-7" aria-busy={isSubmitting} onFocusCapture={markFormStarted} onSubmit={(event) => void submitLead(event)}>
               <div aria-hidden="true" className="absolute opacity-0 h-0 w-0 overflow-hidden pointer-events-none">
                 <input
                   name="website"
@@ -179,7 +179,7 @@ export function QuoteSection() {
                     type="tel"
                     autoComplete="tel"
                     inputMode="tel"
-                    pattern="[0-9()\-\s]+"
+                    pattern="[0-9()\s-]+"
                     /* MOBILE-HARDENING: py-4 for 44px+ touch target */
                   className="w-full border-b-2 border-slate-200 bg-transparent px-0 py-4 text-sm font-medium text-[#0A1628] outline-none transition focus:border-[#0A1628]"
                     placeholder=" "
@@ -272,7 +272,7 @@ export function QuoteSection() {
                   aria-describedby={feedback ? `${fieldPrefix}-feedback` : undefined}
                   className="cta-primary min-h-[48px] w-full"
                 >
-                  {isSubmitting ? "Submitting..." : "Submit Quote Request"}
+                  {isSubmitting ? "Submitting..." : canRetry ? "Try Again" : "Submit Quote Request"}
                 </button>
                 <p className="mt-4 text-center text-[10px] uppercase tracking-[0.18em] text-slate-600">We never share your information.</p>
               </div>

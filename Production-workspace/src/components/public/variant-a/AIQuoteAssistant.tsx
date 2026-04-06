@@ -44,6 +44,7 @@ export function AIQuoteAssistant() {
   const [locale, setLocale] = useState<Locale>("en");
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
+  const [isSuppressedByCTA, setIsSuppressedByCTA] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -101,6 +102,47 @@ export function AIQuoteAssistant() {
     setMessages([{ id: createMessageId(), role: "assistant", text: GREETING[locale] }]);
     setSessionId(null);
   }, [locale]);
+
+  useEffect(() => {
+    const ctaAnchors = [
+      "#hero-primary-cta",
+      "#service-area-primary-cta",
+      "#mobile-quote-closer-cta",
+      "#quote",
+    ];
+
+    const targets = ctaAnchors
+      .map((selector) => document.querySelector(selector))
+      .filter((element): element is Element => Boolean(element));
+
+    if (targets.length === 0) {
+      return;
+    }
+
+    const visibleTargets = new Set<Element>();
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            visibleTargets.add(entry.target);
+          } else {
+            visibleTargets.delete(entry.target);
+          }
+        });
+
+        setIsSuppressedByCTA(visibleTargets.size > 0);
+      },
+      {
+        threshold: 0.2,
+        rootMargin: "0px 0px -12% 0px",
+      },
+    );
+
+    targets.forEach((target) => observer.observe(target));
+
+    return () => observer.disconnect();
+  }, []);
 
   const sendMessage = async () => {
     const prompt = input.trim();
@@ -192,7 +234,9 @@ export function AIQuoteAssistant() {
         aria-label={isOpen ? "Close quote assistant" : "Open quote assistant"}
         aria-expanded={isOpen}
         aria-controls="ai-quote-assistant-panel"
-        className="floating-widget fixed bottom-[7.5rem] right-5 z-[40] inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/18 bg-[#1D4ED8] text-white shadow-[0_18px_50px_rgba(29,78,216,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1948ca] md:bottom-8 md:right-6"
+        className={`floating-widget fixed bottom-[7.5rem] right-5 z-[40] inline-flex h-14 w-14 items-center justify-center rounded-full border border-white/18 bg-[#1D4ED8] text-white shadow-[0_18px_50px_rgba(29,78,216,0.35)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#1948ca] md:bottom-8 md:right-6 ${
+          isSuppressedByCTA && !isOpen ? "pointer-events-none opacity-0" : "opacity-100"
+        }`}
       >
         <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full border border-white/40 bg-[#C9A94E]" />
         <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6">

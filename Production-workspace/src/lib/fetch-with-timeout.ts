@@ -29,8 +29,16 @@ export async function fetchWithTimeout(
     return response;
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
+      const hostLabel = (() => {
+        try {
+          return new URL(url, "http://localhost").hostname;
+        } catch {
+          return url;
+        }
+      })();
+
       throw new Error(
-        `Request to ${new URL(url).hostname} timed out after ${timeoutMs}ms`,
+        `Request to ${hostLabel} timed out after ${timeoutMs}ms`,
       );
     }
     throw error;

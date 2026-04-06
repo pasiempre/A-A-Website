@@ -10,9 +10,9 @@ type CTAButtonProps = {
   className?: string;
   href?: string;
   onClick?: () => void;
-  variant?: "primary" | "secondary" | "outline" | "ghost";
   actionType?: "quote" | "link" | "call" | "custom";
   style?: React.CSSProperties;
+  serviceType?: string;
 };
 
 /**
@@ -27,6 +27,7 @@ export function CTAButton({
   onClick,
   actionType = "link",
   style,
+  serviceType,
 }: CTAButtonProps) {
   const openQuote = useQuoteAction();
 
@@ -38,13 +39,22 @@ export function CTAButton({
         cta_id: ctaId,
         action_type: actionType,
         href: href || undefined,
+        service_type: serviceType || undefined,
       },
     });
 
     // 2. Perform action
     if (actionType === "quote") {
+      void trackConversionEvent({
+        eventName: "quote_panel_opened",
+        metadata: {
+          source_cta_id: ctaId,
+          action_type: actionType,
+          service_type: serviceType || undefined,
+        },
+      });
       e.preventDefault();
-      openQuote();
+      openQuote(serviceType ? { serviceType, sourceCta: ctaId } : undefined);
     }
 
     // 3. Call custom onClick if provided

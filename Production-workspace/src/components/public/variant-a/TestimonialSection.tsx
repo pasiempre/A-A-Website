@@ -158,8 +158,8 @@ export function TestimonialSection() {
       <div className="relative mx-auto flex min-h-0 max-w-6xl flex-col items-center justify-center px-6 md:min-h-[420px]">
         {/* MOBILE-HARDENING: mb-8→mb-6 for tighter heading block. md:mb-12 preserved. */}
         <div className="mb-6 flex flex-col items-center text-center md:mb-12">
-          <p className="section-kicker !text-slate-300">Client Feedback</p>
-          <h2 className="mt-3 font-serif text-2xl tracking-tight text-white md:text-5xl">What Clients Say</h2>
+          <p className="section-kicker !text-slate-300">Verified Results</p>
+          <h2 className="mt-3 font-serif text-2xl tracking-tight text-white md:text-5xl">Trusted by Austin&apos;s Toughest Projects</h2>
         </div>
 
         {/* MOBILE-ELEVATION: C-3 — swipe gesture support for carousel navigation.

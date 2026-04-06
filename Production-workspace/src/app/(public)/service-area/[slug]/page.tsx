@@ -54,7 +54,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
   const baseUrl = getSiteUrl();
   const nearbyAreas = location.nearbyAreaSlugs.map((slugValue) => {
     if (slugValue === "austin") {
-      return { name: "Austin", href: "/#service-area" };
+      return { name: "Austin", href: "/service-area" };
     }
 
     const city = SERVICE_AREA_BY_SLUG[slugValue];
@@ -64,6 +64,24 @@ export default async function LocationPage({ params }: LocationPageProps) {
 
     return { name: city.name, href: `/service-area/${city.slug}` };
   }).filter(Boolean) as Array<{ name: string; href: string }>;
+
+  const locationFaqs = [
+    {
+      question: `Do you provide services across all of ${location.name}?`,
+      answer:
+        "Yes. We support project scopes across the local area and coordinate scheduling windows based on your site needs.",
+    },
+    {
+      question: "How fast can your team respond for this location?",
+      answer:
+        "Response timing depends on current schedule and scope, but we prioritize fast quote response and clear scheduling communication.",
+    },
+    {
+      question: "Can you handle both one-time and recurring work?",
+      answer:
+        "Yes. We support one-time project cleaning and ongoing recurring service models depending on your operation.",
+    },
+  ];
 
   const structuredData = [
     {
@@ -161,7 +179,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
           </ul>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <Link href="/#quote" className="cta-primary px-8 py-4">Request a Quote</Link>
+            <Link href="/#quote-request" className="cta-primary px-8 py-4">Request a Quote</Link>
             <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
           </div>
 
@@ -261,12 +279,57 @@ export default async function LocationPage({ params }: LocationPageProps) {
           </div>
         </section>
 
+        <section className="border-t border-slate-200 bg-white py-12 md:py-16">
+          <div className="mx-auto max-w-5xl px-6">
+            <h2 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
+              Coverage Questions in {location.name}
+            </h2>
+            <div className="mt-5 space-y-3">
+              {locationFaqs.map((faq) => (
+                <details key={faq.question} className="rounded-2xl border border-slate-200 bg-[#FAFAF8] shadow-sm">
+                  <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] md:text-base">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-[#2563EB]">+</span>
+                      {faq.question}
+                    </span>
+                  </summary>
+                  <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+
+            <div className="mt-6 text-sm text-slate-600">
+              Need role-specific scope guidance?
+              {" "}
+              <Link href="/industries/general-contractors" className="font-semibold text-[#2563EB]">
+                General Contractors
+              </Link>
+              {" · "}
+              <Link href="/industries/property-managers" className="font-semibold text-[#2563EB]">
+                Property Managers
+              </Link>
+              {" · "}
+              <Link href="/industries/commercial-spaces" className="font-semibold text-[#2563EB]">
+                Commercial Spaces
+              </Link>
+              {" • "}
+              <Link href="/about" className="font-semibold text-[#2563EB]">
+                About A&amp;A
+              </Link>
+              {" • "}
+              <Link href="/faq" className="font-semibold text-[#2563EB]">
+                FAQ
+              </Link>
+            </div>
+          </div>
+        </section>
+
         <section className="bg-[#0A1628] py-16 text-center md:py-20">
           <div className="mx-auto max-w-3xl px-6">
             <h2 className="font-serif text-3xl tracking-tight text-white md:text-4xl">Ready to get started in {location.name}?</h2>
             <p className="mt-4 text-base font-light text-slate-300">Same standards, same responsiveness — wherever the project is.</p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote" className="cta-gold px-8 py-4">Get a Quote</Link>
+              <Link href="/#quote-request" className="cta-gold px-8 py-4">Get a Quote</Link>
               <a
                 href={`tel:${COMPANY_PHONE_E164}`}
                 className="text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"

@@ -11,6 +11,9 @@ import {
 import { getSiteUrl } from "@/lib/site";
 import type { ServiceAreaRegion } from "@/lib/service-areas";
 import { SERVICE_AREA_CITIES } from "@/lib/service-areas";
+import {
+  SERVICE_AREA_VISUAL_POINTS,
+} from "@/data/service-area-visual";
 
 export const metadata: Metadata = {
   title: "Service Area — Austin Metro Cleaning Coverage",
@@ -68,6 +71,53 @@ const REGION_COLORS: Record<CityData["region"], { dot: string; badge: string }> 
     badge: "bg-amber-50 text-amber-700 border-amber-200/60",
   },
 };
+
+const VISUAL_REGION_MAP: Record<"north" | "central" | "south", "North" | "Central" | "South"> = {
+  north: "North",
+  central: "Central",
+  south: "South",
+};
+
+const SERVICES_ACROSS_AREAS = [
+  {
+    title: "Post-Construction Cleaning",
+    detail: "Rough and final cleaning support for active jobsite closeouts and handoff readiness.",
+    href: "/services/post-construction-cleaning",
+  },
+  {
+    title: "Commercial Cleaning",
+    detail: "Recurring and scheduled support for offices, retail environments, and facility operations.",
+    href: "/services/commercial-cleaning",
+  },
+  {
+    title: "Move-In / Move-Out",
+    detail: "Unit turnover and transition cleaning support for leasing and occupancy timelines.",
+    href: "/services/move-in-move-out-cleaning",
+  },
+];
+
+const COVERAGE_FAQS = [
+  {
+    question: "Do you serve areas outside the listed city pages?",
+    answer:
+      "Often yes. We can support nearby areas based on scope, schedule, and crew availability. Contact us with project details for confirmation.",
+  },
+  {
+    question: "How quickly can you respond to service requests across the metro?",
+    answer:
+      "Our team targets fast response on quote requests and schedules execution windows based on project urgency and location.",
+  },
+  {
+    question: "Do standards vary by city?",
+    answer:
+      "No. Service standards remain consistent across the Austin corridor. Location affects logistics, not quality expectations.",
+  },
+  {
+    question: "Can you support recurring and one-time scopes in the same area?",
+    answer:
+      "Yes. We support recurring maintenance and one-time project-based cleaning in every active coverage area.",
+  },
+];
 
 export default function ServiceAreaIndexPage() {
   const baseUrl = getSiteUrl();
@@ -231,84 +281,203 @@ export default function ServiceAreaIndexPage() {
                 </div>
               </div>
 
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {CITIES.map((city) => {
-                  const regionColor = REGION_COLORS[city.region];
-                  const isHQ = city.slug === "";
-                  const href = isHQ ? "/#service-area" : `/service-area/${city.slug}`;
+              <div className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
+                <div className="rounded-2xl border border-slate-200 bg-[#0A1628] p-5 shadow-sm md:p-7">
+                  <svg
+                    viewBox="0 0 100 100"
+                    className="h-[300px] w-full"
+                    role="img"
+                    aria-label="Austin metro service map showing North, Central, and South coverage"
+                  >
+                    <ellipse
+                      cx="48"
+                      cy="50"
+                      rx="30"
+                      ry="46"
+                      fill="none"
+                      stroke="rgba(201,169,78,0.2)"
+                      strokeWidth="0.7"
+                      strokeDasharray="2 3"
+                    />
 
-                  return (
-                    <Link
-                      key={city.name}
-                      href={href}
-                      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                        isHQ
-                          ? "border-[#C9A94E]/30 ring-1 ring-[#C9A94E]/10"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <div
-                        className={`h-1 w-full transition-all duration-300 group-hover:h-1.5 ${
-                          city.region === "North"
-                            ? "bg-[#3b82f6]"
-                            : city.region === "South"
-                            ? "bg-[#C9A94E]"
-                            : "bg-[#0A1628]"
-                        }`}
-                        aria-hidden="true"
-                      />
+                    {SERVICE_AREA_VISUAL_POINTS.filter((area) => area.name !== "Austin").map((area) => {
+                      const austin = SERVICE_AREA_VISUAL_POINTS.find((point) => point.name === "Austin");
+                      if (!austin) return null;
+                      return (
+                        <line
+                          key={`line-${area.name}`}
+                          x1={austin.x}
+                          y1={austin.y}
+                          x2={area.x}
+                          y2={area.y}
+                          stroke="rgba(255,255,255,0.12)"
+                          strokeWidth="0.5"
+                          strokeDasharray="1.5 3"
+                        />
+                      );
+                    })}
 
-                      <div className="flex flex-1 flex-col p-6">
-                        <div className="mb-4 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <span
-                              className={`h-2.5 w-2.5 rounded-full ${regionColor.dot} ${
-                                isHQ ? "ring-2 ring-[#C9A94E]/30" : ""
-                              }`}
-                            />
-                            <h3 className="text-lg font-semibold text-[#0A1628]">{city.name}</h3>
-                          </div>
-                          <span className="text-xs font-medium text-slate-500">{city.distance}</span>
-                        </div>
+                    {SERVICE_AREA_VISUAL_POINTS.map((area) => {
+                      const region = VISUAL_REGION_MAP[area.region];
+                      const dot = REGION_COLORS[region].dot.replace("bg-[", "").replace("]", "");
+                      const isHQ = area.name === "Austin";
 
-                        <span
-                          className={`mb-4 inline-flex w-fit rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em] ${regionColor.badge}`}
-                        >
-                          {city.region}
-                        </span>
-
-                        <p className="text-sm leading-relaxed text-slate-600">{city.tagline}</p>
-
-                        <div className="mt-5 flex flex-wrap gap-2">
-                          {city.highlights.map((highlight) => (
-                            <span
-                              key={highlight}
-                              className="rounded-full border border-slate-200 bg-[#FAFAF8] px-2.5 py-1 text-[11px] font-medium text-slate-600"
-                            >
-                              {highlight}
-                            </span>
-                          ))}
-                        </div>
-
-                        <div className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#0A1628]">
-                          {isHQ ? "View Austin section" : `View ${city.name} page`}
-                          <svg
-                            aria-hidden="true"
-                            viewBox="0 0 20 20"
-                            className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="1.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
+                      return (
+                        <g key={`point-${area.name}`}>
+                          <circle
+                            cx={area.x}
+                            cy={area.y}
+                            r={isHQ ? 2.6 : 1.9}
+                            fill={dot}
+                            opacity={0.95}
+                          />
+                          <text
+                            x={area.x}
+                            y={area.y + (isHQ ? 5.8 : 4.8)}
+                            textAnchor="middle"
+                            className="fill-slate-300 text-[3.6px]"
                           >
-                            <path d="M4 10h12M12 6l4 4-4 4" />
-                          </svg>
-                        </div>
+                            {area.name}
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-4">
+                    {(Object.keys(REGION_COLORS) as Array<CityData["region"]>).map((region) => (
+                      <div key={`legend-${region}`} className="flex items-center gap-2">
+                        <span className={`h-2 w-2 rounded-full ${REGION_COLORS[region].dot}`} aria-hidden="true" />
+                        <span className="text-xs text-slate-300">{region}</span>
                       </div>
-                    </Link>
-                  );
-                })}
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-7">
+                  <h3 className="text-lg font-semibold text-[#0A1628]">City Pages</h3>
+                  <p className="mt-2 text-sm text-slate-600">
+                    Use the links below to open city-specific service details, local proof signals, and nearby-area handoffs.
+                  </p>
+
+                  <ul className="mt-5 space-y-2">
+                    {CITIES.map((city) => {
+                      const isHQ = city.slug === "";
+                      const href = isHQ ? "/service-area" : `/service-area/${city.slug}`;
+
+                      return (
+                        <li key={`city-link-${city.name}`}>
+                          <Link
+                            href={href}
+                            className="group flex items-center justify-between rounded-xl border border-slate-200 bg-[#FAFAF8] px-4 py-3 transition hover:border-slate-300 hover:bg-white"
+                          >
+                            <span className="flex items-center gap-2.5">
+                              <span className={`h-2 w-2 rounded-full ${REGION_COLORS[city.region].dot}`} aria-hidden="true" />
+                              <span className="text-sm font-semibold text-[#0A1628]">{city.name}</span>
+                            </span>
+                            <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700">{city.distance}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="border-y border-slate-200 bg-white py-16 md:py-20">
+            <div className="mx-auto max-w-7xl px-6">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-[#2563EB]" aria-hidden="true" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#2563EB]">
+                  Services Across All Areas
+                </span>
+              </div>
+
+              <h2 className="mt-4 font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">
+                Built for Consistent Coverage
+              </h2>
+
+              <div className="mt-8 grid gap-4 md:grid-cols-3">
+                {SERVICES_ACROSS_AREAS.map((service) => (
+                  <Link
+                    key={service.title}
+                    href={service.href}
+                    className="group rounded-2xl border border-slate-200 bg-[#FAFAF8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
+                  >
+                    <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{service.detail}</p>
+                    <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#2563EB]">
+                      Learn more
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 20 20"
+                        className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M4 10h12M12 6l4 4-4 4" />
+                      </svg>
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          <section className="bg-[#FAFAF8] py-16 md:py-20">
+            <div className="mx-auto max-w-5xl px-6">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-[#2563EB]" aria-hidden="true" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#2563EB]">
+                  Coverage FAQ
+                </span>
+              </div>
+
+              <h2 className="mt-4 font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">
+                Common Questions About Service Area Coverage
+              </h2>
+
+              <div className="mt-6 space-y-3">
+                {COVERAGE_FAQS.map((faq) => (
+                  <details key={faq.question} className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] md:text-base">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="text-[#2563EB]">+</span>
+                        {faq.question}
+                      </span>
+                    </summary>
+                    <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+
+              <div className="mt-6 text-sm text-slate-600">
+                Looking for buyer-specific guidance?
+                {" "}
+                <Link href="/industries/general-contractors" className="font-semibold text-[#2563EB]">
+                  General Contractors
+                </Link>
+                {" · "}
+                <Link href="/industries/property-managers" className="font-semibold text-[#2563EB]">
+                  Property Managers
+                </Link>
+                {" · "}
+                <Link href="/industries/commercial-spaces" className="font-semibold text-[#2563EB]">
+                  Commercial Spaces
+                </Link>
+                {" • "}
+                <Link href="/about" className="font-semibold text-[#2563EB]">
+                  About A&amp;A
+                </Link>
+                {" • "}
+                <Link href="/faq" className="font-semibold text-[#2563EB]">
+                  FAQ
+                </Link>
               </div>
             </div>
           </section>

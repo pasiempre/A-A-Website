@@ -4,31 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { COMPANY_PHONE, COMPANY_PHONE_E164, COMPANY_SHORT_NAME } from "@/lib/company";
+import { INDUSTRY_MENU_LINKS } from "@/data/industries";
+import { SERVICE_MENU_LINKS } from "@/data/services";
+import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_PHONE_E164, COMPANY_SHORT_NAME } from "@/lib/company";
 import { QuoteCTA } from "./QuoteCTA";
 import { CTAButton } from "./CTAButton";
 
-const serviceLinks = [
-  { href: "/#service-post-construction", label: "Post-Construction", desc: "Rough and final cleans for turnovers." },
-  { href: "/#service-final-clean", label: "Final Clean", desc: "Detail-level move-in readiness." },
-  { href: "/#service-commercial", label: "Commercial", desc: "Ongoing facility care and maintenance." },
-  { href: "/#service-move", label: "Move-In / Move-Out", desc: "Fast vacant unit turnovers." },
-  { href: "/#service-windows", label: "Windows & Power Wash", desc: "Exterior polishing and details." },
-];
-
-const industryLinks = [
-  { href: "/#industries", label: "General Contractors", desc: "Walkthrough-ready closeouts." },
-  { href: "/#industries", label: "Property Managers", desc: "Fast leasing turnovers." },
-  { href: "/#industries", label: "Commercial Offices", desc: "Zero-disruption active site cleaning." },
-];
+const serviceLinks = SERVICE_MENU_LINKS;
+const industryLinks = INDUSTRY_MENU_LINKS;
 
 const primaryLinks = [
   { href: "/#services", label: "Services" },
   { href: "/#industries", label: "Industries" },
-  { href: "/#about", label: "About" },
-  { href: "/#service-area", label: "Service Area" },
+  { href: "/about", label: "About" },
+  { href: "/service-area", label: "Service Area" },
   { href: "/faq", label: "FAQ" },
-  { href: "/#careers", label: "Careers" },
+  { href: "/careers", label: "Careers" },
 ];
 
 export function PublicHeader() {
@@ -82,7 +73,14 @@ export function PublicHeader() {
     };
   }, []);
 
-  const forceSolidHeader = pathname === "/privacy" || pathname === "/terms" || pathname === "/faq";
+  const forceSolidHeader =
+    pathname === "/privacy" ||
+    pathname === "/terms" ||
+    pathname === "/faq" ||
+    pathname === "/about" ||
+    pathname === "/careers" ||
+    pathname === "/service-area" ||
+    pathname.startsWith("/service-area/");
 
   const navShellClass = forceSolidHeader || isScrolled || isMobileMenuOpen
     ? "border-[#183556] bg-[#0f2746] shadow-[0_22px_70px_rgba(2,6,23,0.42)] md:backdrop-blur-md"
@@ -121,6 +119,11 @@ export function PublicHeader() {
                 className="relative"
                 onMouseEnter={() => setOpenDesktopMenu("services")}
                 onMouseLeave={() => setOpenDesktopMenu((current) => (current === "services" ? null : current))}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                    setOpenDesktopMenu((current) => (current === "services" ? null : current));
+                  }
+                }}
               >
                 <button
                   type="button"
@@ -158,6 +161,11 @@ export function PublicHeader() {
                 className="relative"
                 onMouseEnter={() => setOpenDesktopMenu("industries")}
                 onMouseLeave={() => setOpenDesktopMenu((current) => (current === "industries" ? null : current))}
+                onBlur={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                    setOpenDesktopMenu((current) => (current === "industries" ? null : current));
+                  }
+                }}
               >
                 <button
                   type="button"
@@ -241,67 +249,123 @@ export function PublicHeader() {
         aria-hidden={!isMobileMenuOpen}
         className={`md:hidden ${isMobileMenuOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"} transition duration-300`}
       >
+        <button
+          type="button"
+          aria-label="Close mobile navigation"
+          className="fixed inset-0 bg-black/70"
+          onClick={closeMobileMenu}
+        />
+        {/* Top offset aligns below the floating header shell: h-14 nav bar + shell top padding + visual gap. */}
         <div
-          className="absolute inset-x-4 top-[4.5rem] max-h-[calc(100svh-6rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-[#0A1628] p-5 shadow-2xl"
+          className="absolute inset-x-4 top-[4.5rem] z-10 max-h-[calc(100svh-6rem)] overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-gradient-to-b from-[#0E2340] to-[#081427] p-5 shadow-2xl"
           style={{ paddingBottom: "env(safe-area-inset-bottom, 12px)" }}
         >
-          <div className="space-y-3">
-            <CTAButton
-              ctaId="mobile_menu_call"
-              actionType="call"
-              href={`tel:${COMPANY_PHONE_E164}`}
-              onClick={closeMobileMenu}
-              className="w-full rounded-2xl bg-white/6 px-4 py-3 text-sm uppercase tracking-[0.18em] text-white"
-            >
-              Call {COMPANY_PHONE}
-            </CTAButton>
-
-            <details className="rounded-2xl border border-white/10 bg-white/4">
-              <summary className="cursor-pointer list-none px-4 py-3 text-sm uppercase tracking-[0.18em] text-white">
-                Services
-              </summary>
-              <div className="space-y-1 px-3 pb-3">
-                {serviceLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={closeMobileMenu}
-                    className="block rounded-xl px-3 py-2 text-sm text-slate-200 transition hover:bg-white/6 hover:text-white"
+          <div className="space-y-5">
+            <div className="rounded-2xl border border-white/12 bg-white/[0.06] p-3">
+              <div className="grid grid-cols-2 gap-2">
+                <CTAButton
+                  ctaId="mobile_menu_call"
+                  actionType="call"
+                  href={`tel:${COMPANY_PHONE_E164}`}
+                  onClick={closeMobileMenu}
+                  className="flex min-h-[48px] items-center justify-center rounded-xl border border-white/25 bg-white/10 px-3 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-white"
+                >
+                  Call Now
+                </CTAButton>
+                {/* QuoteCTA does not expose onClick; capture phase closes menu before panel open handling. */}
+                <div onClickCapture={closeMobileMenu}>
+                  <QuoteCTA
+                    ctaId="mobile_menu_quote"
+                    className="flex min-h-[48px] items-center justify-center rounded-xl bg-white px-3 py-3 text-[11px] font-bold uppercase tracking-[0.16em] text-[#0A1628]"
                   >
-                    {link.label}
-                  </a>
-                ))}
+                    Free Quote
+                  </QuoteCTA>
+                </div>
               </div>
-            </details>
+              <p className="mt-2 text-center text-[11px] text-slate-300">Call {COMPANY_PHONE}</p>
+            </div>
 
-            <details className="rounded-2xl border border-white/10 bg-white/4">
-              <summary className="cursor-pointer list-none px-4 py-3 text-sm uppercase tracking-[0.18em] text-white">
-                Industries
-              </summary>
-              <div className="space-y-1 px-3 pb-3">
-                {industryLinks.map((link) => (
-                  <a
-                    key={link.label}
-                    href={link.href}
-                    onClick={closeMobileMenu}
-                    className="block rounded-xl px-3 py-2 text-sm text-slate-200 transition hover:bg-white/6 hover:text-white"
-                  >
-                    {link.label}
-                  </a>
-                ))}
+            <div>
+              <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Explore</p>
+              <div className="mt-2 space-y-1">
+                <details className="group rounded-xl bg-white/[0.04]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[13px] font-medium text-white">
+                    <span>Services</span>
+                    <span aria-hidden="true" className="text-slate-400 transition-transform group-open:rotate-90">›</span>
+                  </summary>
+                  <div className="space-y-1 px-3 pb-3">
+                    {serviceLinks.map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        onClick={closeMobileMenu}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-200 transition hover:bg-white/7 hover:text-white"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </details>
+
+                <details className="group rounded-xl bg-white/[0.04]">
+                  <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 text-[13px] font-medium text-white">
+                    <span>Industries</span>
+                    <span aria-hidden="true" className="text-slate-400 transition-transform group-open:rotate-90">›</span>
+                  </summary>
+                  <div className="space-y-1 px-3 pb-3">
+                    {industryLinks.map((link) => (
+                      <a
+                        key={link.label}
+                        href={link.href}
+                        onClick={closeMobileMenu}
+                        className="block rounded-lg px-3 py-2 text-sm text-slate-200 transition hover:bg-white/7 hover:text-white"
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                </details>
+
+                {primaryLinks
+                  .filter((link) => ["About", "Service Area"].includes(link.label))
+                  .map((link) => (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      onClick={closeMobileMenu}
+                      className="block rounded-xl px-4 py-3 text-[13px] font-medium text-white/95 transition hover:bg-white/6"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
               </div>
-            </details>
+            </div>
 
-            {primaryLinks.slice(2).map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={closeMobileMenu}
-                className="block rounded-2xl border border-white/10 px-4 py-3 text-sm uppercase tracking-[0.18em] text-white"
-              >
-                {link.label}
+            <div>
+              <p className="px-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400">Resources</p>
+              <div className="mt-2 space-y-1">
+                {primaryLinks
+                  .filter((link) => ["FAQ", "Careers"].includes(link.label))
+                  .map((link) => (
+                    <a
+                      key={link.label}
+                      href={link.href}
+                      onClick={closeMobileMenu}
+                      className="block rounded-xl px-4 py-3 text-[13px] font-medium text-white/95 transition hover:bg-white/6"
+                    >
+                      {link.label}
+                    </a>
+                  ))}
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 pt-4 text-center text-[11px] text-slate-300">
+              <a href={`mailto:${COMPANY_EMAIL}`} className="text-slate-300 underline-offset-2 hover:text-white hover:underline">
+                {COMPANY_EMAIL}
               </a>
-            ))}
+              <p>Serving Austin metro area</p>
+              <p className="mt-1 text-slate-400">© 2026 {COMPANY_SHORT_NAME}</p>
+            </div>
           </div>
         </div>
       </div>

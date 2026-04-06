@@ -1,39 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import {
+  SERVICE_AREA_REGION_META,
+  SERVICE_AREA_VISUAL_POINTS,
+  type ServiceAreaVisualPoint,
+} from "@/data/service-area-visual";
 import { QuoteCTA } from "./QuoteCTA";
 import { useInViewOnce } from "./useInViewOnce";
 
-type AreaData = {
-  name: string;
-  distance: string;
-  region: "north" | "central" | "south";
-  x: number;
-  y: number;
-};
+type AreaData = ServiceAreaVisualPoint;
 
-const areas: AreaData[] = [
-  { name: "Georgetown", distance: "30 mi", x: 58, y: 8, region: "north" },
-  { name: "The Domain", distance: "12 mi", x: 50, y: 22, region: "north" },
-  { name: "Hutto", distance: "25 mi", x: 72, y: 18, region: "north" },
-  { name: "Round Rock", distance: "20 mi", x: 52, y: 24, region: "north" },
-  { name: "Pflugerville", distance: "15 mi", x: 60, y: 36, region: "north" },
-  { name: "Austin", distance: "HQ", x: 44, y: 50, region: "central" },
-  { name: "Oak Hill", distance: "10 mi", x: 34, y: 60, region: "south" },
-  { name: "Buda", distance: "12 mi", x: 40, y: 65, region: "south" },
-  { name: "Kyle", distance: "18 mi", x: 36, y: 76, region: "south" },
-  { name: "San Marcos", distance: "28 mi", x: 32, y: 90, region: "south" },
-];
-
-const regionMeta: Record<
-  AreaData["region"],
-  { dot: string; ring: string; label: string }
-> = {
-  north: { dot: "#3b82f6", ring: "rgba(59,130,246,0.2)", label: "North" },
-  central: { dot: "#ffffff", ring: "rgba(255,255,255,0.15)", label: "Central" },
-  south: { dot: "#C9A94E", ring: "rgba(201,169,78,0.2)", label: "South" },
-};
+const areas: AreaData[] = SERVICE_AREA_VISUAL_POINTS;
+const regionMeta = SERVICE_AREA_REGION_META;
 
 export function ServiceAreaSection() {
   const { ref, isVisible } = useInViewOnce<HTMLElement>(0.2);
@@ -195,30 +174,95 @@ export function ServiceAreaSection() {
             }`}
             style={{ transitionDelay: "200ms" }}
           >
-            <div className="flex items-center gap-3">
-              <span
-                className="h-px w-8 bg-[#C9A94E]"
-                aria-hidden="true"
-              />
-              <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C9A94E]">
-                Where We Work
-              </span>
+            <div className="md:hidden">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-[#C9A94E]" aria-hidden="true" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C9A94E]">Coverage Area</span>
+              </div>
+              <h2 id="service-area-heading" className="mt-2 font-serif text-3xl tracking-tight text-white">
+                Georgetown to San Marcos
+              </h2>
+              <p className="mt-1 text-sm leading-relaxed text-slate-400">
+                Same standards at every location across the Austin metro.
+              </p>
             </div>
 
-            <h2
-              id="service-area-heading"
-              className="mt-3 font-serif text-3xl tracking-tight text-white md:text-4xl lg:text-[2.75rem]"
-            >
-              Greater Austin Metro
-            </h2>
+            <div className="hidden md:block">
+              <div className="flex items-center gap-3">
+                <span className="h-px w-8 bg-[#C9A94E]" aria-hidden="true" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-[#C9A94E]">Where We Work</span>
+              </div>
 
-            <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-400 md:mt-4 md:text-base">
-              Georgetown to San Marcos — same standards,
-              every&nbsp;location.
-            </p>
+              <h2 className="mt-3 font-serif text-3xl tracking-tight text-white md:text-4xl lg:text-[2.75rem]">
+                Greater Austin Metro
+              </h2>
 
-            {/* MOBILE-HARDENING: Compact 2-column grid for city list */}
-            <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4 md:mt-8 lg:grid-cols-2 xl:grid-cols-4">
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-400 md:mt-4 md:text-base">
+                Georgetown to San Marcos — same standards,
+                every&nbsp;location.
+              </p>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2 md:hidden">
+              {areas.map((area) => {
+                const meta = regionMeta[area.region];
+                return (
+                  <div
+                    key={area.name}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm"
+                  >
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: meta.dot }} aria-hidden="true" />
+                    <span className="font-medium text-slate-100">{area.name}</span>
+                    <span className="text-xs text-slate-400">{area.distance}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex justify-center md:hidden">
+              <svg
+                viewBox="0 0 100 100"
+                className="h-[180px] w-full max-w-[280px]"
+                aria-label="Service area map showing coverage from Georgetown to San Marcos"
+                role="img"
+              >
+                <ellipse
+                  cx="48"
+                  cy="50"
+                  rx="30"
+                  ry="46"
+                  fill="none"
+                  stroke="rgba(201,169,78,0.18)"
+                  strokeWidth="0.6"
+                  strokeDasharray="2 3"
+                />
+                {areas.map((area) => (
+                  <circle
+                    key={`mobile-${area.name}`}
+                    cx={area.x}
+                    cy={area.y}
+                    r={area.name === "Austin" ? 2.8 : 1.8}
+                    fill={regionMeta[area.region].dot}
+                    opacity={0.9}
+                  />
+                ))}
+                {areas
+                  .filter((a) => ["Austin", "Round Rock", "Georgetown", "San Marcos"].includes(a.name))
+                  .map((area) => (
+                    <text
+                      key={`mobile-label-${area.name}`}
+                      x={area.x}
+                      y={area.y + 5}
+                      textAnchor="middle"
+                      className="fill-slate-300 text-[4px]"
+                    >
+                      {area.name}
+                    </text>
+                  ))}
+              </svg>
+            </div>
+
+            <div className="mt-6 hidden grid-cols-2 gap-2 sm:grid-cols-4 md:mt-8 md:grid lg:grid-cols-2 xl:grid-cols-4">
               {areas.map((area, i) => {
                 const meta = regionMeta[area.region];
                 const isHQ = area.name === "Austin";
@@ -267,26 +311,7 @@ export function ServiceAreaSection() {
               })}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
-              {[
-                { name: "Round Rock", href: "/service-area/round-rock" },
-                { name: "Georgetown", href: "/service-area/georgetown" },
-                { name: "Pflugerville", href: "/service-area/pflugerville" },
-                { name: "Buda", href: "/service-area/buda" },
-                { name: "Kyle", href: "/service-area/kyle" },
-                { name: "San Marcos", href: "/service-area/san-marcos" },
-              ].map((city) => (
-                <Link
-                  key={city.name}
-                  href={city.href}
-                  className="inline-flex min-h-[40px] items-center rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium text-slate-300 transition-colors hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
-                >
-                  {city.name}
-                </Link>
-              ))}
-            </div>
-
-            <div className="mt-4 flex items-center gap-5 md:mt-6">
+            <div className="mt-4 hidden items-center gap-5 md:mt-6 md:flex">
               {Object.entries(regionMeta).map(([key, meta]) => (
                 <div key={key} className="flex items-center gap-1.5">
                   <span
@@ -302,7 +327,7 @@ export function ServiceAreaSection() {
               ))}
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center md:mt-8">
+            <div id="service-area-primary-cta" className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center md:mt-8">
               <QuoteCTA ctaId="service_area_check_availability" className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#C9A94E] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#0A1628] transition-all duration-300 hover:bg-[#d4b85e] hover:shadow-lg hover:shadow-[#C9A94E]/20 min-h-[48px]">
                 Check Availability in Your Area
                 <svg

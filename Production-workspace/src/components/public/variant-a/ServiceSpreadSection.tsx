@@ -1,88 +1,18 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
+
+import { trackConversionEvent } from "@/lib/analytics";
+import { SERVICES, type ServiceData } from "@/data/services";
+import { SERVICE_ANCHOR_TO_FORM_VALUE } from "@/lib/service-type-map";
 
 import { QuoteCTA } from "./QuoteCTA";
 import { useInViewOnce } from "./useInViewOnce";
 
-type ServiceItem = {
-  anchor: string;
-  index: string;
-  icon: "build" | "detail" | "office" | "turn" | "wash";
-  titleLines: string[];
-  packageLabel: string;
-  description: string;
-  responsePromise: string;
-  proofLine: string;
-  image: string;
-  bullets: string[];
-  reverse?: boolean;
-};
+type ServiceItem = ServiceData;
 
-const services: ServiceItem[] = [
-  {
-    anchor: "service-post-construction",
-    index: "01",
-    icon: "build",
-    titleLines: ["Post-", "Construction", "Clean"],
-    packageLabel: "Builder Turnover Package",
-    description: "Rough and final clean for new construction projects. We handle debris, dust, and detail so spaces are move-in ready.",
-    responsePromise: "Call-back target: under 1 hour during business hours",
-    proofLine: "Licensed and insured, with schedules that match contractor timelines.",
-    image: "/images/variant-a/service-spread-01.jpg",
-    bullets: ["Multifamily buildings", "Commercial offices", "Schools & institutional"],
-  },
-  {
-    anchor: "service-final-clean",
-    index: "02",
-    icon: "detail",
-    titleLines: ["Final", "Clean"],
-    packageLabel: "First + Second Final Package",
-    description: "Detail-level cleaning for move-in readiness with first and second final workflows.",
-    responsePromise: "Quote delivery target: same day after scope confirmation",
-    proofLine: "Built for punch-list closeouts and final walkthroughs.",
-    image: "/images/variant-a/service-spread-02.jpg",
-    bullets: ["Hardwood floors & tiling", "Fixtures & appliances", "Complete dust removal"],
-    reverse: true,
-  },
-  {
-    anchor: "service-commercial",
-    index: "03",
-    icon: "office",
-    titleLines: ["Commercial", "Cleaning"],
-    packageLabel: "Recurring Site Care",
-    description: "Ongoing and one-time cleaning for offices, retail spaces, and commercial facilities.",
-    responsePromise: "Flexible scheduling for active business hours",
-    proofLine: "Keeps active spaces clean without interrupting daily operations.",
-    image: "/images/variant-a/service-spread-03.jpg",
-    bullets: ["Office complexes", "Retail environments", "Regular maintenance"],
-  },
-  {
-    anchor: "service-move",
-    index: "04",
-    icon: "turn",
-    titleLines: ["Move-In", "Move-Out"],
-    packageLabel: "Vacant Unit Turnover",
-    description: "Vacant unit turnover cleaning for property managers with fast turnaround.",
-    responsePromise: "Emergency same-day support available by request",
-    proofLine: "Fast turnover support to help units pass inspection and lease quickly.",
-    image: "/images/variant-a/service-spread-04.jpg",
-    bullets: ["Apartment turns", "Deep sanitation", "Property management support"],
-    reverse: true,
-  },
-  {
-    anchor: "service-windows",
-    index: "05",
-    icon: "wash",
-    titleLines: ["Windows &", "Power Wash"],
-    packageLabel: "Exterior Detail Upgrade",
-    description: "Interior/exterior window cleaning and power washing for polished final delivery.",
-    responsePromise: "Scope + equipment quote sent after initial call",
-    proofLine: "High-visibility exterior finish work for cleaner handoffs.",
-    image: "/images/variant-a/service-spread-05.jpg",
-    bullets: ["Exterior facades", "High-reach windows", "Concrete & walkways"],
-  },
-];
+const services = SERVICES;
 
 function ServiceIcon({ icon }: { icon: ServiceItem["icon"] }) {
   if (icon === "build") {
@@ -263,6 +193,7 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
 
           <QuoteCTA
             ctaId={`service_${service.anchor}_quote`}
+            serviceType={SERVICE_ANCHOR_TO_FORM_VALUE[service.anchor]}
             className={`cta-outline-dark gap-3 ${
               isVisible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
             }`}
@@ -277,6 +208,142 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
   );
 }
 
+function MobileServiceAccordion() {
+  const [openService, setOpenService] = useState<string>(services[0]?.anchor ?? "");
+  const [loadedServiceImages, setLoadedServiceImages] = useState<string[]>(() =>
+    services[0]?.anchor ? [services[0].anchor] : [],
+  );
+
+  const markImageLoaded = (anchor: string) => {
+    setLoadedServiceImages((previous) =>
+      previous.includes(anchor) ? previous : [...previous, anchor],
+    );
+  };
+
+  useEffect(() => {
+    const syncWithHash = () => {
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash && services.some((service) => service.anchor === hash)) {
+        setOpenService(hash);
+        markImageLoaded(hash);
+      }
+    };
+
+    syncWithHash();
+    window.addEventListener("hashchange", syncWithHash);
+    return () => window.removeEventListener("hashchange", syncWithHash);
+  }, []);
+
+  return (
+    <div className="md:hidden">
+      {services.map((service) => {
+        const isOpen = openService === service.anchor;
+        const panelId = `${service.anchor}-panel`;
+        const shouldRenderImage = isOpen || loadedServiceImages.includes(service.anchor);
+
+        return (
+          <article key={service.anchor} id={service.anchor} className="border-b border-slate-200 bg-white">
+            <button
+              type="button"
+              className="flex w-full items-start gap-3 px-4 py-4 text-left"
+              aria-expanded={isOpen}
+              aria-controls={panelId}
+              onClick={() => {
+                const willOpen = !isOpen;
+                const next = willOpen ? service.anchor : "";
+                setOpenService(next);
+                if (next) {
+                  markImageLoaded(next);
+                }
+
+                if (willOpen) {
+                  void trackConversionEvent({
+                    eventName: "accordion_service_expanded",
+                    source: "mobile_service_accordion",
+                    metadata: {
+                      service_anchor: service.anchor,
+                      service_title: service.titleLines.join(" "),
+                      position: service.index,
+                    },
+                  });
+                }
+              }}
+            >
+              <span className="icon-tile mt-0.5 inline-flex h-9 w-9 rounded-xl text-[#0A1628]">
+                <ServiceIcon icon={service.icon} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block font-serif text-xl leading-tight tracking-tight text-[#0A1628]">{service.titleLines.join(" ")}</span>
+                <span className="mt-1 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                  {service.packageLabel}
+                </span>
+                <span className="mt-2 flex items-center gap-2 text-[11px] font-medium text-slate-600">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#C9A94E]" aria-hidden="true" />
+                  {service.responsePromise}
+                </span>
+              </span>
+              <span className="pt-1 text-sm text-slate-500" aria-hidden="true">{isOpen ? "−" : "+"}</span>
+            </button>
+
+            <div
+              id={panelId}
+              className={`grid overflow-hidden transition-[grid-template-rows,opacity] duration-300 motion-reduce:transition-none ${
+                isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+              }`}
+              aria-hidden={!isOpen}
+              inert={!isOpen ? true : undefined}
+            >
+              <div className="overflow-hidden">
+                <div className="px-4 pb-5">
+                  {shouldRenderImage ? (
+                    <div className="relative h-40 overflow-hidden rounded-xl">
+                      <Image
+                        src={service.image}
+                        alt={`${service.titleLines.join(" ")} service example for ${service.packageLabel}`}
+                        fill
+                        quality={68}
+                        sizes="100vw"
+                        className="object-cover"
+                      />
+                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#081120]/25 via-transparent to-transparent" />
+                    </div>
+                  ) : null}
+
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{service.description}</p>
+
+                  <div className="mt-2 rounded-lg border border-[#C9A94E]/25 bg-[#C9A94E]/8 px-3 py-2">
+                    <p className="text-sm font-medium leading-relaxed text-slate-700">{service.proofLine}</p>
+                  </div>
+
+                  <ul className="mt-3 space-y-1.5 text-slate-700">
+                    {service.bullets.map((bullet) => (
+                      <li key={bullet} className="flex items-center gap-2.5 text-xs">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" aria-hidden="true" />
+                        {bullet}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {isOpen ? (
+                    <QuoteCTA
+                      ctaId={`service_${service.anchor}_quote_mobile`}
+                      serviceType={SERVICE_ANCHOR_TO_FORM_VALUE[service.anchor]}
+                      className="cta-outline-dark mt-4 min-h-[48px] w-full justify-center gap-2"
+                    >
+                      Quote This Service
+                      <span aria-hidden="true">→</span>
+                    </QuoteCTA>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ServiceSpreadSection() {
   return (
     /* MOBILE-ELEVATION: P-6 — removed border-b. This section transitions to OfferAndIndustry
@@ -284,9 +351,12 @@ export function ServiceSpreadSection() {
        serves as the visual divider; border-b is redundant and adds a visible line that
        fights with the background transition. */
     <section id="services" aria-label="Services" className="scroll-mt-32 bg-white md:scroll-mt-36">
-      {services.map((service) => (
-        <ServiceSpreadItem key={service.anchor} service={service} />
-      ))}
+      <MobileServiceAccordion />
+      <div className="hidden md:block">
+        {services.map((service) => (
+          <ServiceSpreadItem key={service.anchor} service={service} />
+        ))}
+      </div>
     </section>
   );
 }

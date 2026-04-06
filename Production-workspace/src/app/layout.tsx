@@ -22,6 +22,10 @@ export const metadata: Metadata = {
   description: "Construction-ready cleaning operations and quote intake for Austin-area contractors, property teams, and commercial spaces.",
   alternates: {
     canonical: "/",
+    languages: {
+      "en-US": "/",
+      "x-default": "/",
+    },
   },
   openGraph: {
     title: COMPANY_NAME,

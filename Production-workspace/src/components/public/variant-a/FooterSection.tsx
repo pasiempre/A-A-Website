@@ -13,7 +13,7 @@ export function FooterSection() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#C9A94E]/60 to-transparent" aria-hidden="true" />
 
       <div className="mx-auto max-w-7xl px-6">
-        <div className="mb-8 rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-5 py-6 shadow-[0_28px_90px_rgba(2,6,23,0.35)] backdrop-blur md:mb-16 md:rounded-[1.75rem] md:flex md:items-center md:justify-between md:px-10 md:py-10">
+        <div className="mb-8 hidden rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))] px-5 py-6 shadow-[0_28px_90px_rgba(2,6,23,0.35)] backdrop-blur md:mb-16 md:flex md:items-center md:justify-between md:rounded-[1.75rem] md:px-10 md:py-10">
           <div className="max-w-2xl">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.24em] text-[#C9A94E] md:mb-4">Project Closeout Ready</p>
             <h3 className="font-serif text-xl tracking-tight text-white md:text-4xl">Bring A&A in before the handoff gets rushed.</h3>

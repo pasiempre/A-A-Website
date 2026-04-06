@@ -15,13 +15,13 @@ type AnimatedStat = {
 const animatedStats: AnimatedStat[] = [
   { target: 15, suffix: "+", label: "Years", detail: "field experience", icon: "years" },
   { target: 500, suffix: "+", label: "Projects", detail: "spaces delivered", icon: "projects" },
-  { target: 100, suffix: "%", label: "On-Time", detail: "handoff focus", icon: "timing" },
+  { target: 100, suffix: "%", label: "On-Time", detail: "handoff rate", icon: "timing" },
 ];
 
 const staticStat = {
   title: "Licensed",
   subtitle: "& Insured",
-  detail: "ready for commercial and site work",
+  detail: "fully credentialed for commercial sites",
 };
 
 const dividerCellClass = "relative lg:px-6 lg:after:absolute lg:after:right-0 lg:after:top-1/2 lg:after:h-24 lg:after:w-px lg:after:-translate-y-1/2 lg:after:bg-slate-200";
@@ -120,8 +120,8 @@ export function AuthorityBar() {
       <div className="mx-auto max-w-7xl px-6">
         {/* MOBILE-HARDENING: mb-6→mb-4 for tighter heading spacing. md:mb-10 preserved. */}
         <div className="mb-4 text-center md:mb-10">
-          <p className="section-kicker">Track Record</p>
-          <h2 id="authority-heading" className="mt-2 font-serif text-2xl tracking-tight text-[#0A1628] md:mt-3 md:text-5xl">Our Numbers Speak</h2>
+          <p className="section-kicker">The A&A Standard</p>
+          <h2 id="authority-heading" className="mt-2 font-serif text-2xl tracking-tight text-[#0A1628] md:mt-3 md:text-5xl">15+ Years. 500+ Spaces. Austin&apos;s Standard.</h2>
         </div>
 
         {/* MOBILE-HARDENING: gap-y-4→gap-y-2 for tighter grid rows on mobile. Desktop is single row (4 cols) so gap-y irrelevant. */}
@@ -152,7 +152,6 @@ export function AuthorityBar() {
               <br className="hidden md:block" />
               <span className="hidden md:inline-block pt-1">{staticStat.subtitle}</span>
             </div>
-            <div className="text-[9px] font-medium uppercase tracking-[0.22em] text-slate-600 md:text-[10px]">Austin Standards</div>
             <div className="mt-1 max-w-[14rem] text-[10px] uppercase tracking-[0.16em] text-slate-500 md:mt-3 md:text-xs">{staticStat.detail}</div>
           </div>
 
@@ -166,7 +165,7 @@ export function AuthorityBar() {
           <div className="surface-panel-soft inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 text-xs text-slate-600 md:gap-3 md:px-5 md:py-3 md:text-sm">
             <span className="text-sm tracking-[0.22em] text-[#C9A94E] md:text-base" aria-hidden="true">★★★★★</span>
             <span className="sr-only">Rated 5 out of 5 stars</span>
-            <span className="font-light">Trusted across Austin-area job sites, office spaces, and turnovers.</span>
+            <span className="font-light">Rated 5 stars across 200+ completed projects</span>
           </div>
         </div>
       </div>

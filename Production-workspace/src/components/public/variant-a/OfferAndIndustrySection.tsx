@@ -1,75 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
+import { INDUSTRIES, type IndustryData } from "@/data/industries";
+import { INDUSTRY_TO_SERVICE_TYPE } from "@/lib/service-type-map";
 import { QuoteCTA } from "./QuoteCTA";
 import { useInViewOnce } from "./useInViewOnce";
 
-type IndustryBlock = {
-  title: string;
-  eyebrow: string;
-  painPoint: string;
-  outcome: string;
-  fit: string[];
-  stat: string;
-  statLabel: string;
-  accent: string;
-  accentIcon: string;
-  accentBorder: string;
-  accentGlow: string;
-  icon: "contractor" | "property" | "office";
-};
+type IndustryBlock = IndustryData;
 
-const industries: IndustryBlock[] = [
-  {
-    title: "General Contractors",
-    eyebrow: "Walkthrough-Ready Closeouts",
-    painPoint:
-      "Punch-list pressure and inconsistent final-clean quality across trades can slow handoff.",
-    outcome:
-      "A&A helps tighten the final presentation with detail-focused cleaning and proof-of-completion support.",
-    fit: ["Final Walkthroughs", "Multi-Trade Closeouts", "Schedule-Sensitive Turnovers"],
-    stat: "200+",
-    statLabel: "closeouts completed on schedule",
-    accent: "from-blue-50/80 via-blue-100/40 to-transparent",
-    accentIcon: "bg-blue-100 text-blue-600 ring-blue-200/60",
-    accentBorder: "border-blue-200/60",
-    accentGlow: "group-hover:shadow-blue-100/50",
-    icon: "contractor",
-  },
-  {
-    title: "Property Managers",
-    eyebrow: "Faster Turnover Flow",
-    painPoint:
-      "Slow turns and inconsistent unit-ready standards make leasing and inspections harder than they should be.",
-    outcome:
-      "Projects move faster when units, common areas, and touchpoints are cleaned to a predictable standard.",
-    fit: ["Vacant Unit Turns", "Common Areas", "Leasing-Ready Presentation"],
-    stat: "48hr",
-    statLabel: "average turnaround time",
-    accent: "from-amber-50/80 via-amber-100/40 to-transparent",
-    accentIcon: "bg-amber-100 text-amber-600 ring-amber-200/60",
-    accentBorder: "border-amber-200/60",
-    accentGlow: "group-hover:shadow-amber-100/50",
-    icon: "property",
-  },
-  {
-    title: "Commercial Spaces",
-    eyebrow: "Clean Without Disruption",
-    painPoint:
-      "Office and operational teams need reliable cleaning that fits active business environments and deadlines.",
-    outcome:
-      "Flexible scheduling and standards-driven work help maintain a clean impression without unnecessary friction.",
-    fit: ["Off-Hours Service", "Active Facilities", "Polished Daily Environments"],
-    stat: "15+",
-    statLabel: "active facilities served weekly",
-    accent: "from-emerald-50/80 via-emerald-100/40 to-transparent",
-    accentIcon: "bg-emerald-100 text-emerald-600 ring-emerald-200/60",
-    accentBorder: "border-emerald-200/60",
-    accentGlow: "group-hover:shadow-emerald-100/50",
-    icon: "office",
-  },
-];
+const industries: IndustryBlock[] = INDUSTRIES;
 
 function ContractorIcon() {
   return (
@@ -173,17 +114,70 @@ export function OfferAndIndustrySection() {
               </p>
             </div>
 
-            <QuoteCTA className="cta-primary group/btn flex w-fit items-center gap-2.5 whitespace-nowrap">
+            <QuoteCTA ctaId="industry_scope_cta_desktop" className="cta-primary group/btn hidden w-fit items-center gap-2.5 whitespace-nowrap md:flex">
               Talk Through Your Scope
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
             </QuoteCTA>
           </div>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
-          {industries.map((industry, index) => (
+        <div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-2 md:hidden">
+          {industries.map((industry) => {
+            const industrySlug = industry.slug;
+            return (
+              <article
+                key={`mobile-${industry.title}`}
+                className="min-w-[86%] snap-center rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ${industry.accentIcon}`}>
+                    <IndustryIcon icon={industry.icon} />
+                  </div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{industry.eyebrow}</p>
+                </div>
+                <h3 className="mt-3 font-serif text-2xl leading-[1.15] tracking-tight text-[#0A1628]">{industry.title}</h3>
+                <div className="mt-3 flex items-baseline gap-2">
+                  <span className="text-xl font-bold tracking-tight text-[#0A1628]">{industry.stat}</span>
+                  <span className="text-xs text-slate-600">{industry.statLabel}</span>
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-slate-500">{industry.painPoint}</p>
+                <p className="mt-3 text-sm leading-relaxed text-slate-700">{industry.outcome}</p>
+                <div className="mt-4 border-t border-slate-100 pt-4">
+                  <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-500">Best suited for</p>
+                  <p className="mt-2 text-xs font-medium text-slate-600">{industry.fit.join(", ")}</p>
+                </div>
+                <div className="mt-4 space-y-2">
+                  <QuoteCTA
+                    ctaId={`industry_${industrySlug}_discuss_project_mobile`}
+                    serviceType={INDUSTRY_TO_SERVICE_TYPE[industrySlug]}
+                    className="cta-primary inline-flex w-full items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.16em]"
+                  >
+                    Discuss Your Project
+                    <ArrowRight className="h-4 w-4" />
+                  </QuoteCTA>
+                  <Link
+                    href={`/industries/${industrySlug}`}
+                    className="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
+                  >
+                    View Industry Page
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400 md:hidden">
+          Swipe to view all industries
+        </div>
+
+        <div className="hidden gap-6 md:grid md:grid-cols-3 lg:gap-8">
+          {industries.map((industry, index) => {
+            const industrySlug = industry.slug;
+            return (
             <article
               key={industry.title}
+              id={`industry-${industrySlug}`}
               role="article"
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
@@ -285,16 +279,30 @@ export function OfferAndIndustrySection() {
                   </p>
                 </div>
 
+                <p className="mt-3 text-sm leading-relaxed text-slate-700 md:hidden">
+                  {industry.outcome}
+                </p>
+
                 {/* MOBILE-HARDENING: pt-5→pt-4 for tighter CTA spacing. md:pt-8 preserved. */}
                 <div className="mt-auto pt-4 md:pt-8">
-                  <QuoteCTA className="inline-flex items-center gap-2 text-sm font-semibold text-[#0A1628] transition-all duration-300 group-hover:gap-3 group-hover:text-[#2563EB]">
+                  <QuoteCTA
+                    ctaId={`industry_${industrySlug}_discuss_project`}
+                    serviceType={INDUSTRY_TO_SERVICE_TYPE[industrySlug]}
+                    className="cta-primary inline-flex w-full items-center justify-center gap-2 text-xs font-bold uppercase tracking-[0.16em] md:w-auto md:justify-start md:bg-transparent md:px-0 md:py-0 md:text-sm md:normal-case md:tracking-normal md:text-[#0A1628] md:shadow-none md:ring-0 md:hover:bg-transparent md:group-hover:gap-3 md:group-hover:text-[#2563EB]"
+                  >
                     Discuss Your Project
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </QuoteCTA>
+                  <div className="mt-3">
+                    <Link href={`/industries/${industrySlug}`} className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 hover:text-[#0A1628]">
+                      View Industry Page
+                    </Link>
+                  </div>
                 </div>
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
 
       </div>

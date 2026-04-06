@@ -11,6 +11,7 @@ type ComparisonPair = {
   tag: string;
   scope: string;
   turnaround: string;
+  keyBenefit: string;
 };
 
 const pairs: ComparisonPair[] = [
@@ -21,6 +22,7 @@ const pairs: ComparisonPair[] = [
     tag: "Commercial Office",
     scope: "Lobby + Shared Areas",
     turnaround: "Final Presentation",
+    keyBenefit: "Inspection-ready presentation",
   },
   {
     before: "/images/variant-a/comparison-02-before.jpg",
@@ -29,6 +31,7 @@ const pairs: ComparisonPair[] = [
     tag: "Apartment Turn",
     scope: "Vacant Unit Refresh",
     turnaround: "Leasing Ready",
+    keyBenefit: "Leasing-ready in 48 hours",
   },
   {
     before: "/images/variant-a/comparison-03-before.jpg",
@@ -37,6 +40,7 @@ const pairs: ComparisonPair[] = [
     tag: "Post-Construction",
     scope: "Dust + Detail Finish",
     turnaround: "Walkthrough Ready",
+    keyBenefit: "Zero punch-list callbacks",
   },
 ];
 
@@ -161,18 +165,17 @@ export function BeforeAfterSlider() {
             <div className="max-w-xl">
               <div className="flex items-center gap-3">
                 <span className="h-px w-8 bg-[#2563EB]" aria-hidden="true" />
-                <span className="section-kicker">The A&A Standard</span>
+                <span className="section-kicker">Proof of Work</span>
               </div>
 
               <h2
                 id="before-after-heading"
                 className="mt-4 font-serif text-3xl tracking-tight text-[#0A1628] sm:text-5xl"
               >
-                See the Difference
+                The A&A Standard
               </h2>
               <p className="mt-3 max-w-lg text-base leading-relaxed text-slate-500 md:mt-4">
-                Every project is cleaned to the same standard. Drag to compare
-                the before and after — the results speak for&nbsp;themselves.
+                Drag to compare - real projects, real results.
               </p>
             </div>
 
@@ -334,25 +337,21 @@ export function BeforeAfterSlider() {
           } ${isTransitioning ? "opacity-0" : "opacity-100"}`}
           style={{ transitionDelay: "400ms" }}
         >
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 md:grid-cols-4">
+          <div className="grid gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 md:grid-cols-3">
             {[
               {
                 label: "Project",
                 value: item.caption,
-                accent: true,
               },
               { label: "Scope", value: item.scope },
-              { label: "Result", value: item.turnaround },
-              { label: "Key Benefit", value: "Inspection-ready results" },
+              { label: "Key Benefit", value: item.keyBenefit },
             ].map((cell) => (
               <div
                 key={cell.label}
                 className="bg-white p-3 md:p-5"
               >
                 <p
-                  className={`text-[10px] font-bold uppercase tracking-[0.22em] ${
-                    cell.accent ? "text-[#2563EB]" : "text-slate-500"
-                  }`}
+                  className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-500"
                 >
                   {cell.label}
                 </p>

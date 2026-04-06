@@ -115,7 +115,7 @@ export default function PostConstructionCleaningPage() {
               </ul>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <Link href="/#quote" className="cta-primary px-8 py-4">
+                <Link href="/#quote-request" className="cta-primary px-8 py-4">
                   Request a Quote
                 </Link>
                 <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">
@@ -182,7 +182,7 @@ export default function PostConstructionCleaningPage() {
               We respond within one hour during business hours. Tell us about your project and we&apos;ll confirm scope and timeline.
             </p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote" className="cta-gold px-8 py-4">
+              <Link href="/#quote-request" className="cta-gold px-8 py-4">
                 Get a Quote
               </Link>
               <a

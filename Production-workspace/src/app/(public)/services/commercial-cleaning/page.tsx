@@ -112,7 +112,7 @@ export default function CommercialCleaningPage() {
               </ul>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <Link href="/#quote" className="cta-primary px-8 py-4">Request a Quote</Link>
+                <Link href="/#quote-request" className="cta-primary px-8 py-4">Request a Quote</Link>
                 <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
               </div>
             </div>
@@ -159,7 +159,7 @@ export default function CommercialCleaningPage() {
             <h2 className="font-serif text-3xl tracking-tight text-white md:text-4xl">Looking for dependable commercial cleaning coverage?</h2>
             <p className="mt-4 text-base font-light text-slate-300">Tell us your facility type and schedule, and we&apos;ll build a right-fit plan.</p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote" className="cta-gold px-8 py-4">Get a Quote</Link>
+              <Link href="/#quote-request" className="cta-gold px-8 py-4">Get a Quote</Link>
               <a href={`tel:${COMPANY_PHONE_E164}`} className="text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white">Or call {COMPANY_PHONE}</a>
             </div>
           </div>
