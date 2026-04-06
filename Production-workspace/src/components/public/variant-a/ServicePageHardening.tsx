@@ -144,7 +144,7 @@ export function ServicePageHardening({
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <article className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-              <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Includes</h4>
+              <h3 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Includes</h3>
               <ul className="mt-3 space-y-2">
                 {pricing.includes.map((item) => (
                   <li key={item} className="text-sm leading-relaxed text-slate-600">
@@ -155,7 +155,7 @@ export function ServicePageHardening({
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-              <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Common Add-Ons</h4>
+              <h3 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Common Add-Ons</h3>
               <ul className="mt-3 space-y-2">
                 {pricing.addOns.map((item) => (
                   <li key={item} className="text-sm leading-relaxed text-slate-600">
@@ -196,7 +196,7 @@ export function ServicePageHardening({
                 </svg>
               </div>
               <div>
-                <h4 className="font-bold text-[#0A1628]">{obj.title}</h4>
+                <h3 className="font-bold text-[#0A1628]">{obj.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {obj.desc}
                 </p>

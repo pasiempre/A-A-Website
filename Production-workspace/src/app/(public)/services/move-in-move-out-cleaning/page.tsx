@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
+import { SERVICES } from "@/data/services";
 import { COMPANY_CITY, COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { SERVICE_FAQS } from "@/lib/service-faqs";
 import { getSiteUrl } from "@/lib/site";
@@ -155,6 +156,33 @@ export default function MoveInMoveOutCleaningPage() {
         </section>
 
         <ServicePageHardening serviceType="turnover" />
+
+        <section className="border-t border-slate-200 bg-white py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-6">
+            <p className="section-kicker">Related Services</p>
+            <h2 className="mt-3 font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">
+              Explore Other Services
+            </h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {SERVICES.filter((service) => service.href !== PAGE_PATH).slice(0, 3).map((service) => (
+                <Link
+                  key={service.anchor}
+                  href={service.href}
+                  className="surface-panel group p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2563EB]">{service.packageLabel}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">
+                    {service.titleLines.join(" ")}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{service.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#2563EB]">
+                    Learn more <span aria-hidden="true">&rarr;</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <section className="bg-[#0A1628] py-16 text-center md:py-20">
           <div className="mx-auto max-w-3xl px-6">

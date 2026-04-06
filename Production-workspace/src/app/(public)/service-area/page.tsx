@@ -15,6 +15,7 @@ import { SERVICE_AREA_CITIES } from "@/lib/service-areas";
 import {
   SERVICE_AREA_VISUAL_POINTS,
 } from "@/data/service-area-visual";
+import { SERVICES } from "@/data/services";
 
 export const metadata: Metadata = {
   title: "Service Area — Austin Metro Cleaning Coverage",
@@ -78,24 +79,6 @@ const VISUAL_REGION_MAP: Record<"north" | "central" | "south", "North" | "Centra
   central: "Central",
   south: "South",
 };
-
-const SERVICES_ACROSS_AREAS = [
-  {
-    title: "Post-Construction Cleaning",
-    detail: "Rough and final cleaning support for active jobsite closeouts and handoff readiness.",
-    href: "/services/post-construction-cleaning",
-  },
-  {
-    title: "Commercial Cleaning",
-    detail: "Recurring and scheduled support for offices, retail environments, and facility operations.",
-    href: "/services/commercial-cleaning",
-  },
-  {
-    title: "Move-In / Move-Out",
-    detail: "Unit turnover and transition cleaning support for leasing and occupancy timelines.",
-    href: "/services/move-in-move-out-cleaning",
-  },
-];
 
 const COVERAGE_FAQS = [
   {
@@ -399,15 +382,15 @@ export default function ServiceAreaIndexPage() {
                 Built for Consistent Coverage
               </h2>
 
-              <div className="mt-8 grid gap-4 md:grid-cols-3">
-                {SERVICES_ACROSS_AREAS.map((service) => (
+              <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {SERVICES.map((service) => (
                   <Link
-                    key={service.title}
+                    key={service.anchor}
                     href={service.href}
                     className="group rounded-2xl border border-slate-200 bg-[#FAFAF8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
                   >
-                    <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{service.detail}</p>
+                    <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.titleLines.join(" ")}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{service.description}</p>
                     <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#2563EB]">
                       Learn more
                       <svg

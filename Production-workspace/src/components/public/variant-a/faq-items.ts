@@ -10,7 +10,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "What areas do you serve?",
     answer:
-      "We serve the greater Austin metro area including Round Rock, Pflugerville, Georgetown, Hutto, Buda, Kyle, and San Marcos. If you're outside that range, reach out — we may still be able to help depending on project size.",
+      "We serve the greater Austin metro area including Round Rock, Pflugerville, Georgetown, Buda, Kyle, and San Marcos. We also cover other communities in the corridor - reach out if your project is outside these areas.",
     category: "general",
   },
   {
@@ -22,7 +22,7 @@ export const FAQ_ITEMS: FAQItem[] = [
   {
     question: "How quickly can you start a project?",
     answer:
-      "We respond to quote requests within one hour during business hours. Depending on crew availability, we can often begin within 24–48 hours. Emergency same-day starts are available by request for turnover and move-out situations.",
+      "We respond to quote requests within one hour during business hours for the central Austin metro. Response windows for outlying areas like Georgetown, Kyle, and San Marcos may be up to 90 minutes. Depending on crew availability, we can often begin within 24-48 hours. Emergency same-day starts are available by request for turnover and move-out situations.",
     category: "process",
   },
   {

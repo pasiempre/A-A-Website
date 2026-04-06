@@ -133,6 +133,23 @@ export default function CareersPage() {
         </div>
       </section>
 
+      <section className="bg-[#0A1628] py-14 text-center md:py-18">
+        <div className="mx-auto max-w-4xl px-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#C9A94E]">Join the Team</p>
+          <h2 className="mt-3 font-serif text-3xl tracking-tight text-white md:text-4xl">
+            Ready to work with a crew that values quality?
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-slate-300">
+            Submit your application above, or call us to learn more about open roles.
+          </p>
+          <div className="mt-7">
+            <CTAButton ctaId="careers_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-light min-h-[48px]">
+              Call {COMPANY_PHONE}
+            </CTAButton>
+          </div>
+        </div>
+      </section>
+
       <section className="border-t border-slate-200 bg-white py-12">
         <div className="mx-auto max-w-7xl px-6 text-sm text-slate-600">
           Looking for project services instead of careers?

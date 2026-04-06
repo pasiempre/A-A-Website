@@ -249,6 +249,10 @@ export default function AboutPage() {
               <Link href="/faq" className="font-semibold text-[#2563EB]">
                 View FAQ
               </Link>
+              {" • "}
+              <Link href="/careers" className="font-semibold text-[#2563EB]">
+                Careers
+              </Link>
             </div>
           </div>
         </section>
@@ -265,7 +269,7 @@ export default function AboutPage() {
               <QuoteCTA ctaId="about_closing_quote" className="cta-gold min-h-[48px]">
                 Request a Quote
               </QuoteCTA>
-              <CTAButton ctaId="about_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/35 text-white hover:bg-white hover:text-[#0A1628]">
+              <CTAButton ctaId="about_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-light min-h-[48px]">
                 Call {COMPANY_PHONE}
               </CTAButton>
             </div>

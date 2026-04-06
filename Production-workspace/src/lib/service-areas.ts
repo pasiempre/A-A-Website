@@ -205,6 +205,8 @@ export const SERVICE_AREA_CITIES: ServiceAreaCity[] = [
 export const SERVICE_AREA_BY_SLUG: Record<string, ServiceAreaCity> =
   Object.fromEntries(SERVICE_AREA_CITIES.map((city) => [city.slug, city]));
 
+// Display the first 6 cities on homepage/service pills. Hutto (index 6) retains
+// its own city page for organic search but is excluded from featured navigation.
 export const HOMEPAGE_SERVICE_AREA_LINKS = SERVICE_AREA_CITIES.slice(0, 6).map((city) => ({
   label: city.name,
   href: `/service-area/${city.slug}`,

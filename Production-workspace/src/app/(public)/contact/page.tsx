@@ -10,6 +10,7 @@ import {
   COMPANY_PHONE,
   COMPANY_PHONE_E164,
 } from "@/lib/company";
+import { SERVICE_AREA_CITIES } from "@/lib/service-areas";
 import { getSiteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -64,7 +65,7 @@ const QUICK_FACTS = [
   },
   {
     title: "Coverage",
-    body: "Austin, Round Rock, Pflugerville, Georgetown, Hutto, Buda, Kyle, and San Marcos.",
+    body: "Austin, Round Rock, Pflugerville, Georgetown, Buda, Kyle, and San Marcos.",
     icon: "coverage" as const,
   },
   {
@@ -454,16 +455,21 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {["Austin", "Round Rock", "Pflugerville", "Georgetown", "Hutto", "Buda", "Kyle", "San Marcos"].map(
-                    (city) => (
-                      <span
-                        key={city}
-                        className="rounded-full border border-slate-200 bg-[#FAFAF8] px-4 py-2 text-sm font-medium text-slate-600"
-                      >
-                        {city}
-                      </span>
-                    ),
-                  )}
+                  {[
+                    { name: "Austin", href: "/service-area" },
+                    ...SERVICE_AREA_CITIES.slice(0, 6).map((city) => ({
+                      name: city.name,
+                      href: `/service-area/${city.slug}`,
+                    })),
+                  ].map((city) => (
+                    <Link
+                      key={city.name}
+                      href={city.href}
+                      className="rounded-full border border-slate-200 bg-[#FAFAF8] px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-[#0A1628]"
+                    >
+                      {city.name}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
@@ -483,7 +489,7 @@ export default function ContactPage() {
                     <path d="M4 10h12M12 6l4 4-4 4" />
                   </svg>
                 </Link>
-                <Link href="/#services" className="cta-outline-dark gap-2 px-6 py-3">
+                <Link href="/services" className="cta-outline-dark gap-2 px-6 py-3">
                   Explore Our Services
                   <svg
                     aria-hidden="true"

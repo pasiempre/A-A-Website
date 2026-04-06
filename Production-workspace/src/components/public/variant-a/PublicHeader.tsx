@@ -14,8 +14,8 @@ const serviceLinks = SERVICE_MENU_LINKS;
 const industryLinks = INDUSTRY_MENU_LINKS;
 
 const primaryLinks = [
-  { href: "/#services", label: "Services" },
-  { href: "/#industries", label: "Industries" },
+  { href: "/services", label: "Services" },
+  { href: "/industries", label: "Industries" },
   { href: "/about", label: "About" },
   { href: "/service-area", label: "Service Area" },
   { href: "/faq", label: "FAQ" },
@@ -81,6 +81,7 @@ export function PublicHeader() {
     pathname === "/careers" ||
     pathname === "/services" ||
     pathname.startsWith("/services/") ||
+    pathname === "/industries" ||
     pathname === "/service-area" ||
     pathname.startsWith("/service-area/");
 

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AccordionFAQ } from "@/components/public/variant-a/AccordionFAQ";
 import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
+import { SERVICES } from "@/data/services";
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { getSiteUrl } from "@/lib/site";
 import { SERVICE_AREA_BY_SLUG, SERVICE_AREA_CITIES } from "@/lib/service-areas";
@@ -217,31 +218,15 @@ export default async function LocationPage({ params }: LocationPageProps) {
         <section className="border-t border-slate-200 bg-white py-16 md:py-24">
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">Services Available in {location.name}</h2>
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {[
-                {
-                  title: "Post-Construction",
-                  body: "Rough and final clean for active construction sites and new builds.",
-                  href: "/services/post-construction-cleaning",
-                },
-                {
-                  title: "Turnover Cleaning",
-                  body: "Fast vacant unit turns for property managers and leasing teams.",
-                  href: "/services/move-in-move-out-cleaning",
-                },
-                {
-                  title: "Commercial Cleaning",
-                  body: "Ongoing facility care for offices, retail, and commercial spaces.",
-                  href: "/services/commercial-cleaning",
-                },
-              ].map((service) => (
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {SERVICES.map((service) => (
                 <Link
-                  key={service.title}
+                  key={service.anchor}
                   href={service.href}
                   className="surface-panel group p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{service.body}</p>
+                  <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.titleLines.join(" ")}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{service.description}</p>
                   <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#2563EB]">
                     Learn more
                     <svg
