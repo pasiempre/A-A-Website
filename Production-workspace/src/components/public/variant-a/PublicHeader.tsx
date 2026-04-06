@@ -371,6 +371,19 @@ export function PublicHeader() {
           </div>
         </div>
       </div>
+
+      <noscript>
+        <nav aria-label="Navigation (no JavaScript)" className="bg-[#0f2746] px-6 py-4">
+          <ul className="flex flex-wrap gap-4 text-sm text-white">
+            <li><a href="/services">Services</a></li>
+            <li><a href="/about">About</a></li>
+            <li><a href="/service-area">Service Area</a></li>
+            <li><a href="/faq">FAQ</a></li>
+            <li><a href="/careers">Careers</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </nav>
+      </noscript>
     </header>
   );
 }

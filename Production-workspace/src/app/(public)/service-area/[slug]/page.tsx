@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AccordionFAQ } from "@/components/public/variant-a/AccordionFAQ";
 import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
@@ -152,7 +153,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <main id="main-content" className="bg-[#F1F0EE]">
+      <main id="main-content" className="bg-[#FAFAF8]">
         <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-6 pt-28 md:pt-32">
           <ol className="flex items-center gap-2 text-xs text-slate-500">
             <li><Link href="/" className="hover:text-[#0A1628]">Home</Link></li>
@@ -262,7 +263,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
           </div>
         </section>
 
-        <section className="border-t border-slate-200 bg-[#F1F0EE] py-12">
+        <section className="border-t border-slate-200 bg-[#FAFAF8] py-12">
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="font-serif text-lg font-semibold text-[#0A1628]">Also serving nearby areas</h2>
             <div className="mt-4 flex flex-wrap gap-3">
@@ -286,18 +287,8 @@ export default async function LocationPage({ params }: LocationPageProps) {
             <h2 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
               Coverage Questions in {location.name}
             </h2>
-            <div className="mt-5 space-y-3">
-              {locationFaqs.map((faq) => (
-                <details key={faq.question} className="rounded-2xl border border-slate-200 bg-[#FAFAF8] shadow-sm">
-                  <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] md:text-base">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="text-[#2563EB]">+</span>
-                      {faq.question}
-                    </span>
-                  </summary>
-                  <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
-                </details>
-              ))}
+            <div className="mt-5">
+              <AccordionFAQ items={locationFaqs} />
             </div>
 
             <div className="mt-6 text-sm text-slate-600">

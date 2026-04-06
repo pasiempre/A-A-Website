@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AccordionFAQ } from "@/components/public/variant-a/AccordionFAQ";
 import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { INDUSTRIES, type IndustryData } from "@/data/industries";
@@ -425,12 +426,23 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
     url: `${baseUrl}/industries/${industry.slug}`,
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+      { "@type": "ListItem", position: 2, name: "Industries", item: `${baseUrl}/industries` },
+      { "@type": "ListItem", position: 3, name: industry.title, item: `${baseUrl}/industries/${industry.slug}` },
+    ],
+  };
+
   const relatedIndustries = INDUSTRIES.filter((item) => item.slug !== industry.slug).slice(0, 2);
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
       <main className="bg-[#FAFAF8]">
         <section className="relative overflow-hidden border-b border-slate-200 bg-[#0A1628] pb-16 pt-28 md:pt-36">
@@ -552,7 +564,8 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
 
         <section className="bg-[#0A1628] py-12 md:py-16">
           <div className="mx-auto max-w-5xl px-6">
-            <p className="section-kicker !text-slate-300">Verified Results</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#C9A94E]">Verified Results</p>
+            <h2 className="sr-only">Social Proof and Verified Results</h2>
             <article className="dark-surface-panel mt-4 p-6 md:p-8">
               <div className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200">
                 {content.socialProof.tag}
@@ -639,18 +652,8 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
             <p className="section-kicker">Common Questions</p>
             <h2 className="mt-3 font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">Questions {industry.title} Ask</h2>
 
-            <div className="mt-6 space-y-3">
-              {content.faqs.map((item) => (
-                <details key={item.question} className="surface-panel group overflow-hidden">
-                  <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] marker:content-none md:text-base">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="text-[#2563EB]">+</span>
-                      {item.question}
-                    </span>
-                  </summary>
-                  <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{item.answer}</p>
-                </details>
-              ))}
+            <div className="mt-6">
+              <AccordionFAQ items={content.faqs} />
             </div>
 
             <div className="mt-5 text-sm text-slate-600">

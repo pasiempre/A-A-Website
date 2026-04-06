@@ -13,7 +13,7 @@ import {
 import { getSiteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact Us",
+  title: "Contact Us | A&A Cleaning Austin TX",
   description: `Contact ${COMPANY_NAME} for post-construction, commercial, and turnover cleaning quotes in the Austin, TX metro area. Call, email, or submit a request online.`,
   alternates: { canonical: "/contact" },
   openGraph: {

@@ -80,7 +80,7 @@ export default function PostConstructionCleaningPage() {
         }}
       />
 
-      <main id="main-content" className="bg-[#F1F0EE]">
+      <main id="main-content" className="bg-[#FAFAF8]">
         <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-6 pt-28 md:pt-32">
           <ol className="flex items-center gap-2 text-xs text-slate-500">
             <li><Link href="/" className="hover:text-[#0A1628]">Home</Link></li>

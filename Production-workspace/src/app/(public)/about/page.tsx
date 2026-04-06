@@ -159,7 +159,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-[#F1F0EE] py-12 md:py-16">
+        <section className="border-y border-slate-200 bg-[#FAFAF8] py-12 md:py-16">
           <div className="mx-auto max-w-7xl px-6">
             <p className="section-kicker">By the Numbers</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

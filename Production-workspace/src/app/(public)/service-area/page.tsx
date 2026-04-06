@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { AccordionFAQ } from "@/components/public/variant-a/AccordionFAQ";
 import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import {
   COMPANY_NAME,
@@ -441,18 +442,8 @@ export default function ServiceAreaIndexPage() {
                 Common Questions About Service Area Coverage
               </h2>
 
-              <div className="mt-6 space-y-3">
-                {COVERAGE_FAQS.map((faq) => (
-                  <details key={faq.question} className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] md:text-base">
-                      <span className="inline-flex items-center gap-2">
-                        <span className="text-[#2563EB]">+</span>
-                        {faq.question}
-                      </span>
-                    </summary>
-                    <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
-                  </details>
-                ))}
+              <div className="mt-6">
+                <AccordionFAQ items={COVERAGE_FAQS} />
               </div>
 
               <div className="mt-6 text-sm text-slate-600">

@@ -22,7 +22,7 @@ export function FAQSection() {
       ref={ref}
       id="faq"
       aria-labelledby="faq-heading"
-      className="scroll-mt-32 border-b border-slate-200 bg-[#F1F0EE] py-24 md:scroll-mt-36 md:py-32"
+      className="scroll-mt-32 border-b border-slate-200 bg-[#FAFAF8] py-24 md:scroll-mt-36 md:py-32"
     >
       <div className="mx-auto max-w-4xl px-6">
         <div
@@ -55,11 +55,12 @@ export function FAQSection() {
               key={category}
               type="button"
               onClick={() => setFilter(category)}
+              aria-pressed={filter === category}
               className={`rounded-full px-4 py-2 text-[10px] font-bold uppercase tracking-[0.18em] transition-all duration-300 ${
                 filter === category
                   ? "bg-[#0A1628] text-white shadow-sm"
                   : "border border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-[#0A1628]"
-              }`}
+              } min-h-[44px]`}
             >
               {category === "all" ? "All" : CATEGORY_LABELS[category]}
             </button>

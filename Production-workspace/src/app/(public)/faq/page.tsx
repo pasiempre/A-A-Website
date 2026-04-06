@@ -9,7 +9,7 @@ import { COMPANY_EMAIL, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company"
 import { getSiteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "FAQ",
+  title: "FAQ | A&A Cleaning Services Austin",
   description:
     "Answers to common questions about A&A Cleaning services, timelines, pricing, and coverage across the Austin metro area.",
   alternates: {
@@ -70,7 +70,7 @@ export default function FAQPage() {
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3 mb-4">
                   <span className="h-px w-8 bg-[#2563EB]" aria-hidden="true" />
-                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-[#2563EB]">Quick Answers</span>
+                  <span className="section-kicker">Quick Answers</span>
                   <span className="h-px w-8 bg-[#2563EB]" aria-hidden="true" />
                 </div>
                 <h1 className="font-serif text-4xl md:text-5xl tracking-tight text-[#0A1628] mb-6">
@@ -93,7 +93,7 @@ export default function FAQPage() {
                   </CTAButton>
                   <a
                     href="#faq"
-                    className="inline-flex items-center gap-2 px-6 py-3 border-2 border-slate-300 text-[#0A1628] rounded-lg hover:border-slate-400 transition-colors font-medium"
+                    className="cta-outline-dark inline-flex items-center gap-2 px-6 py-3"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
@@ -132,7 +132,7 @@ export default function FAQPage() {
                   </CTAButton>
                   <a
                     href={`mailto:${COMPANY_EMAIL}`}
-                    className="inline-flex min-h-[48px] items-center gap-2 rounded-lg border border-white/35 px-6 py-3 text-white transition-colors hover:border-white/60 hover:bg-white/10"
+                    className="cta-light inline-flex min-h-[48px] items-center gap-2 px-6 py-3"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />

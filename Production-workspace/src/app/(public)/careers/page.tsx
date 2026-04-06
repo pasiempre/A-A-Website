@@ -5,6 +5,7 @@ import { EmploymentApplicationForm } from "@/components/public/EmploymentApplica
 import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
+import { getSiteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Careers | Join the A&A Cleaning Team",
@@ -13,13 +14,58 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/careers",
   },
+  openGraph: {
+    title: "Careers | Join the A&A Cleaning Team",
+    description:
+      "Apply to join A&A Cleaning. We hire for reliable, detail-focused cleaning work across active construction and turnover projects.",
+    url: `${getSiteUrl()}/careers`,
+    type: "website",
+  },
 };
 
 export default function CareersPage() {
+  const baseUrl = getSiteUrl();
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+          { "@type": "ListItem", position: 2, name: "Careers", item: `${baseUrl}/careers` },
+        ],
+      },
+      {
+        "@type": "WebPage",
+        name: "Careers | Join the A&A Cleaning Team",
+        url: `${baseUrl}/careers`,
+        description:
+          "Apply to join A&A Cleaning. We hire for reliable, detail-focused cleaning work across active construction and turnover projects.",
+      },
+    ],
+  };
+
   return (
-    <main className="bg-[#FAFAF8]">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+
+      <main className="bg-[#FAFAF8]">
       <section className="border-b border-slate-200 bg-white pb-12 pt-28 md:pt-36">
-        <div className="mx-auto max-w-6xl px-6">
+        <div className="mx-auto max-w-7xl px-6">
+          <nav aria-label="Breadcrumb" className="mb-5">
+            <ol className="flex items-center gap-2 text-xs text-slate-500">
+              <li>
+                <Link href="/" className="hover:text-[#0A1628]">Home</Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="font-semibold text-[#0A1628]">Careers</li>
+            </ol>
+          </nav>
+
           <p className="section-kicker">Careers</p>
           <h1 className="mt-3 max-w-3xl font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl lg:text-6xl">
             Join a crew that values consistency, pace, and finish quality.
@@ -38,7 +84,7 @@ export default function CareersPage() {
       </section>
 
       <section className="px-6 py-10 md:py-14">
-        <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[0.92fr_1.08fr]">
+        <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.92fr_1.08fr]">
           <section className="space-y-6">
             <article className="surface-panel p-6">
               <h2 className="text-lg font-semibold text-slate-900">What matters</h2>
@@ -88,12 +134,14 @@ export default function CareersPage() {
       </section>
 
       <section className="border-t border-slate-200 bg-white py-12">
-        <div className="mx-auto max-w-6xl px-6 text-sm text-slate-600">
+        <div className="mx-auto max-w-7xl px-6 text-sm text-slate-600">
           Looking for project services instead of careers?
           {" "}
           <QuoteCTA ctaId="careers_bottom_quote" className="min-h-0 font-semibold text-[#2563EB]">Request a Quote</QuoteCTA>
         </div>
       </section>
-    </main>
+
+      </main>
+    </>
   );
 }
