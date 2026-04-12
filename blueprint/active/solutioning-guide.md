@@ -106,6 +106,36 @@ Outcome:
 - This validates code health baseline, not full closure of all ~1,060 findings.
 - Remaining work is issue-by-issue validation and closure against the condensed 166-item set.
 
+## Validated Findings Ledger (Ship Blockers)
+Status key: `Verified Open` | `Partial` | `Resolved (Code)` | `Resolved (Runtime Verified)`
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| SB-1 (fictional phone) | Verified Open | Placeholder number is still the canonical public number and propagates to call CTAs. | `src/lib/company.ts` (`(512) 555-0199`) and imports across public pages/components. |
+| SB-2 (testimonial authenticity) | Verified Open | Testimonial quotes and identities are hardcoded in code with no attached provenance artifact in repo. | `src/components/public/variant-a/TestimonialSection.tsx`. |
+| SB-3 (years consistency) | Verified Open | Years claims are inconsistent across surfaces (`6+` vs `15+`). | `src/components/public/variant-a/AboutSection.tsx` (`6+`), `src/components/public/variant-a/AuthorityBar.tsx` (`15+`), `src/lib/company.ts` (`15+`). |
+| SB-4 (enrichment secret fallback chain) | Partial | Secret is now required in server env and production path hard-fails if missing; dev fallback string still exists for non-production. | `src/lib/env.ts` (`ENRICHMENT_TOKEN_SECRET` required), `src/app/api/quote-request/route.ts` (`getEnrichmentTokenSecret`). |
+| SB-5 (env validation coverage) | Partial | Core required keys are validated; QuickBooks keys are not present in env validation set, and startup call-site wiring for `validateServerEnvironment()` is not found yet. | `src/lib/env.ts` plus repo-wide search for `validateServerEnvironment(` usage (no runtime invocation found). |
+| SB-6 (signup role escalation) | Partial | Fix migration exists and uses `raw_app_meta_data`; baseline migration still shows old `raw_user_meta_data` role source. Runtime DB promotion still required. | `supabase/migrations/0024_fix_handle_new_user_role_source.sql` and `supabase/migrations/0018_core_schema_bootstrap.sql`. |
+
+Validation coverage note:
+- Ship-blocker ledger is now evidence-backed.
+- Next phase is expanding this same validation format across the condensed 166-item set.
+
+## Validated Findings Ledger (Priority B: Pipeline Reliability)
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-48 (quote->job lead relation) | Verified Open | Route still treats FK relation as array (`quote.leads?.[0]`), which is not safe for PostgREST many-to-one object shape. | `src/app/api/quote-create-job/route.ts`.
+| C-36 (latest quote selection) | Verified Open | Lead pipeline still takes first quote entry (`lead.quotes?.[0]`) without explicit descending sort safeguard. | `src/components/admin/LeadPipelineClient.tsx`.
+| C-46 (scheduled field source) | Verified Open | Employee tickets query reads `scheduled_start` from `job_assignments` select/order path. | `src/components/employee/EmployeeTicketsClient.tsx` query select + order.
+| C-47 (employee relation normalization) | Verified Open | Employee tickets still reads joined job relation via first-element indexing (`assignment.jobs?.[0]`) rather than normalized relation helper. | `src/components/employee/EmployeeTicketsClient.tsx`.
+| C-64 (notification relation normalization) | Verified Open | Notification center still reads joined relations via first-element indexing (`profiles?.[0]`, `jobs?.[0]`). | `src/components/admin/NotificationCenterClient.tsx`.
+
+Coverage update:
+- Validated and explicitly tracked in this guide: 11 items (6 ship blockers + 5 pipeline-critical findings).
+- Remaining condensed findings require the same validation pattern before closure.
+
 ## Drift Control
 If transcript claims and code differ:
 1. Mark drift in the implementation lock manifest.
@@ -118,3 +148,5 @@ If transcript claims and code differ:
 - 2026-04-12: Added implementation lock file at blueprint/active/solutioning-implementation-lock-manifest.md.
 - 2026-04-12: Added findings-to-target coverage reconciliation to clarify that lock count is phase coverage, not total solution count.
 - 2026-04-12: Added automated validation batch-1 evidence and blocker fix summary.
+- 2026-04-12: Added ship-blocker validated findings ledger with evidence-backed statuses.
+- 2026-04-12: Added priority-B pipeline validated findings ledger (C-36/C-46/C-47/C-48/C-64).
