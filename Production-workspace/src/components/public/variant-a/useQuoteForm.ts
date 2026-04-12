@@ -36,6 +36,54 @@ type RequestResult = {
   retryable: boolean;
 };
 
+const ATTRIBUTION_QUERY_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "msclkid",
+  "fbclid",
+  "ttclid",
+] as const;
+const ATTRIBUTION_STORAGE_KEY = "aa_attribution_params_v1";
+
+function hasStep2Details(payload: {
+  companyName: string;
+  email: string;
+  timeline: string;
+  description: string;
+}): boolean {
+  return Boolean(
+    payload.companyName.trim() ||
+      payload.email.trim() ||
+      payload.timeline.trim() ||
+      payload.description.trim(),
+  );
+}
+
+function getAttributionParamsFromWindow(): URLSearchParams {
+  if (typeof window === "undefined") {
+    return new URLSearchParams();
+  }
+
+  const incoming = new URLSearchParams(window.location.search);
+  const persisted = new URLSearchParams(window.sessionStorage.getItem(ATTRIBUTION_STORAGE_KEY) ?? "");
+  const attribution = new URLSearchParams();
+
+  ATTRIBUTION_QUERY_KEYS.forEach((key) => {
+    const value = incoming.get(key) || persisted.get(key);
+    if (value) {
+      attribution.set(key, value);
+    }
+  });
+
+  return attribution;
+}
+
 function isRetryableStatus(status: number): boolean {
   return status === 429 || status >= 500;
 }
@@ -257,36 +305,47 @@ export function useQuoteForm({ source, enableTwoStep = false }: UseQuoteFormOpti
         return;
       }
 
-      const requestResult = await requestWithRetry("/api/quote-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          enableTwoStep
-            ? {
-                flowStep: "step2",
-                leadId,
-                enrichmentToken,
-                companyName,
-                email,
-                timeline,
-                description,
-                website,
-              }
-            : {
-                flowStep: "step1",
-                name,
-                companyName,
-                phone,
-                email,
-                serviceType,
-                timeline,
-                description,
-                website,
-              },
-        ),
-      });
+      const step2Payload = {
+        companyName,
+        email,
+        timeline,
+        description,
+      };
+      const shouldSkipStep2Submit =
+        enableTwoStep && currentStep === 2 && !hasStep2Details(step2Payload);
 
-      if (requestResult.error) {
+      const requestResult = shouldSkipStep2Submit
+        ? null
+        : await requestWithRetry("/api/quote-request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              enableTwoStep
+                ? {
+                    flowStep: "step2",
+                    leadId,
+                    enrichmentToken,
+                    companyName,
+                    email,
+                    timeline,
+                    description,
+                    website,
+                  }
+                : {
+                    flowStep: "step1",
+                    name,
+                    companyName,
+                    phone,
+                    email,
+                    serviceType,
+                    timeline,
+                    description,
+                    website,
+                  },
+            ),
+          });
+
+      if (requestResult?.error) {
         setFeedback({
           message: "Unable to submit right now. Please try again or call us directly.",
           type: "error",
@@ -304,17 +363,17 @@ export function useQuoteForm({ source, enableTwoStep = false }: UseQuoteFormOpti
         return;
       }
 
-      const response = requestResult.response;
-      if (!response) {
+      const response = requestResult?.response;
+      if (!response && !shouldSkipStep2Submit) {
         setFeedback({
           message: "Unable to submit right now. Please try again or call us directly.",
           type: "error",
         });
-        setCanRetry(requestResult.retryable);
+        setCanRetry(requestResult?.retryable ?? false);
         return;
       }
 
-      if (!response.ok) {
+      if (response && !response.ok) {
         const body = (await response.json().catch(() => null)) as { error?: string } | null;
         setFeedback({
           message: "Unable to submit right now. Please try again or call us directly.",
@@ -334,6 +393,14 @@ export function useQuoteForm({ source, enableTwoStep = false }: UseQuoteFormOpti
       }
 
       if (enableTwoStep) {
+        if (shouldSkipStep2Submit) {
+          await trackConversionEvent({
+            eventName: "quote_step2_skipped",
+            source,
+            metadata: { serviceType },
+          });
+        }
+
         await trackConversionEvent({
           eventName: "quote_step2_completed",
           source,
@@ -352,8 +419,16 @@ export function useQuoteForm({ source, enableTwoStep = false }: UseQuoteFormOpti
 
       // F-17: Redirect to confirmation page
       const firstName = name.split(" ")[0] || "";
+      const successParams = new URLSearchParams();
+      successParams.set("name", firstName);
+
+      const attributionParams = getAttributionParamsFromWindow();
+      attributionParams.forEach((value, key) => {
+        successParams.set(key, value);
+      });
+
       setCanRetry(false);
-      router.push(`/quote/success?name=${encodeURIComponent(firstName)}`);
+      router.push(`/quote/success?${successParams.toString()}`);
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : "Unable to submit right now. Please try again or call us directly.";

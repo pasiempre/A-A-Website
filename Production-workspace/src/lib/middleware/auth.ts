@@ -36,10 +36,8 @@ function getRole(user: {
   user_metadata?: Record<string, unknown> | null;
 }): string | null {
   const appRole = user.app_metadata?.role;
-  const userRole = user.user_metadata?.role;
 
   if (typeof appRole === "string") return appRole;
-  if (typeof userRole === "string") return userRole;
   return null;
 }
 
@@ -203,3 +201,4 @@ export async function evaluateAuth(
 
   return { context };
 }
+

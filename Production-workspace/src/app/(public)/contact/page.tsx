@@ -353,6 +353,19 @@ export default function ContactPage() {
                     All fields marked with * are required.
                   </p>
 
+                  <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+                    <p className="text-sm font-semibold text-[#0A1628]">Need Spanish support?</p>
+                    <p className="mt-1 text-sm text-slate-600">Nuestro equipo tambien atiende en Español por telefono.</p>
+                    <CTAButton
+                      ctaId="contact_spanish_call"
+                      actionType="call"
+                      href={`tel:${COMPANY_PHONE_E164}`}
+                      className="mt-3 cta-outline-dark"
+                    >
+                      Llamar En Español
+                    </CTAButton>
+                  </div>
+
                   <div className="mt-10">
                     <ContactPageClient serviceTypes={SERVICE_TYPES} />
                   </div>

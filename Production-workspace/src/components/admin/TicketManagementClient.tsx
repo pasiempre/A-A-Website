@@ -27,7 +27,7 @@ type Profile = {
 type ChecklistTemplate = {
   id: string;
   name: string;
-  locale: string;
+  service_type: string | null;
 };
 
 type JobRow = {
@@ -140,7 +140,7 @@ export function TicketManagementClient({
         )
         .order("created_at", { ascending: false })
         .limit(100),
-      supabase.from("checklist_templates").select("id, name, locale").order("created_at", { ascending: false }).limit(100),
+      supabase.from("checklist_templates").select("id, name, service_type").order("created_at", { ascending: false }).limit(100),
     ]);
 
     if (profileError) {
@@ -540,6 +540,11 @@ export function TicketManagementClient({
                 onChange={(event) => setForm((prev) => ({ ...prev, workerId: event.target.value }))}
               >
                 <option value="">Unassigned</option>
+                {employeeOptions.length === 0 ? (
+                  <option value="" disabled>
+                    No employee profiles available
+                  </option>
+                ) : null}
                 {employeeOptions.map((employee) => (
                   <option key={employee.id} value={employee.id}>
                     {employee.full_name ?? employee.id.slice(0, 8)}
@@ -559,7 +564,8 @@ export function TicketManagementClient({
               <option value="">No template</option>
               {checklistTemplates.map((template) => (
                 <option key={template.id} value={template.id}>
-                  {template.name} ({template.locale})
+                  {template.name}
+                  {template.service_type ? ` (${formatCleanType(template.service_type)})` : ""}
                 </option>
               ))}
             </select>

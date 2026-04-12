@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef } from "react";
 
 import { trackConversionEvent } from "@/lib/analytics";
+import { COMPANY_PHONE_E164 } from "@/lib/company";
 import { useQuoteForm } from "./useQuoteForm";
 
 type FloatingQuotePanelProps = {
@@ -13,21 +14,27 @@ type FloatingQuotePanelProps = {
 
 export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: FloatingQuotePanelProps) {
   const fieldPrefix = useId().replace(/:/g, "");
-  const { fields, setters, isSubmitting, feedback, submitLead, markFormStarted, currentStep, canRetry } = useQuoteForm({
+  const { fields, setters, isSubmitting, feedback, submitLead, markFormStarted, currentStep, canRetry, setCurrentStep } = useQuoteForm({
     source: "floating_quote_panel",
     enableTwoStep: true,
   });
   const panelRef = useRef<HTMLElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const wasOpenRef = useRef(false);
-  const prefillOpenStateRef = useRef(false);
+  const previousInitialServiceTypeRef = useRef<string | undefined>(initialServiceType);
 
   useEffect(() => {
-    if (!prefillOpenStateRef.current && isOpen && initialServiceType && !fields.serviceType) {
+    const wasOpen = wasOpenRef.current;
+    const isOpening = !wasOpen && isOpen;
+    const didContextServiceTypeChange =
+      previousInitialServiceTypeRef.current !== initialServiceType;
+
+    if (isOpen && initialServiceType && (isOpening || didContextServiceTypeChange)) {
       setters.setServiceType(initialServiceType);
     }
-    prefillOpenStateRef.current = isOpen;
-  }, [fields.serviceType, initialServiceType, isOpen, setters]);
+
+    previousInitialServiceTypeRef.current = initialServiceType;
+  }, [initialServiceType, isOpen, setters]);
 
   useEffect(() => {
     const wasOpen = wasOpenRef.current;
@@ -117,6 +124,23 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
     };
   }, [isOpen, onClose]);
 
+  const handleFieldFocus = (event: React.FocusEvent<HTMLFormElement>) => {
+    const target = event.target as HTMLElement;
+    const isFocusableField =
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement;
+
+    if (!isFocusableField || typeof window === "undefined" || window.innerWidth >= 768) {
+      return;
+    }
+
+    // Keep active field comfortably above the mobile keyboard.
+    window.setTimeout(() => {
+      target.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 120);
+  };
+
   return (
     <div
       className={`fixed inset-0 z-[55] bg-[#0A1628]/45 backdrop-blur-sm transition ${isOpen ? "opacity-100" : "pointer-events-none opacity-0"}`}
@@ -149,7 +173,15 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
           </button>
         </div>
 
-        <form className="space-y-5" aria-busy={isSubmitting} onFocusCapture={markFormStarted} onSubmit={(event) => void submitLead(event)}>
+        <form
+          className="space-y-5"
+          aria-busy={isSubmitting}
+          onFocusCapture={(event) => {
+            markFormStarted();
+            handleFieldFocus(event);
+          }}
+          onSubmit={(event) => void submitLead(event)}
+        >
           <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
             {currentStep === 1
               ? "Step 1 of 2: Just three fields to get started."
@@ -175,6 +207,7 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
               id={`${fieldPrefix}-name`}
               name="name"
               autoComplete="name"
+              enterKeyHint="next"
               /* MOBILE-HARDENING: py-4 for 44px+ touch target */
               className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               required
@@ -193,6 +226,7 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
               type="tel"
               autoComplete="tel"
               inputMode="tel"
+              enterKeyHint="next"
               pattern="[0-9()\s-]+"
               /* MOBILE-HARDENING: py-4 for 44px+ touch target */
               className="w-full border-b border-slate-300 px-1 py-4 text-sm"
@@ -233,6 +267,8 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
             <input
               id={`${fieldPrefix}-company`}
               name="companyName"
+              autoComplete="organization"
+              enterKeyHint="next"
               /* MOBILE-HARDENING: py-4 for 44px+ touch target */
               className="w-full border-b border-slate-300 px-1 py-4 text-sm"
               value={fields.companyName}
@@ -247,6 +283,8 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
                   id={`${fieldPrefix}-email`}
                   name="email"
                   autoComplete="email"
+                  inputMode="email"
+                  enterKeyHint="next"
                   /* MOBILE-HARDENING: py-4 for 44px+ touch target */
                   className="w-full border-b border-slate-300 px-1 py-4 text-sm"
                   type="email"
@@ -314,6 +352,45 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
                   ? "Continue"
                   : "Send My Quote Request"}
           </button>
+          {currentStep === 2 ? (
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentStep(1);
+                void trackConversionEvent({
+                  eventName: "quote_step2_back_clicked",
+                  source: "floating_quote_panel",
+                  metadata: {
+                    has_name: Boolean(fields.name.trim()),
+                    has_phone: Boolean(fields.phone.trim()),
+                    has_service_type: Boolean(fields.serviceType.trim()),
+                  },
+                });
+              }}
+              className="w-full rounded-sm border border-slate-300 py-3 text-xs font-medium uppercase tracking-[0.18em] text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 min-h-[48px]"
+            >
+              Back to Step 1
+            </button>
+          ) : null}
+          <p className="text-center text-[11px] text-slate-600">
+            Prefer Spanish support? {" "}
+            <a
+              href={`tel:${COMPANY_PHONE_E164}`}
+              onClick={() => {
+                void trackConversionEvent({
+                  eventName: "quote_spanish_handoff_clicked",
+                  source: "floating_quote_panel",
+                  metadata: {
+                    step: currentStep,
+                  },
+                });
+              }}
+              className="font-semibold text-[#0A1628] underline underline-offset-2 hover:text-[#2563EB]"
+            >
+              Habla con nosotros en Español
+            </a>
+            .
+          </p>
           <p className="text-center text-[10px] uppercase tracking-[0.16em] text-slate-600">Avg. response: under 1 hour</p>
         </form>
       </aside>

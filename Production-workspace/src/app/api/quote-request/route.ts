@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 
 import { optionalServerEnv } from "@/lib/env";
 import { dispatchSmsWithQuietHours, sendSmsWithRetry } from "@/lib/notifications";
@@ -37,12 +38,10 @@ const recentSubmissions = new Map<string, number>();
 const DEDUP_WINDOW_MS = 60_000;
 const DEDUP_MAX_ENTRIES = 1_000;
 
-// Step 2 enrichment token store (short-lived, in-memory).
-// Prevents blind leadId updates from unauthenticated clients.
-const enrichmentTokens = new Map<string, { token: string; expiresAt: number }>();
 const ENRICHMENT_TOKEN_TTL_MS = 15 * 60_000;
 const UUID_V4_LIKE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ENRICHMENT_TOKEN_SECRET_FALLBACK = "dev-enrichment-secret-change-me";
 
 function extractMissingColumnFromSchemaCacheError(message?: string): string | null {
   if (!message) {
@@ -53,35 +52,83 @@ function extractMissingColumnFromSchemaCacheError(message?: string): string | nu
   return match?.[1] ?? null;
 }
 
-function issueEnrichmentToken(leadId: string): string {
-  const token = crypto.randomUUID();
-  enrichmentTokens.set(leadId, {
-    token,
-    expiresAt: Date.now() + ENRICHMENT_TOKEN_TTL_MS,
-  });
-  return token;
+function base64UrlEncode(value: string): string {
+  return Buffer.from(value, "utf8").toString("base64url");
 }
 
-function validateEnrichmentToken(leadId: string, token: string): boolean {
-  const record = enrichmentTokens.get(leadId);
-  if (!record) {
-    return false;
-  }
-
-  if (record.expiresAt < Date.now()) {
-    enrichmentTokens.delete(leadId);
-    return false;
-  }
-
-  if (record.token !== token) {
-    return false;
-  }
-
-  return true;
+function base64UrlDecode(value: string): string {
+  return Buffer.from(value, "base64url").toString("utf8");
 }
 
-function consumeEnrichmentToken(leadId: string): void {
-  enrichmentTokens.delete(leadId);
+function getEnrichmentTokenSecret(): string {
+  const configuredSecret = optionalServerEnv("ENRICHMENT_TOKEN_SECRET");
+  if (configuredSecret) {
+    return configuredSecret;
+  }
+
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "ENRICHMENT_TOKEN_SECRET must be set in production. " +
+        "Refusing to fall back to service role key or hardcoded dev secret.",
+    );
+  }
+
+  return ENRICHMENT_TOKEN_SECRET_FALLBACK;
+}
+
+function signTokenPayload(payloadBase64: string, secret: string): string {
+  return createHmac("sha256", secret).update(payloadBase64, "utf8").digest("base64url");
+}
+
+function issueEnrichmentToken(leadId: string, secret: string): string {
+  const payload = {
+    leadId,
+    exp: Date.now() + ENRICHMENT_TOKEN_TTL_MS,
+    nonce: crypto.randomUUID(),
+  };
+  const payloadBase64 = base64UrlEncode(JSON.stringify(payload));
+  const signature = signTokenPayload(payloadBase64, secret);
+  return `${payloadBase64}.${signature}`;
+}
+
+function validateEnrichmentToken(leadId: string, token: string, secret: string): boolean {
+  const [payloadBase64, signature] = token.split(".");
+  if (!payloadBase64 || !signature) {
+    return false;
+  }
+
+  const expectedSignature = signTokenPayload(payloadBase64, secret);
+  const signatureBuffer = Buffer.from(signature, "utf8");
+  const expectedBuffer = Buffer.from(expectedSignature, "utf8");
+
+  if (
+    signatureBuffer.length !== expectedBuffer.length ||
+    !timingSafeEqual(signatureBuffer, expectedBuffer)
+  ) {
+    return false;
+  }
+
+  try {
+    const parsed = JSON.parse(base64UrlDecode(payloadBase64)) as {
+      leadId?: string;
+      exp?: number;
+    };
+    if (!parsed.leadId || typeof parsed.exp !== "number") {
+      return false;
+    }
+
+    if (parsed.leadId !== leadId) {
+      return false;
+    }
+
+    if (parsed.exp < Date.now()) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function buildDedupKey(name: string, phone: string): string {
@@ -141,6 +188,17 @@ export async function POST(request: Request) {
   }
 
   const flowStep = body.flowStep ?? "step1";
+  let enrichmentTokenSecret: string;
+
+  try {
+    enrichmentTokenSecret = getEnrichmentTokenSecret();
+  } catch (error) {
+    console.error("[quote-request] enrichment secret configuration error", error);
+    return NextResponse.json(
+      { error: "Server misconfiguration. Please contact support." },
+      { status: 500 },
+    );
+  }
 
   // --- Step 2 enrichment path (update existing lead) ---
   if (flowStep === "step2") {
@@ -153,14 +211,14 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!enrichmentToken || !validateEnrichmentToken(leadId, enrichmentToken)) {
+    if (!enrichmentToken || !validateEnrichmentToken(leadId, enrichmentToken, enrichmentTokenSecret)) {
       return NextResponse.json(
         { error: "Invalid or expired enrichment token." },
         { status: 403 },
       );
     }
 
-    if (!UUID_V4_LIKE.test(leadId) || !UUID_V4_LIKE.test(enrichmentToken)) {
+    if (!UUID_V4_LIKE.test(leadId)) {
       return NextResponse.json(
         { error: "Invalid enrichment payload format." },
         { status: 400 },
@@ -184,8 +242,8 @@ export async function POST(request: Request) {
 
     if (Object.keys(updatePayload).length === 0) {
       return NextResponse.json(
-        { error: "At least one enrichment field is required for step2." },
-        { status: 400 },
+        { success: true, leadId, updated: false, skipped: true },
+        { status: 200 },
       );
     }
 
@@ -227,8 +285,6 @@ export async function POST(request: Request) {
           { status: 500 },
         );
       }
-
-      consumeEnrichmentToken(leadId);
 
       return NextResponse.json(
         { success: true, leadId: updatedLead.id, updated: true },
@@ -433,7 +489,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const enrichmentToken = issueEnrichmentToken(insertedLead.id);
+    const enrichmentToken = issueEnrichmentToken(insertedLead.id, enrichmentTokenSecret);
 
     return NextResponse.json(
       { success: true, leadId: insertedLead.id, enrichmentToken },

@@ -13,6 +13,21 @@ import { QuoteContext } from "./variant-a/QuoteContext";
 import type { QuoteOpenContext } from "./variant-a/QuoteContext";
 import { CTAButton } from "./variant-a/CTAButton";
 
+const ATTRIBUTION_QUERY_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "gclid",
+  "gbraid",
+  "wbraid",
+  "msclkid",
+  "fbclid",
+  "ttclid",
+] as const;
+const ATTRIBUTION_STORAGE_KEY = "aa_attribution_params_v1";
+
 const FloatingQuotePanel = dynamic(
   () => import("./variant-a/FloatingQuotePanel").then((module) => module.FloatingQuotePanel),
   { ssr: false },
@@ -29,10 +44,13 @@ const ScrollToTopButton = dynamic(
 export function PublicChrome({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHomePage = pathname === "/";
+  const isQuoteSuccessPage = pathname.startsWith("/quote/success");
 
   const [isQuoteOpen, setIsQuoteOpen] = useState(false);
   const [quoteOpenContext, setQuoteOpenContext] = useState<QuoteOpenContext | undefined>();
+  const [quoteRoutePath, setQuoteRoutePath] = useState<string | null>(null);
   const mainRef = useRef<HTMLDivElement | null>(null);
+  const isQuoteVisible = isQuoteOpen && quoteRoutePath === pathname;
 
   /* MOBILE-ELEVATION: H-8 — sticky bar hidden until user scrolls past hero (~80vh).
      Prevents CTA stacking on the first viewport where hero CTAs are already visible.
@@ -188,10 +206,10 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const mainElement = mainRef.current;
 
-    document.body.style.overflow = isQuoteOpen ? "hidden" : "";
+    document.body.style.overflow = isQuoteVisible ? "hidden" : "";
 
     if (mainElement) {
-      if (isQuoteOpen) {
+      if (isQuoteVisible) {
         mainElement.setAttribute("inert", "");
       } else {
         mainElement.removeAttribute("inert");
@@ -202,7 +220,25 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
       document.body.style.overflow = "";
       mainElement?.removeAttribute("inert");
     };
-  }, [isQuoteOpen]);
+  }, [isQuoteVisible]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const search = new URLSearchParams(window.location.search);
+    const existing = new URLSearchParams(window.sessionStorage.getItem(ATTRIBUTION_STORAGE_KEY) ?? "");
+
+    ATTRIBUTION_QUERY_KEYS.forEach((key) => {
+      const value = search.get(key);
+      if (value) {
+        existing.set(key, value);
+      }
+    });
+
+    window.sessionStorage.setItem(ATTRIBUTION_STORAGE_KEY, existing.toString());
+  }, [pathname]);
 
   const openQuote = (context?: QuoteOpenContext) => {
     setQuoteOpenContext(context);
@@ -214,11 +250,13 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
         source_cta: context?.sourceCta,
       },
     });
+    setQuoteRoutePath(pathname);
     setIsQuoteOpen(true);
   };
 
   const closeQuote = () => {
     setIsQuoteOpen(false);
+    setQuoteRoutePath(null);
     setQuoteOpenContext(undefined);
   };
 
@@ -234,14 +272,16 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
 
       <ErrorBoundary>
         <FloatingQuotePanel
-          isOpen={isQuoteOpen}
+          isOpen={isQuoteVisible}
           onClose={closeQuote}
           initialServiceType={quoteOpenContext?.serviceType}
         />
       </ErrorBoundary>
-      <ErrorBoundary fallback={null}>
-        <AIQuoteAssistant />
-      </ErrorBoundary>
+      {!isQuoteSuccessPage ? (
+        <ErrorBoundary fallback={null}>
+          <AIQuoteAssistant />
+        </ErrorBoundary>
+      ) : null}
       <ScrollToTopButton />
 
       {/* MOBILE-ELEVATION: MF-5 — sticky bar hidden when quote panel is open (isQuoteOpen).
@@ -252,7 +292,7 @@ export function PublicChrome({ children }: { children: React.ReactNode }) {
         role="toolbar"
         aria-label="Quick actions"
         className={`floating-widget fixed bottom-0 left-0 z-[30] flex w-full gap-3 border-t border-slate-200/50 bg-white/95 px-4 pt-3 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-transform duration-300 md:hidden ${
-          showStickyBar && !isQuoteOpen
+          showStickyBar && !isQuoteVisible
             ? "translate-y-0"
             : "translate-y-full"
         }`}

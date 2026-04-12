@@ -211,8 +211,8 @@ Primary files:
 
 ## 7) Related Planning Docs (Blueprint Active)
 
-- Current implementation feedback thread: [blueprint/active/feedback.md](blueprint/active/feedback.md)
-- UX masterdoc: [blueprint/active/masterdoc-ux-ui.md](blueprint/active/masterdoc-ux-ui.md)
+- Current implementation feedback thread: [blueprint/archive/2026-04-11-active-cleanup/feedback.md](blueprint/archive/2026-04-11-active-cleanup/feedback.md)
+- UX masterdoc: [blueprint/archive/2026-04-11-active-cleanup/masterdoc-ux-ui.md](blueprint/archive/2026-04-11-active-cleanup/masterdoc-ux-ui.md)
 - UX masterdoc 2.0: [blueprint/active/masterdoc-ux-ui-2.0.md](blueprint/active/masterdoc-ux-ui-2.0.md)
 - Chunk/performance deep dive: [blueprint/active/chunk-performance-deep-dive-2026-04-04.md](blueprint/active/chunk-performance-deep-dive-2026-04-04.md)
 
