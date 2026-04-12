@@ -26,6 +26,25 @@ Purpose: Keep planning, validation gating, and implementation targeting in one c
   - runtime or SQL proof
   - verification note in validation evidence
 
+## Coverage Reconciliation (Findings vs Targets)
+- Raw findings corpus: ~1,060 issues (canonical count from master rework summary).
+- Condensed actionable set: 166 tracked IDs (SB/C/XF patterns in master rework tables).
+- Archived solutioning transcript: 21 session blocks and many fix directives (not a small list).
+- Current implementation lock manifest: 11 symbol-level locks + 3 drift entries.
+
+Important: The lock manifest is phase-1 implementation protection for high-risk active surfaces, not the full solution inventory.
+
+Targeting rule for this phase:
+1. Keep the 11 active locks stable while validating.
+2. Expand lock coverage batch-by-batch from the condensed master rework set.
+3. Any finding confirmed valid must map to one of: existing lock, new lock, or explicit drift entry.
+4. No valid finding should remain untracked.
+
+Current status:
+- Not all findings have been runtime-validated yet.
+- More valid solutions are expected as validation progresses.
+- The 14-item count reflects current lock coverage only, not total final scope.
+
 ## Current Priorities
 ### Priority A (Security and Data Integrity)
 - SB-1: real business phone replacement across public CTAs
@@ -75,3 +94,4 @@ If transcript claims and code differ:
 - 2026-04-12: Converted this file from mixed transcript+planning to control-plane format.
 - 2026-04-12: Archived full prior content to blueprint/archive/2026-04-12-active-cleanup/solutioning-guide-transcript-2026-04-12.md.
 - 2026-04-12: Added implementation lock file at blueprint/active/solutioning-implementation-lock-manifest.md.
+- 2026-04-12: Added findings-to-target coverage reconciliation to clarify that lock count is phase coverage, not total solution count.
