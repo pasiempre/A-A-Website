@@ -41,14 +41,6 @@ function ClipboardIcon({ className }: IconProps) {
   );
 }
 
-function SparklesIcon({ className }: IconProps) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className={className}>
-      <path d="M12 4.5l1.45 3.55L17 9.5l-3.55 1.45L12 14.5l-1.45-3.55L7 9.5l3.55-1.45L12 4.5Zm6 8.75.9 2.2 2.2.9-2.2.9-.9 2.2-.9-2.2-2.2-.9 2.2-.9.9-2.2Zm-12 1 .75 1.85 1.85.75-1.85.75L6 19.45l-.75-1.85-1.85-.75 1.85-.75L6 14.25Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.4" />
-    </svg>
-  );
-}
-
 function BroomIcon({ className }: IconProps) {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className={className}>

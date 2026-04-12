@@ -116,7 +116,7 @@ export default function IndustriesIndexPage() {
                     <span className="text-slate-500">{industry.statLabel}</span>
                   </div>
                   <span className="mt-auto inline-flex items-center gap-2 pt-5 text-xs font-semibold uppercase tracking-wide text-[#2563EB]">
-                    Learn more <span aria-hidden="true">-></span>
+                    Learn more <span aria-hidden="true">&rarr;</span>
                   </span>
                 </Link>
               ))}

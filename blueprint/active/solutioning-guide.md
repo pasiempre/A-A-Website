@@ -84,6 +84,28 @@ For each issue batch:
 - DB assumptions confirmed against real schema/policies.
 - Evidence captured in feedback evidence doc.
 
+## Validation Batch 1 (2026-04-12)
+Scope:
+- Automated baseline checks plus immediate blocker burn-down.
+
+Checks run:
+- `npx eslint . --max-warnings=0` -> pass
+- `npx tsc --noEmit` -> pass
+- `npx next build --webpack` -> pass (with third-party opentelemetry/sentry warnings)
+- `npm run preflight:f07` -> pass
+- `npm run smoke:f07` -> pass (8 passed, 0 failed)
+
+Fixes applied in this batch:
+- Removed accidental markdown payload from `src/lib/idempotency.ts` that broke parsing.
+- Fixed TSX token issue in `src/app/(public)/industries/page.tsx` (`->` rendering).
+- Replaced no-script internal anchors with `Link` usage in `src/components/public/variant-a/PublicHeader.tsx` to satisfy lint rule.
+- Removed unused icon declaration in `src/app/quote/success/page.tsx` to keep strict lint clean.
+
+Outcome:
+- Build/lint/type baseline is now green for current tree.
+- This validates code health baseline, not full closure of all ~1,060 findings.
+- Remaining work is issue-by-issue validation and closure against the condensed 166-item set.
+
 ## Drift Control
 If transcript claims and code differ:
 1. Mark drift in the implementation lock manifest.
@@ -95,3 +117,4 @@ If transcript claims and code differ:
 - 2026-04-12: Archived full prior content to blueprint/archive/2026-04-12-active-cleanup/solutioning-guide-transcript-2026-04-12.md.
 - 2026-04-12: Added implementation lock file at blueprint/active/solutioning-implementation-lock-manifest.md.
 - 2026-04-12: Added findings-to-target coverage reconciliation to clarify that lock count is phase coverage, not total solution count.
+- 2026-04-12: Added automated validation batch-1 evidence and blocker fix summary.
