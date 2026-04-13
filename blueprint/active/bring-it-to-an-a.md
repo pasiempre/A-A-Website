@@ -2,6 +2,94 @@
 
 ---
 
+## Validation Overlay (2026-04-12)
+
+This section validates feasibility and sequencing against current repo state and the active solution control plane.
+
+### Scope Decision
+- Keep this roadmap independent from the fix-first control plane.
+- Source of truth for fixes and risk closure: `blueprint/active/solutioning-guide.md`.
+- Source of truth for upgrades and net-new capabilities: this document.
+
+### Classification Legend
+- `Fix-Aligned`: Directly closes currently open validated findings.
+- `Upgrade`: Improves UX/quality/performance after stability gates are met.
+- `Net-New`: New capability beyond current defect scope.
+
+### Feasibility Snapshot (By Primary Area)
+
+| Area | Classification | Feasibility | Primary Dependencies on Open Findings |
+| --- | --- | --- | --- |
+| Accessibility | Fix-Aligned | High | C-1, C-25, C-26, C-27, C-31 |
+| Mobile UX | Fix-Aligned + Upgrade | High | C-25, C-26, C-27, C-10, C-13, C-39 |
+| Admin CRM | Fix-Aligned + Upgrade | Medium-High | C-10, C-12, C-18, C-20, C-21 |
+| Data Integrity | Fix-Aligned | High | C-16, C-24, C-28, C-30, C-38 |
+| Security | Fix-Aligned | Medium-High | SB-6, C-40, C-70, #1047 |
+| Public Site | Fix-Aligned + Upgrade | Medium-High | SB-1, SB-2, SB-3, C-2, C-5/C-17, C-6 |
+| Employee Portal | Fix-Aligned + Upgrade | Medium | C-46, C-47 |
+| Admin Dashboard | Fix-Aligned + Upgrade | Medium-High | C-11/C-19, C-54 |
+| Architecture | Upgrade | Medium | Depends on stabilization of C/SB critical path |
+| Infrastructure | Upgrade | High | Mostly independent; verify with deployment/runtime env |
+
+### Second-Pass (35 Items) Triage
+
+Implement in core rollout (high ROI, low rework risk):
+- 1 `USER FEEDBACK SYSTEM`
+- 2 `DOUBLE SUBMISSION PREVENTION`
+- 3 `URL STATE & DEEP LINKING`
+- 4 `CURRENCY & DATE FORMATTING CONSISTENCY`
+- 6 `LOADING STATES & SKELETONS`
+- 7 `EMPTY STATES`
+- 8 `ABORTCONTROLLER ON UNMOUNT`
+- 9 `STALE CLOSURES & RACE CONDITIONS`
+- 11 `Z-INDEX MANAGEMENT`
+- 25 `PERFORMANCE OPTIMIZATION`
+- 26 `CONTENT SECURITY POLICY`
+- 27 `CACHING STRATEGY`
+- 30 `STATUS BADGE CONSISTENCY`
+- 31 `ADMIN SIDEBAR POLISH`
+
+Implement after core stabilization (valuable, moderate coupling):
+- 12 `FORM STATE PERSISTENCE`
+- 14 `UNDO PATTERN`
+- 15 `REAL-TIME SUBSCRIPTIONS`
+- 17 `PRINT & PDF EXPORT`
+- 18 `KEYBOARD SHORTCUTS`
+- 28 `SHARED UI COMPONENT LIBRARY`
+- 32 `NOTIFICATION PREFERENCES`
+- 33 `DATA EXPORT & REPORTING`
+
+Defer unless explicit business trigger exists (high effort or strategic capability):
+- 10 `GLOBAL SEARCH (COMMAND PALETTE)`
+- 13 `BATCH OPERATIONS`
+- 16 `MULTI-TAB SYNC`
+- 19 `CALENDAR VIEW`
+- 20 `MAP VIEW FOR SCHEDULING`
+- 21 `RECURRING JOB SCHEDULING`
+- 22 `CUSTOMER-FACING PORTAL`
+- 23 `SEO FINAL POLISH`
+- 34 `PHOTO GALLERY FOR ADMIN`
+- 29 `ONBOARDING & HELP`
+- 35 `PRIORITY MATRIX — THIS PASS` (planning artifact, not implementation scope)
+
+### Should All Upgrades Be Implemented?
+- No. Implementing every upgrade is not required to reach an A-grade operating product.
+- Recommended target for this program: complete all fix-aligned work plus high-ROI upgrades; defer capability-heavy items unless tied to active revenue or operations goals.
+
+### Reassessed Grade Trajectory
+- Current validated state: `B-` (approximately 78/100).
+- After all solution-guide fixes + migration/runtime gates + core rollout upgrades above: `A- to A` (approximately 90-94/100).
+- After full roadmap (including strategic net-new capabilities): potential `A/A+` (approximately 94-96/100), with diminishing returns per engineering hour.
+
+### Recommended Execution Order
+1. Close fix-critical items from `solutioning-guide.md` first (security, integrity, relation normalization, mobile blockers).
+2. Ship core rollout upgrade set from this roadmap.
+3. Run full validation pass (lint/type/build + preflight/smoke + runtime evidence capture).
+4. Promote only artifact-backed items to `Resolved (Runtime Verified)`.
+5. Re-prioritize deferred net-new capability items by business ROI.
+
+---
+
 ## Table of Contents
 
 1. [Accessibility (3 → 10)](#1-accessibility)

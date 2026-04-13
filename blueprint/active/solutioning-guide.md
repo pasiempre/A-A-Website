@@ -10,6 +10,27 @@ Purpose: Keep planning, validation gating, and implementation targeting in one c
 - Full historical transcript (archived): blueprint/archive/2026-04-12-active-cleanup/solutioning-guide-transcript-2026-04-12.md
 - Validation control plane: blueprint/active/master-rework-doc-2.0.md
 - Validation evidence log: blueprint/active/feedback3.0-validation-evidence-2026-04-11.md
+- Upgrade roadmap (kept independent): blueprint/active/bring-it-to-an-a.md
+
+## Scope Boundary (Fixes vs Upgrades)
+- This guide remains the fix-first control plane for validated defects and closure evidence.
+- Upgrade and net-new capability work is tracked independently in `blueprint/active/bring-it-to-an-a.md`.
+- Cross-document rule: an upgrade that depends on an open defect must not be promoted ahead of the linked fix closure.
+
+## Critical Baseline Finding
+- Independent code validation confirms that multiple prior-session "resolved" claims were not present in the current working tree at validation time.
+- Practical impact: prior handoff resolution totals are treated as proposal-level until matched to current-file evidence.
+- Baseline interpretation for this guide: trust repo state + evidence artifacts over historical transcript claims.
+
+## Migration Deployment Gate
+- Gate status: NOT APPLIED (runtime target DB promotion still pending for migration-dependent closure paths).
+- Items blocked from promotion to `Resolved (Runtime Verified)` until migration/runtime evidence is captured:
+  - SB-6
+  - C-40
+  - C-41
+  - C-42
+  - C-73
+  - #1047
 
 ## Working Agreement
 1. Keep code implementations unchanged unless explicitly approved.
@@ -32,6 +53,10 @@ Purpose: Keep planning, validation gating, and implementation targeting in one c
 - Archived solutioning transcript: 21 session blocks and many fix directives (not a small list).
 - Current implementation lock manifest: 11 symbol-level locks + 3 drift entries.
 
+Hierarchy note:
+- `~1,060` raw findings -> `166` condensed actionable IDs -> `129` canonical SB/C/XF IDs explicitly statused in this guide.
+- The remaining non-canonical portion of the 166 set is covered through findings-dump reconciliation and numeric sub-finding inheritance (`#880-#980`).
+
 Important: The lock manifest is phase-1 implementation protection for high-risk active surfaces, not the full solution inventory.
 
 Targeting rule for this phase:
@@ -47,7 +72,7 @@ Current status:
 
 ## Current Priorities
 ### Priority A (Security and Data Integrity)
-- SB-1: real business phone replacement across public CTAs
+- SB-1: real business phone replacement across public CTAs (phone number to use: 5128252212)
 - SB-6: signup role source hardening verification on target DB
 - C-16: ticket create sequence resilience (no orphan state)
 - C-24: QA rework safety and recovery behavior
@@ -106,6 +131,19 @@ Outcome:
 - This validates code health baseline, not full closure of all ~1,060 findings.
 - Remaining work is issue-by-issue validation and closure against the condensed 166-item set.
 
+## Validation Batch 2 (Session 13 Solutioning Readiness)
+Status: Pending execution after implementation approval.
+
+Planned checks:
+- `npx eslint . --max-warnings=0`
+- `npx tsc --noEmit`
+- `npx next build --webpack`
+- `npm run preflight:f07`
+- `npm run smoke:f07`
+
+Promotion rule:
+- Any item moved from `Verified Open`/`Partial` to `Resolved (Code)` or `Resolved (Runtime Verified)` in this phase must include direct before/after evidence and runtime artifact references where applicable.
+
 ## Validated Findings Ledger (Ship Blockers)
 Status key: `Verified Open` | `Partial` | `Resolved (Code)` | `Resolved (Runtime Verified)`
 
@@ -113,7 +151,7 @@ Status key: `Verified Open` | `Partial` | `Resolved (Code)` | `Resolved (Runtime
 | --- | --- | --- | --- |
 | SB-1 (fictional phone) | Verified Open | Placeholder number is still the canonical public number and propagates to call CTAs. | `src/lib/company.ts` (`(512) 555-0199`) and imports across public pages/components. |
 | SB-2 (testimonial authenticity) | Verified Open | Testimonial quotes and identities are hardcoded in code with no attached provenance artifact in repo. | `src/components/public/variant-a/TestimonialSection.tsx`. |
-| SB-3 (years consistency) | Verified Open | Years claims are inconsistent across surfaces (`6+` vs `15+`). | `src/components/public/variant-a/AboutSection.tsx` (`6+`), `src/components/public/variant-a/AuthorityBar.tsx` (`15+`), `src/lib/company.ts` (`15+`). |
+| SB-3 (years consistency) | Verified Open | Years claims are inconsistent across surfaces (`6+` vs `15+`). | `src/components/public/variant-a/AboutSection.tsx` (`6+`), `src/components/public/variant-a/AuthorityBar.tsx` (`15+`), `src/lib/company.ts` (`15+`). | --- my mom has been in the cleaning business over 15 years so we can stilck to tha
 | SB-4 (enrichment secret fallback chain) | Partial | Secret is now required in server env and production path hard-fails if missing; dev fallback string still exists for non-production. | `src/lib/env.ts` (`ENRICHMENT_TOKEN_SECRET` required), `src/app/api/quote-request/route.ts` (`getEnrichmentTokenSecret`). |
 | SB-5 (env validation coverage) | Partial | Core required keys are validated; QuickBooks keys are not present in env validation set, and startup call-site wiring for `validateServerEnvironment()` is not found yet. | `src/lib/env.ts` plus repo-wide search for `validateServerEnvironment(` usage (no runtime invocation found). |
 | SB-6 (signup role escalation) | Partial | Fix migration exists and uses `raw_app_meta_data`; baseline migration still shows old `raw_user_meta_data` role source. Runtime DB promotion still required. | `supabase/migrations/0024_fix_handle_new_user_role_source.sql` and `supabase/migrations/0018_core_schema_bootstrap.sql`. |
@@ -231,6 +269,116 @@ Coverage update:
 - Validated and explicitly tracked in this guide: 44 unique items.
 - Remaining condensed findings still require additional batch passes.
 
+## Full Canonical Coverage Completion (SB/C/XF)
+
+Canonical denominator:
+- `master-rework-doc-2.0` canonical IDs: 129
+- Already explicitly ledgered in this guide before this section: 45
+- Remaining canonical IDs mapped in this section: 84
+
+Result:
+- Canonical coverage now complete in this guide (all 129 SB/C/XF IDs are statused).
+
+### Findings-Dump-Only Canonical IDs (16) Reconciled
+
+These IDs appear in `findings-dump.md` but not in the 2.0 canonical set. They are now explicitly mapped for full findings-dump coverage.
+
+| ID | Status | Reconciliation Note |
+| --- | --- | --- |
+| SB-7 | Verified Open | Alias/renumbering of `#1043` privilege-escalation ship-blocker; tracked in this guide under SB-6 lineage and remains highest-priority open until runtime regression proof is complete. |
+| XF-36 | Resolved (Conditional) | Hiring schema-gap framing superseded by later migration-backed reconciliation in master (employment-app schema fixes). |
+| XF-37 | Partial | Earlier cross-file symptom cluster for hiring/insights drift; reduced by schema fixes but still dependent on runtime/hiring-surface validation. |
+| XF-38 | Partial | API-route + schema mismatch theme narrowed after migration coverage; keep partial until full hiring runtime pass. |
+| XF-39 | Partial | Findings-dump explicitly marks schema layer resolved while noting possible remaining code-layer issues. |
+| XF-40 | Verified Open | Duplicate employment email implementations remain a live architecture issue (`employment-application/route.ts` vs resilient-email path). |
+| XF-41 | Verified Open | Notification queue retry semantics vs attempts-reset behavior remains an open queue-control issue. |
+| XF-42 | Verified Open | NotificationCenter join normalization bug aligns with open relation `[0]` handling issues. |
+| XF-43 | Resolved (Code) | `assignment_notification_log` table concern superseded by migration-backed existence evidence. |
+| XF-44 | Verified Open | `normalizeRelation` reuse/refactor remains open and tied to unresolved relation-shape bugs. |
+| XF-45 | Verified Open | Divergent auth strategy between middleware and API-route auth remains open and security-relevant. |
+| XF-46 | Resolved (Runtime Verified) | `quote_templates` table availability concerns reconciled by runtime artifact promotion for C-44. |
+| XF-47 | Verified Open | Inventory FK join normalization issue remains open in current cross-file framing. |
+| XF-48 | Resolved (Runtime Verified) | Quote-template phantom-table framing reconciled by runtime artifact promotion for C-44/C-66 chain. |
+| XF-49 | Resolved (Code) | Employee assignment maps-link path marked as resolved in findings reconciliation chain. |
+| XF-50 | Verified Open | Duplicate email implementation finding duplicates XF-40 and remains open under that architecture issue. |
+
+### Remaining C-ID Status Mapping (34)
+
+Resolved or superseded from master appendix evidence:
+- `C-14, C-29, C-32, C-33, C-34, C-37, C-43, C-45, C-50, C-51, C-52, C-53, C-55, C-56, C-57, C-59, C-60, C-61, C-62, C-65, C-67, C-68, C-69, C-72`
+
+Partial (master/evidence indicates incomplete closure):
+- `C-22, C-71`
+
+Verified Open (active critical or unresolved in master + current pass context):
+- `C-3, C-4, C-15, C-23, C-35, C-49, C-58, C-73`
+
+### Remaining XF-ID Status Mapping (50)
+
+Resolved or conditionally resolved by migration/artifact path:
+- `XF-25, XF-26, XF-27, XF-52, XF-55, XF-56, XF-64, XF-65`
+
+Partial (depends on related C-item closure or environment verification):
+- `XF-24, XF-28, XF-58, XF-62`
+
+Verified Open (unresolved systemic cross-file items):
+- `XF-1, XF-2, XF-3, XF-4, XF-5, XF-6, XF-7, XF-8, XF-9, XF-10, XF-11, XF-12, XF-13, XF-14, XF-15, XF-16, XF-17, XF-18, XF-19, XF-20, XF-21, XF-22, XF-23, XF-29, XF-30, XF-31, XF-32, XF-33, XF-34, XF-35, XF-51, XF-53, XF-54, XF-57, XF-59, XF-60, XF-61, XF-63`
+
+Validation boundary note:
+- This completes full canonical coverage tracking.
+- Runtime-only closures remain gated by environment artifacts (already called out in the DB/runtime ledger).
+
+Findings-dump boundary note:
+- With the reconciliation table above, findings-dump-only canonical IDs are now explicitly statused in this guide.
+
+## Sub-Findings Validation Coverage (#880-#980)
+
+Declared sub-findings in findings dump:
+- Range: `#880-#980`
+- Total declared: 101
+- Represented in this validation pass: 101
+- Missing sub-findings: 0
+
+Bucket distribution from findings declarations:
+- Critical issues: 12
+- High issues: 24
+- Medium issues: 31
+- Low issues: 2
+- Unlabeled/general issue bucket: 31
+
+Sub-finding status rule used for end-to-end validation:
+1. A sub-finding is considered covered when it is mapped to a parent canonical item and that parent has an explicit status in this guide.
+2. If a sub-finding has no credible superseding evidence, it inherits `Verified Open` from its parent.
+3. If migration/runtime evidence promoted the parent, sub-findings inherit that promoted status.
+4. Runtime-only confirmations remain gated until artifacts are captured.
+
+Audit result:
+- No orphaned declared sub-finding IDs remain in the `#880-#980` set.
+- Numeric sub-findings are now fully included in validation scope via parent-canonical inheritance.
+
+## Partial-Item Closure Conditions
+
+| ID | Current Status | Closure Condition to Promote |
+| --- | --- | --- |
+| SB-4 | Partial | Remove non-production fallback secret path and enforce single required secret source across all runtime environments. |
+| SB-5 | Partial | Add missing required env keys (including QuickBooks set) to validation contract and invoke `validateServerEnvironment()` at startup/runtime entrypoints. |
+| SB-6 | Partial | Apply role-source hardening migration to target DB and capture runtime proof that signup role reads from `raw_app_meta_data` only. |
+| C-10 | Partial | Add direct nav affordances for `dispatch` and `scheduling` modules in sidebar IA and verify route/module parity in admin shell. |
+| C-13 | Partial | Replace exact timestamp equality checks with overlap-window conflict detection in quote-to-job and lead quick-check paths. |
+| C-39 | Partial | Align assignment conflict strategy to availability windows (not exact timestamp) across scheduling and job-create flows. |
+| C-40 | Partial | Promote multi-crew RLS policy fix with runtime cross-crew visibility tests in target environment. |
+| C-41 | Partial | Capture admin runtime write/read proof for `scheduled_date` and `scheduled_time` fields after migration deployment. |
+| C-42 | Partial | Capture runtime proof that `checklist_completed_at` is written and read correctly through completion flow. |
+| C-22 | Partial | Complete unresolved closure path documented in master/evidence appendix and attach file-level + runtime proof before status promotion. |
+| C-71 | Partial | Complete unresolved closure path documented in master/evidence appendix and attach file-level + runtime proof before status promotion. |
+| XF-24 | Partial | Resolve dependent C-item blockers and verify cross-file behavior with post-fix runtime pass. |
+| XF-28 | Partial | Resolve dependent C-item blockers and verify cross-file behavior with post-fix runtime pass. |
+| XF-37 | Partial | Complete hiring/insights runtime validation to confirm remaining drift has been removed. |
+| XF-38 | Partial | Complete hiring API + schema runtime pass and remove residual mismatch evidence. |
+| XF-39 | Partial | Verify code-layer parity for the previously schema-resolved issue and attach runtime proof. |
+| XF-58 | Partial | Resolve linked canonical blockers and validate runtime behavior in affected module chain. |
+| XF-62 | Partial | Resolve linked canonical blockers and validate runtime behavior in affected module chain. |
+
 ## Drift Control
 If transcript claims and code differ:
 1. Mark drift in the implementation lock manifest.
@@ -251,3 +399,11 @@ If transcript claims and code differ:
 - 2026-04-12: Added DB/runtime artifact validated findings ledger (C-40/C-41/C-42/C-44/C-66/#1047).
 - 2026-04-12: Added public conversion/accessibility validated findings ledger (C-1/C-2/C-6).
 - 2026-04-12: Added public content/map validated findings ledger (C-7/C-8/C-9).
+- 2026-04-12: Completed full canonical SB/C/XF coverage mapping for all remaining IDs.
+- 2026-04-12: Added findings-dump-only canonical ID reconciliation (SB-7, XF-36..XF-50).
+- 2026-04-12: Added full sub-findings coverage audit for declared `#880-#980` set.
+- 2026-04-12: Added critical baseline finding that prior transcript resolutions are treated as proposal-level until evidenced in current repo state.
+- 2026-04-12: Added migration deployment gate and explicit blocked-item list for runtime promotion.
+- 2026-04-12: Added findings count hierarchy note (`~1060 -> 166 -> 129 + reconciled remainder`).
+- 2026-04-12: Added Validation Batch 2 placeholder for Session 13 implementation verification.
+- 2026-04-12: Added explicit closure conditions for all items currently marked `Partial`.
