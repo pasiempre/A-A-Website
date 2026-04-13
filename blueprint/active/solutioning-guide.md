@@ -132,9 +132,62 @@ Validation coverage note:
 | C-47 (employee relation normalization) | Verified Open | Employee tickets still reads joined job relation via first-element indexing (`assignment.jobs?.[0]`) rather than normalized relation helper. | `src/components/employee/EmployeeTicketsClient.tsx`.
 | C-64 (notification relation normalization) | Verified Open | Notification center still reads joined relations via first-element indexing (`profiles?.[0]`, `jobs?.[0]`). | `src/components/admin/NotificationCenterClient.tsx`.
 
-Coverage update:
+Coverage update at end of Priority B batch:
 - Validated and explicitly tracked in this guide: 11 items (6 ship blockers + 5 pipeline-critical findings).
 - Remaining condensed findings require the same validation pattern before closure.
+
+## Validated Findings Ledger (Priority C: Admin UX and Routing)
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-10 (module discoverability) | Partial | Sidebar includes `Jobs & Dispatch` but does not expose dedicated direct nav entries for `dispatch` and `scheduling`; these modules still exist in shell routing and require module switch path. | `src/components/admin/AdminSidebarNav.tsx`, `src/components/admin/AdminShell.tsx`. |
+| C-12 (quote review before send) | Verified Open | Lead pipeline action still sends quote directly from `Send Quote` to API without explicit review/confirm step. | `src/components/admin/LeadPipelineClient.tsx` (`createQuote`, `Send Quote` button), `src/app/api/quote-send/route.ts`. |
+| C-13 (overlap-aware availability checks) | Partial | Scheduling module now includes overlap/conflict detection, but quote-create-job and lead quick checks still use exact `jobs.scheduled_start == scheduledStart` matching. | `src/components/admin/SchedulingAndAvailabilityClient.tsx`, `src/components/admin/LeadPipelineClient.tsx`, `src/app/api/quote-create-job/route.ts`. |
+| C-39 (availability matching strategy) | Partial | `employee_availability` table is actively queried in scheduling module, but assignment conflict checks in job-create path remain exact timestamp based. | `src/components/admin/SchedulingAndAvailabilityClient.tsx`, `src/app/api/quote-create-job/route.ts`. |
+| C-25 (mobile kanban stacking) | Verified Open | Lead pipeline uses `xl:grid-cols-5`, which collapses below xl and produces vertical stacking behavior. | `src/components/admin/LeadPipelineClient.tsx`. |
+| C-26 (touch target risk) | Verified Open | Primary action buttons in lead cards remain compact (`px-2 py-1 text-xs`), below ideal mobile touch ergonomics. | `src/components/admin/LeadPipelineClient.tsx`. |
+| C-27 (input sizing / mobile ergonomics) | Verified Open | Lead pipeline editing controls are heavily `text-xs`, indicating continued small-control density for mobile use. | `src/components/admin/LeadPipelineClient.tsx`. |
+
+## Validated Findings Ledger (Priority D: Taxonomy and Consistency)
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-5 / C-17 (service taxonomy consistency) | Verified Open | Service-type values remain distributed across many files (contact constants, public form selects, CTA metadata, admin templates) without a single canonical module. | `src/app/(public)/contact/page.tsx`, `src/components/public/variant-a/QuoteSection.tsx`, `src/components/public/variant-a/useQuoteForm.ts`, `src/components/admin/QuoteTemplateManagerClient.tsx`. |
+| C-18 (lead status visibility parity) | Verified Open | `qualified` exists in type/grouping state but is missing from displayed status columns and status selector options. | `src/components/admin/LeadPipelineClient.tsx` (`statusColumns`, status `<select>` options). |
+| C-20 (client directory surface) | Verified Open | No dedicated admin client directory component/surface found; conversion writes to `clients` but no explicit client listing module is present. | admin client component inventory plus `src/components/admin/LeadPipelineClient.tsx` and `src/app/api/quote-create-job/route.ts`. |
+| C-21 (lead activity log strategy) | Verified Open | Lead notes are appended into a single text blob (`leads.notes`) instead of structured activity records. | `src/app/api/lead-message/route.ts`, `src/components/admin/LeadPipelineClient.tsx`. |
+
+Coverage update:
+- Validated and explicitly tracked in this guide: 22 items (6 ship blockers + 5 pipeline + 7 admin UX/routing + 4 taxonomy/consistency).
+- Remaining condensed findings still require batch validation and statusing.
+
+## Validated Findings Ledger (Data Integrity and Stability)
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-16 (ticket create sequence resilience) | Verified Open | Ticket creation performs multi-step inserts (job, assignment, checklist) without a transactional boundary; partial-failure risk remains. | `src/components/admin/TicketManagementClient.tsx` (`createTicket`). |
+| C-24 (QA rework safety) | Verified Open | `needs_rework` path still resets assignment/checklist progress fields to null/false, indicating destructive rollback behavior. | `src/components/admin/TicketManagementClient.tsx` (`saveQaReview`). |
+| C-28 (mutation error handling) | Verified Open | Lead pipeline mutation flows still execute without local `catch` blocks, so thrown network/runtime errors are not centrally surfaced by those functions. | `src/components/admin/LeadPipelineClient.tsx` (`createQuote`, `updateLeadStatus`, `convertLeadToClient`, `createJobFromQuote`) and search for `catch (` in file. |
+| C-30 (latest quote total null safety) | Verified Open | Quote card render still calls `latestQuote.total.toFixed(2)` directly, leaving null/undefined total as a crash risk. | `src/components/admin/LeadPipelineClient.tsx` quote card render. |
+| C-38 (unknown lead status safety) | Verified Open | Grouping logic still writes via `grouped[lead.status]` without unknown-key guard, which can throw for unrecognized statuses. | `src/components/admin/LeadPipelineClient.tsx` grouping reducer. |
+| C-31 (admin crash containment) | Verified Open | Admin shell renders module content directly without an explicit error boundary wrapper around module surfaces. | `src/components/admin/AdminShell.tsx` (`ModuleContent` render path). |
+
+Coverage update:
+- Validated and explicitly tracked in this guide: 28 items.
+- Remaining condensed findings still require additional batch validation and statusing.
+
+## Validated Findings Ledger (Security and Insights Integrity)
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-63 (employment rate-limit durability) | Verified Open | Employment application route still uses in-memory IP timestamp map, which is not durable/distributed for serverless multi-instance workloads. | `src/app/api/employment-application/route.ts` (`submissionTimestamps`, `isRateLimited`). |
+| C-70 (dispatch run auth mismatch) | Verified Open | Admin notification center calls dispatch endpoint without cron auth header, while endpoint enforces cron authorization. | `src/components/admin/NotificationCenterClient.tsx` (`fetch('/api/notification-dispatch')`), `src/app/api/notification-dispatch/route.ts` (`authorizeCronRequest`). |
+| C-11 / C-19 (dashboard KPI authenticity) | Verified Open | Overview dashboard still displays static Weekly Pulse values for conversion and QA pass metrics. | `src/components/admin/OverviewDashboard.tsx` (`Lead Conversion 28%`, `QA Pass Rate 94%`). |
+| C-54 (revenue trend accuracy) | Verified Open | Unified insights trend currently computes revenue trend against zero previous value, producing skewed/placeholder trend behavior. | `src/components/admin/UnifiedInsightsClient.tsx` (`computeTrend(Number(latestSnapshot?.total_revenue ?? 0), 0)`). |
+
+Coverage update:
+- Validated and explicitly tracked in this guide: 32 items.
+- Continue batch validation until the condensed 166-item set is fully statused.
 
 ## Drift Control
 If transcript claims and code differ:
@@ -150,3 +203,6 @@ If transcript claims and code differ:
 - 2026-04-12: Added automated validation batch-1 evidence and blocker fix summary.
 - 2026-04-12: Added ship-blocker validated findings ledger with evidence-backed statuses.
 - 2026-04-12: Added priority-B pipeline validated findings ledger (C-36/C-46/C-47/C-48/C-64).
+- 2026-04-12: Added priority-C and priority-D validated findings ledgers with evidence-backed statuses.
+- 2026-04-12: Added data-integrity and stability validated findings ledger (C-16/C-24/C-28/C-30/C-31/C-38).
+- 2026-04-12: Added security and insights-integrity validated findings ledger (C-11/C-19/C-54/C-63/C-70).
