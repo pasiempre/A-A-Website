@@ -219,6 +219,18 @@ Coverage update:
 - Validated and explicitly tracked in this guide: 41 unique items.
 - Continue batch validation across remaining condensed findings.
 
+## Validated Findings Ledger (Public Content and Map Rendering)
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-7 (FAQ schema alignment on service pages) | Resolved (Code) | Service pages currently include both FAQ schema (`FAQPage` + `mainEntity`) and visible FAQ UI via hardening component FAQ accordion. | `src/app/(public)/services/*/page.tsx`, `src/components/public/variant-a/ServicePageHardening.tsx`. |
+| C-8 (service-area map geometry) | Verified Open | Service-area map SVG still uses square viewBox (`0 0 100 100`), preserving the original geometry-risk pattern. | `src/app/(public)/service-area/page.tsx`. |
+| C-9 (map color parsing from class string) | Verified Open | Map dot color still derives by parsing Tailwind-like class text (`replace("bg-[", "")`), which is brittle to class-format changes. | `src/app/(public)/service-area/page.tsx`. |
+
+Coverage update:
+- Validated and explicitly tracked in this guide: 44 unique items.
+- Remaining condensed findings still require additional batch passes.
+
 ## Drift Control
 If transcript claims and code differ:
 1. Mark drift in the implementation lock manifest.
@@ -238,3 +250,4 @@ If transcript claims and code differ:
 - 2026-04-12: Added security and insights-integrity validated findings ledger (C-11/C-19/C-54/C-63/C-70).
 - 2026-04-12: Added DB/runtime artifact validated findings ledger (C-40/C-41/C-42/C-44/C-66/#1047).
 - 2026-04-12: Added public conversion/accessibility validated findings ledger (C-1/C-2/C-6).
+- 2026-04-12: Added public content/map validated findings ledger (C-7/C-8/C-9).
