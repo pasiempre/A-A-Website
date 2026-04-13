@@ -189,6 +189,36 @@ Coverage update:
 - Validated and explicitly tracked in this guide: 32 items.
 - Continue batch validation until the condensed 166-item set is fully statused.
 
+## Validated Findings Ledger (DB and Runtime Artifacts)
+
+Source:
+- `blueprint/active/feedback3.0-validation-evidence-2026-04-11.md` (Section 5.1 promotion tracker and artifact notes).
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-44 (`quote_templates`) | Resolved (Runtime Verified) | Table/policy/runtime smoke evidence recorded and promoted. | `feedback3.0-validation-evidence-2026-04-11.md` Section 5.1 + 5.2 + 5.3. |
+| C-66 (`automation_settings`) | Resolved (Runtime Verified) | Table/policy/runtime evidence recorded and promoted. | `feedback3.0-validation-evidence-2026-04-11.md` Section 5.1 + 5.2 + 5.4. |
+| C-41 (`scheduled_date` / `scheduled_time`) | Partial | Column artifacts captured; admin runtime proof still pending. | `feedback3.0-validation-evidence-2026-04-11.md` Section 5.1 + 5.5. |
+| C-42 (`checklist_completed_at`) | Partial | Column artifacts captured; completion write/read runtime proof still pending. | `feedback3.0-validation-evidence-2026-04-11.md` Section 5.1 + 5.5. |
+| C-40 (multi-crew RLS visibility) | Partial | Policy artifacts confirm remaining gap; runtime proof still blocked/pending. | `feedback3.0-validation-evidence-2026-04-11.md` Section 5.1 + 5.2 + 5.6. |
+| #1047 (`attempts` vs `attempt_count`) | Verified Open | Dual-column collision validated; dispatch retry runtime row proof pending. | `feedback3.0-validation-evidence-2026-04-11.md` Section 5.1 + 5.7. |
+
+Coverage update:
+- Validated and explicitly tracked in this guide: 38 unique items.
+- Remaining condensed findings still require continuing batch validation.
+
+## Validated Findings Ledger (Public Conversion and Accessibility)
+
+| ID | Status | Validation Result | Evidence |
+| --- | --- | --- | --- |
+| C-1 (skip-link target correctness) | Verified Open | Root skip link still targets body-level id (`#site-main-content`) instead of page `<main id="main-content">`; only a subset of pages define `main-content`. | `src/app/layout.tsx` and `main-content` occurrences in select service pages. |
+| C-6 (dedup step-2 continuity) | Verified Open | Quote-request dedup branch returns synthetic lead id (`deduped`) without enrichment token continuity for step-2 flow. | `src/app/api/quote-request/route.ts` dedup guard response. |
+| C-2 (conversion event reliability) | Verified Open | Conversion endpoint inserts event without checking insert error and still returns `{ ok: true }`, masking ingestion failures. | `src/app/api/conversion-event/route.ts`. |
+
+Coverage update:
+- Validated and explicitly tracked in this guide: 41 unique items.
+- Continue batch validation across remaining condensed findings.
+
 ## Drift Control
 If transcript claims and code differ:
 1. Mark drift in the implementation lock manifest.
@@ -206,3 +236,5 @@ If transcript claims and code differ:
 - 2026-04-12: Added priority-C and priority-D validated findings ledgers with evidence-backed statuses.
 - 2026-04-12: Added data-integrity and stability validated findings ledger (C-16/C-24/C-28/C-30/C-31/C-38).
 - 2026-04-12: Added security and insights-integrity validated findings ledger (C-11/C-19/C-54/C-63/C-70).
+- 2026-04-12: Added DB/runtime artifact validated findings ledger (C-40/C-41/C-42/C-44/C-66/#1047).
+- 2026-04-12: Added public conversion/accessibility validated findings ledger (C-1/C-2/C-6).
