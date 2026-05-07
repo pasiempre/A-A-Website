@@ -33,6 +33,7 @@ type AssignmentRow = {
         title: string;
         address: string;
         clean_type: string;
+        scheduled_start: string | null;
         scope: string | null;
         areas: string[] | null;
         priority: string;
@@ -43,14 +44,62 @@ type AssignmentRow = {
           | { id: string; message_text: string; created_at: string }[]
           | null;
       }[]
+    | {
+        title: string;
+        address: string;
+        clean_type: string;
+        scheduled_start: string | null;
+        scope: string | null;
+        areas: string[] | null;
+        priority: string;
+        job_checklist_items:
+          | { id: string; item_text: string; is_completed: boolean }[]
+          | null;
+        job_messages:
+          | { id: string; message_text: string; created_at: string }[]
+          | null;
+      }
     | null;
 };
+
+function normalizeRelation<T>(relation: T[] | T | null | undefined): T | null {
+  if (!relation) return null;
+  return Array.isArray(relation) ? relation[0] ?? null : relation;
+}
 
 function isSameLocalDay(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M8 3v4M16 3v4M3 10h18" />
+    </svg>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="M4 7h4l1.5-2h5L16 7h4v11H4z" />
+      <circle cx="12" cy="13" r="3" />
+    </svg>
+  );
+}
+
+function ClipboardIcon() {
+  return (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <rect x="7" y="4" width="10" height="16" rx="2" />
+      <path d="M9 4.5h6" />
+      <path d="M9 10h6M9 14h6" />
+    </svg>
   );
 }
 
@@ -61,10 +110,11 @@ function JobDayTimeline({ assignments, isLoading }: { assignments: AssignmentRow
 
   const now = new Date();
   const todayAssignments = assignments.filter((assignment) => {
-    if (!assignment.scheduled_start) {
+    const job = normalizeRelation(assignment.jobs);
+    if (!job?.scheduled_start) {
       return false;
     }
-    return isSameLocalDay(new Date(assignment.scheduled_start), now);
+    return isSameLocalDay(new Date(job.scheduled_start), now);
   });
 
   const dateLabelRaw = now.toLocaleDateString("es-ES", {
@@ -76,15 +126,15 @@ function JobDayTimeline({ assignments, isLoading }: { assignments: AssignmentRow
 
   return (
     <div className="mb-4 rounded-xl bg-[#0A1628] p-4 text-white shadow-lg">
-      <p className="text-sm font-semibold">📅 Hoy — {dateLabel}</p>
+      <p className="flex items-center gap-2 text-sm font-semibold"><CalendarIcon /> Hoy — {dateLabel}</p>
 
       {todayAssignments.length === 0 ? (
         <p className="mt-2 text-sm text-slate-200">Sin horario programado</p>
       ) : (
         <div className="mt-3 space-y-2.5">
           {todayAssignments.map((assignment) => {
-            const job = assignment.jobs?.[0];
-            const start = assignment.scheduled_start ? new Date(assignment.scheduled_start) : null;
+            const job = normalizeRelation(assignment.jobs);
+            const start = job?.scheduled_start ? new Date(job.scheduled_start) : null;
             const timeLabel = start
               ? start.toLocaleTimeString("es-ES", { hour: "numeric", minute: "2-digit" })
               : "Sin hora";
@@ -251,7 +301,7 @@ export function EmployeeTicketsClient() {
     const { data, error } = await supabase
       .from("job_assignments")
       .select(
-        "id, job_id, employee_id, role, status, scheduled_start, jobs(title, address, clean_type, scope, areas, priority, job_checklist_items(id, item_text, is_completed), job_messages(id, message_text, created_at))",
+        "id, job_id, employee_id, role, status, scheduled_start, jobs(title, address, clean_type, scheduled_start, scope, areas, priority, job_checklist_items(id, item_text, is_completed), job_messages(id, message_text, created_at))",
       )
       .eq("employee_id", user.id)
       .order("scheduled_start", { ascending: true, nullsFirst: false });
@@ -333,7 +383,11 @@ export function EmployeeTicketsClient() {
     await refreshPendingCount();
   };
 
-  const updateAssignmentStatus = async (assignmentId: string, nextStatus: string) => {
+  const updateAssignmentStatus = async (
+    assignmentId: string,
+    jobId: string,
+    nextStatus: string,
+  ) => {
     setFormError(null);
     setStatusText(null);
 
@@ -349,6 +403,29 @@ export function EmployeeTicketsClient() {
       setFormError(error.message);
       return;
     }
+
+    if (nextStatus === "complete" || nextStatus === "completed") {
+      const response = await fetch("/api/completion-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          jobId,
+          autoTriggered: false,
+        }),
+      });
+
+      if (!response.ok && response.status !== 409) {
+        const payload = await response.json().catch(() => null);
+        const apiError =
+          payload && typeof payload.error === "string"
+            ? payload.error
+            : "Completion report could not be generated.";
+        setFormError(apiError);
+      }
+    }
+
     setStatusText("Estado actualizado.");
     await loadAssignments();
   };
@@ -558,7 +635,7 @@ export function EmployeeTicketsClient() {
                 className="relative inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-amber-200 bg-amber-50 px-3 text-sm font-medium text-amber-800 hover:bg-amber-100"
                 aria-label={`${pendingUploadCount} fotos pendientes`}
               >
-                📸
+                <CameraIcon />
                 <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-[20px] items-center justify-center rounded-full bg-amber-600 px-1 text-[10px] font-bold text-white">
                   {pendingUploadCount}
                 </span>
@@ -591,7 +668,7 @@ export function EmployeeTicketsClient() {
 
         <div className="divide-y divide-slate-100">
           {assignments.map((assignment) => {
-            const job = assignment.jobs?.[0] ?? null;
+            const job = normalizeRelation(assignment.jobs);
             const checklistItems = job?.job_checklist_items ?? [];
             const completedItems = checklistItems.filter((i) => i.is_completed).length;
             const messages = job?.job_messages ?? [];
@@ -615,7 +692,9 @@ export function EmployeeTicketsClient() {
                 onToggleExpand={() =>
                   setExpandedCard((prev) => (prev === assignment.id ? null : assignment.id))
                 }
-                onStatusChange={(next) => void updateAssignmentStatus(assignment.id, next)}
+                onStatusChange={(next) =>
+                  void updateAssignmentStatus(assignment.id, assignment.job_id, next)
+                }
               >
                 <EmployeeChecklistView
                   items={checklistItems}
@@ -669,7 +748,7 @@ export function EmployeeTicketsClient() {
 
           {!isLoading && assignments.length === 0 && (
             <div className="px-4 py-10 text-center">
-              <p className="text-2xl">📋</p>
+              <p className="flex justify-center text-slate-400"><ClipboardIcon /></p>
               <p className="mt-2 text-sm text-slate-500">No hay trabajos asignados.</p>
             </div>
           )}

@@ -132,7 +132,7 @@ Outcome:
 - Remaining work is issue-by-issue validation and closure against the condensed 166-item set.
 
 ## Validation Batch 2 (Session 13 Solutioning Readiness)
-Status: Pending execution after implementation approval.
+Status: Executed (implementation batch + verification complete).
 
 Planned checks:
 - `npx eslint . --max-warnings=0`
@@ -140,6 +140,28 @@ Planned checks:
 - `npx next build --webpack`
 - `npm run preflight:f07`
 - `npm run smoke:f07`
+
+Execution result:
+- `npx eslint` on touched files -> pass
+- `npx tsc --noEmit` -> pass
+- `npx next build --webpack` -> pass (known third-party opentelemetry warnings only)
+- `npm run preflight:f07` -> pass
+- `npm run smoke:f07` -> pass (8 passed, 0 failed)
+
+Implemented scope in this batch:
+- SB-1 phone constant corrected to production number in `src/lib/company.ts`.
+- Pipeline/relation fixes in lead + quote-to-job + employee/notification modules (`C-36`, `C-46`, `C-47`, `C-48`, `C-64`).
+- Admin UX and safety updates for discoverability/confirmation/conflict handling (`C-10`, `C-12`, `C-13`, `C-39`, `C-25/C-26/C-27`, `C-24`).
+- Data-integrity hardening in lead pipeline mutation/error/null/guard paths (`C-28`, `C-30`, `C-38`).
+- Dispatch auth-path alignment for admin-triggered runs (`C-70`).
+- Admin module crash containment via module-level error boundary (`C-31`).
+- Conversion-event write reliability hardening (insert-error surfaced instead of unconditional success response) (`C-2`).
+- Enrichment secret handling hardened to required-server-env only (`SB-4`).
+- Startup environment validation now includes QuickBooks keys and runtime invocation (`SB-5`).
+- Ticket creation now routes through an atomic DB RPC/procedure boundary for job+assignment+checklist creation (`C-16`).
+- Quote flow now includes dedicated review step before send confirmation (`C-12`).
+- Dedup continuity now replays lead id + enrichment token for rapid re-submissions to preserve step-2 enrichment path (`C-6`).
+- Availability conflict checks now include `employee_availability` unavailability windows in lead and quote-job assignment paths (`C-39`).
 
 Promotion rule:
 - Any item moved from `Verified Open`/`Partial` to `Resolved (Code)` or `Resolved (Runtime Verified)` in this phase must include direct before/after evidence and runtime artifact references where applicable.
@@ -149,12 +171,12 @@ Status key: `Verified Open` | `Partial` | `Resolved (Code)` | `Resolved (Runtime
 
 | ID | Status | Validation Result | Evidence |
 | --- | --- | --- | --- |
-| SB-1 (fictional phone) | Verified Open | Placeholder number is still the canonical public number and propagates to call CTAs. | `src/lib/company.ts` (`(512) 555-0199`) and imports across public pages/components. |
+| SB-1 (fictional phone) | Resolved (Code) | Canonical company phone constants were updated to live number and E164 pair. | `src/lib/company.ts` (`(512) 825-2212`, `+15128252212`) and consuming imports across public surfaces. |
 | SB-2 (testimonial authenticity) | Verified Open | Testimonial quotes and identities are hardcoded in code with no attached provenance artifact in repo. | `src/components/public/variant-a/TestimonialSection.tsx`. |
-| SB-3 (years consistency) | Verified Open | Years claims are inconsistent across surfaces (`6+` vs `15+`). | `src/components/public/variant-a/AboutSection.tsx` (`6+`), `src/components/public/variant-a/AuthorityBar.tsx` (`15+`), `src/lib/company.ts` (`15+`). | --- my mom has been in the cleaning business over 15 years so we can stilck to tha
-| SB-4 (enrichment secret fallback chain) | Partial | Secret is now required in server env and production path hard-fails if missing; dev fallback string still exists for non-production. | `src/lib/env.ts` (`ENRICHMENT_TOKEN_SECRET` required), `src/app/api/quote-request/route.ts` (`getEnrichmentTokenSecret`). |
-| SB-5 (env validation coverage) | Partial | Core required keys are validated; QuickBooks keys are not present in env validation set, and startup call-site wiring for `validateServerEnvironment()` is not found yet. | `src/lib/env.ts` plus repo-wide search for `validateServerEnvironment(` usage (no runtime invocation found). |
-| SB-6 (signup role escalation) | Partial | Fix migration exists and uses `raw_app_meta_data`; baseline migration still shows old `raw_user_meta_data` role source. Runtime DB promotion still required. | `supabase/migrations/0024_fix_handle_new_user_role_source.sql` and `supabase/migrations/0018_core_schema_bootstrap.sql`. |
+| SB-3 (years consistency) | Resolved (Code) | About-section years proof point now uses canonical company stats value aligned with authority bar/company constants. | `src/components/public/variant-a/AboutSection.tsx`, `src/components/public/variant-a/AuthorityBar.tsx`, `src/lib/company.ts`. |
+| SB-4 (enrichment secret fallback chain) | Resolved (Code) | Enrichment token secret now enforces required server env with no non-production fallback secret path. | `src/app/api/quote-request/route.ts` (`requireServerEnv("ENRICHMENT_TOKEN_SECRET")`), `src/lib/env.ts`. |
+| SB-5 (env validation coverage) | Resolved (Code) | Required env validation now includes QuickBooks key set and is wired at middleware startup path. | `src/lib/env.ts` (`SERVER_REQUIRED_KEYS`), `middleware.ts` (`validateServerEnvironment()`). |
+| SB-6 (signup role escalation) | Partial | Role source now uses `raw_app_meta_data` in both baseline and fix migrations; runtime DB promotion + exploit regression evidence still required. | `supabase/migrations/0018_core_schema_bootstrap.sql` and `supabase/migrations/0024_fix_handle_new_user_role_source.sql`. |
 
 Validation coverage note:
 - Ship-blocker ledger is now evidence-backed.
@@ -164,11 +186,11 @@ Validation coverage note:
 
 | ID | Status | Validation Result | Evidence |
 | --- | --- | --- | --- |
-| C-48 (quote->job lead relation) | Verified Open | Route still treats FK relation as array (`quote.leads?.[0]`), which is not safe for PostgREST many-to-one object shape. | `src/app/api/quote-create-job/route.ts`.
-| C-36 (latest quote selection) | Verified Open | Lead pipeline still takes first quote entry (`lead.quotes?.[0]`) without explicit descending sort safeguard. | `src/components/admin/LeadPipelineClient.tsx`.
-| C-46 (scheduled field source) | Verified Open | Employee tickets query reads `scheduled_start` from `job_assignments` select/order path. | `src/components/employee/EmployeeTicketsClient.tsx` query select + order.
-| C-47 (employee relation normalization) | Verified Open | Employee tickets still reads joined job relation via first-element indexing (`assignment.jobs?.[0]`) rather than normalized relation helper. | `src/components/employee/EmployeeTicketsClient.tsx`.
-| C-64 (notification relation normalization) | Verified Open | Notification center still reads joined relations via first-element indexing (`profiles?.[0]`, `jobs?.[0]`). | `src/components/admin/NotificationCenterClient.tsx`.
+| C-48 (quote->job lead relation) | Resolved (Code) | Quote-create-job now normalizes lead relation shape instead of assuming array-first relation access. | `src/app/api/quote-create-job/route.ts` (`normalizeRelation`).
+| C-36 (latest quote selection) | Resolved (Code) | Lead quotes are normalized with explicit `created_at` descending sort before render/select behavior. | `src/components/admin/LeadPipelineClient.tsx` (`normalizedLeads` quote sort).
+| C-46 (scheduled field source) | Resolved (Code) | Employee timeline now reads `scheduled_start` from joined job relation, not assignment-local timestamp field. | `src/components/employee/EmployeeTicketsClient.tsx` (jobs select includes `scheduled_start`, timeline uses job field).
+| C-47 (employee relation normalization) | Resolved (Code) | Employee tickets now uses relation normalization helper instead of direct `[0]` indexing. | `src/components/employee/EmployeeTicketsClient.tsx` (`normalizeRelation`).
+| C-64 (notification relation normalization) | Resolved (Code) | Notification center now normalizes joined `profiles`/`jobs` relations before access. | `src/components/admin/NotificationCenterClient.tsx` (`normalizeRelation`).
 
 Coverage update at end of Priority B batch:
 - Validated and explicitly tracked in this guide: 11 items (6 ship blockers + 5 pipeline-critical findings).
@@ -178,20 +200,20 @@ Coverage update at end of Priority B batch:
 
 | ID | Status | Validation Result | Evidence |
 | --- | --- | --- | --- |
-| C-10 (module discoverability) | Partial | Sidebar includes `Jobs & Dispatch` but does not expose dedicated direct nav entries for `dispatch` and `scheduling`; these modules still exist in shell routing and require module switch path. | `src/components/admin/AdminSidebarNav.tsx`, `src/components/admin/AdminShell.tsx`. |
-| C-12 (quote review before send) | Verified Open | Lead pipeline action still sends quote directly from `Send Quote` to API without explicit review/confirm step. | `src/components/admin/LeadPipelineClient.tsx` (`createQuote`, `Send Quote` button), `src/app/api/quote-send/route.ts`. |
-| C-13 (overlap-aware availability checks) | Partial | Scheduling module now includes overlap/conflict detection, but quote-create-job and lead quick checks still use exact `jobs.scheduled_start == scheduledStart` matching. | `src/components/admin/SchedulingAndAvailabilityClient.tsx`, `src/components/admin/LeadPipelineClient.tsx`, `src/app/api/quote-create-job/route.ts`. |
-| C-39 (availability matching strategy) | Partial | `employee_availability` table is actively queried in scheduling module, but assignment conflict checks in job-create path remain exact timestamp based. | `src/components/admin/SchedulingAndAvailabilityClient.tsx`, `src/app/api/quote-create-job/route.ts`. |
-| C-25 (mobile kanban stacking) | Verified Open | Lead pipeline uses `xl:grid-cols-5`, which collapses below xl and produces vertical stacking behavior. | `src/components/admin/LeadPipelineClient.tsx`. |
-| C-26 (touch target risk) | Verified Open | Primary action buttons in lead cards remain compact (`px-2 py-1 text-xs`), below ideal mobile touch ergonomics. | `src/components/admin/LeadPipelineClient.tsx`. |
-| C-27 (input sizing / mobile ergonomics) | Verified Open | Lead pipeline editing controls are heavily `text-xs`, indicating continued small-control density for mobile use. | `src/components/admin/LeadPipelineClient.tsx`. |
+| C-10 (module discoverability) | Resolved (Code) | Sidebar now exposes direct entries for `dispatch` and `scheduling` modules in daily workflow nav. | `src/components/admin/AdminSidebarNav.tsx`, `src/components/admin/AdminShell.tsx`. |
+| C-12 (quote review before send) | Resolved (Code) | Quote send flow now uses dedicated review state with editable preview and explicit `Confirm & Send` action. | `src/components/admin/LeadPipelineClient.tsx` (`reviewQuoteLeadId` review panel). |
+| C-13 (overlap-aware availability checks) | Resolved (Code) | Quote/job availability checks now use overlap-window matching (`±90m`) rather than exact timestamp equality. | `src/components/admin/LeadPipelineClient.tsx`, `src/app/api/quote-create-job/route.ts`. |
+| C-39 (availability matching strategy) | Resolved (Code) | Assignment conflict checks now apply overlap windows and employee availability blocks (`unavailable` + `limited`) in both lead-side availability and quote-create-job API gating before job creation. | `src/components/admin/LeadPipelineClient.tsx`, `src/app/api/quote-create-job/route.ts`, `src/components/admin/SchedulingAndAvailabilityClient.tsx`. |
+| C-25 (mobile kanban stacking) | Resolved (Code) | Lead board now uses mobile status-tab mode (single active column) to avoid full-column vertical stack overload on small screens. | `src/components/admin/LeadPipelineClient.tsx` (mobile status tabs + conditional column rendering). |
+| C-26 (touch target risk) | Resolved (Code) | Lead actions now consistently use larger touch-friendly controls (`text-sm`, increased padding) across workflow controls. | `src/components/admin/LeadPipelineClient.tsx`. |
+| C-27 (input sizing / mobile ergonomics) | Resolved (Code) | Lead quote/job form controls were uplifted from `text-xs` to `text-sm` with larger vertical spacing to reduce mobile input strain. | `src/components/admin/LeadPipelineClient.tsx`. |
 
 ## Validated Findings Ledger (Priority D: Taxonomy and Consistency)
 
 | ID | Status | Validation Result | Evidence |
 | --- | --- | --- | --- |
 | C-5 / C-17 (service taxonomy consistency) | Verified Open | Service-type values remain distributed across many files (contact constants, public form selects, CTA metadata, admin templates) without a single canonical module. | `src/app/(public)/contact/page.tsx`, `src/components/public/variant-a/QuoteSection.tsx`, `src/components/public/variant-a/useQuoteForm.ts`, `src/components/admin/QuoteTemplateManagerClient.tsx`. |
-| C-18 (lead status visibility parity) | Verified Open | `qualified` exists in type/grouping state but is missing from displayed status columns and status selector options. | `src/components/admin/LeadPipelineClient.tsx` (`statusColumns`, status `<select>` options). |
+| C-18 (lead status visibility parity) | Resolved (Code) | `qualified` is now present in displayed pipeline columns and status select options. | `src/components/admin/LeadPipelineClient.tsx` (`statusColumns`, status `<select>` options). |
 | C-20 (client directory surface) | Verified Open | No dedicated admin client directory component/surface found; conversion writes to `clients` but no explicit client listing module is present. | admin client component inventory plus `src/components/admin/LeadPipelineClient.tsx` and `src/app/api/quote-create-job/route.ts`. |
 | C-21 (lead activity log strategy) | Verified Open | Lead notes are appended into a single text blob (`leads.notes`) instead of structured activity records. | `src/app/api/lead-message/route.ts`, `src/components/admin/LeadPipelineClient.tsx`. |
 
@@ -203,12 +225,12 @@ Coverage update:
 
 | ID | Status | Validation Result | Evidence |
 | --- | --- | --- | --- |
-| C-16 (ticket create sequence resilience) | Verified Open | Ticket creation performs multi-step inserts (job, assignment, checklist) without a transactional boundary; partial-failure risk remains. | `src/components/admin/TicketManagementClient.tsx` (`createTicket`). |
-| C-24 (QA rework safety) | Verified Open | `needs_rework` path still resets assignment/checklist progress fields to null/false, indicating destructive rollback behavior. | `src/components/admin/TicketManagementClient.tsx` (`saveQaReview`). |
-| C-28 (mutation error handling) | Verified Open | Lead pipeline mutation flows still execute without local `catch` blocks, so thrown network/runtime errors are not centrally surfaced by those functions. | `src/components/admin/LeadPipelineClient.tsx` (`createQuote`, `updateLeadStatus`, `convertLeadToClient`, `createJobFromQuote`) and search for `catch (` in file. |
-| C-30 (latest quote total null safety) | Verified Open | Quote card render still calls `latestQuote.total.toFixed(2)` directly, leaving null/undefined total as a crash risk. | `src/components/admin/LeadPipelineClient.tsx` quote card render. |
-| C-38 (unknown lead status safety) | Verified Open | Grouping logic still writes via `grouped[lead.status]` without unknown-key guard, which can throw for unrecognized statuses. | `src/components/admin/LeadPipelineClient.tsx` grouping reducer. |
-| C-31 (admin crash containment) | Verified Open | Admin shell renders module content directly without an explicit error boundary wrapper around module surfaces. | `src/components/admin/AdminShell.tsx` (`ModuleContent` render path). |
+| C-16 (ticket create sequence resilience) | Resolved (Code) | Ticket creation now executes through a single DB RPC transaction boundary (`admin_create_ticket_atomic`) for job+assignment+checklist writes; API path no longer relies on staged manual rollback. | `src/app/api/ticket-create/route.ts`, `supabase/migrations/0026_ticket_create_atomic.sql`, `src/components/admin/TicketManagementClient.tsx` (`/api/ticket-create`). |
+| C-24 (QA rework safety) | Resolved (Code) | Rework path now preserves assignment/checklist progress (non-destructive), while still routing job back to in-progress with explicit confirmation. | `src/components/admin/TicketManagementClient.tsx` (`saveQaReview`). |
+| C-28 (mutation error handling) | Resolved (Code) | Lead pipeline mutation paths now include local `catch` handling for surfaced runtime/network failures. | `src/components/admin/LeadPipelineClient.tsx` (`createQuote`, `updateLeadStatus`, `convertLeadToClient`, `createJobFromQuote`). |
+| C-30 (latest quote total null safety) | Resolved (Code) | Quote total render now safely normalizes nullable values before formatting. | `src/components/admin/LeadPipelineClient.tsx` (`Number(latestQuote.total ?? 0).toFixed(2)`). |
+| C-38 (unknown lead status safety) | Resolved (Code) | Lead grouping now guards unknown statuses and routes unmatched values to fallback bucket. | `src/components/admin/LeadPipelineClient.tsx` grouped reducer guard. |
+| C-31 (admin crash containment) | Resolved (Code) | Admin module render path is now wrapped by a local error boundary with retry path, containing module-level crashes. | `src/components/admin/AdminModuleErrorBoundary.tsx`, `src/components/admin/AdminShell.tsx`. |
 
 Coverage update:
 - Validated and explicitly tracked in this guide: 28 items.
@@ -218,10 +240,11 @@ Coverage update:
 
 | ID | Status | Validation Result | Evidence |
 | --- | --- | --- | --- |
-| C-63 (employment rate-limit durability) | Verified Open | Employment application route still uses in-memory IP timestamp map, which is not durable/distributed for serverless multi-instance workloads. | `src/app/api/employment-application/route.ts` (`submissionTimestamps`, `isRateLimited`). |
-| C-70 (dispatch run auth mismatch) | Verified Open | Admin notification center calls dispatch endpoint without cron auth header, while endpoint enforces cron authorization. | `src/components/admin/NotificationCenterClient.tsx` (`fetch('/api/notification-dispatch')`), `src/app/api/notification-dispatch/route.ts` (`authorizeCronRequest`). |
-| C-11 / C-19 (dashboard KPI authenticity) | Verified Open | Overview dashboard still displays static Weekly Pulse values for conversion and QA pass metrics. | `src/components/admin/OverviewDashboard.tsx` (`Lead Conversion 28%`, `QA Pass Rate 94%`). |
-| C-54 (revenue trend accuracy) | Verified Open | Unified insights trend currently computes revenue trend against zero previous value, producing skewed/placeholder trend behavior. | `src/components/admin/UnifiedInsightsClient.tsx` (`computeTrend(Number(latestSnapshot?.total_revenue ?? 0), 0)`). |
+| C-63 (employment rate-limit durability) | Resolved (Code) | Employment application route now uses shared distributed rate-limit utility with strict tier and response headers, replacing in-memory IP timestamp map behavior. | `src/app/api/employment-application/route.ts`, `src/lib/rate-limit.ts`. |
+| C-73 (completion report write path) | Resolved (Code) | Completion report POST now supports employee-authenticated writes with assignment ownership checks and restricted employee permissions; employee status-complete flow now triggers report generation without direct DB table writes from client. | `src/app/api/completion-report/route.ts`, `src/components/employee/EmployeeTicketsClient.tsx`. |
+| C-70 (dispatch run auth mismatch) | Resolved (Code) | Dispatch endpoint now authorizes either cron header or authenticated admin session, matching admin UI trigger path. | `src/app/api/notification-dispatch/route.ts` (`authorizeCronRequest` + `authorizeAdmin` path), `src/components/admin/NotificationCenterClient.tsx`. |
+| C-11 / C-19 (dashboard KPI authenticity) | Resolved (Code) | Overview Weekly Pulse now renders computed values from 7-day lead and QA datasets rather than static placeholders. | `src/components/admin/OverviewDashboard.tsx` (`weeklyLeadConversion`, `weeklyQaPassRate`). |
+| C-54 (revenue trend accuracy) | Resolved (Code) | Revenue trend now compares latest snapshot revenue against the previous snapshot value instead of a hardcoded zero baseline. | `src/components/admin/UnifiedInsightsClient.tsx` (`previousSnapshotRevenue`, `computeTrend(..., previousSnapshotRevenue)`). |
 
 Coverage update:
 - Validated and explicitly tracked in this guide: 32 items.
@@ -249,9 +272,9 @@ Coverage update:
 
 | ID | Status | Validation Result | Evidence |
 | --- | --- | --- | --- |
-| C-1 (skip-link target correctness) | Verified Open | Root skip link still targets body-level id (`#site-main-content`) instead of page `<main id="main-content">`; only a subset of pages define `main-content`. | `src/app/layout.tsx` and `main-content` occurrences in select service pages. |
-| C-6 (dedup step-2 continuity) | Verified Open | Quote-request dedup branch returns synthetic lead id (`deduped`) without enrichment token continuity for step-2 flow. | `src/app/api/quote-request/route.ts` dedup guard response. |
-| C-2 (conversion event reliability) | Verified Open | Conversion endpoint inserts event without checking insert error and still returns `{ ok: true }`, masking ingestion failures. | `src/app/api/conversion-event/route.ts`. |
+| C-1 (skip-link target correctness) | Resolved (Code) | Root skip link now targets stable global content wrapper id available on all pages. | `src/app/layout.tsx` (`href="#main-content"`, `<div id="main-content">`). |
+| C-6 (dedup step-2 continuity) | Resolved (Code) | Dedup path now returns concrete lead id and enrichment token (from cache or DB fallback) instead of synthetic `deduped`, preserving step-2 continuity. | `src/app/api/quote-request/route.ts` dedup replay + `rememberSubmission`/token issue path. |
+| C-2 (conversion event reliability) | Resolved (Code) | Conversion endpoint now validates JSON parse and returns 500 on insert failure instead of always returning success. | `src/app/api/conversion-event/route.ts`. |
 
 Coverage update:
 - Validated and explicitly tracked in this guide: 41 unique items.
@@ -311,7 +334,7 @@ Partial (master/evidence indicates incomplete closure):
 - `C-22, C-71`
 
 Verified Open (active critical or unresolved in master + current pass context):
-- `C-3, C-4, C-15, C-23, C-35, C-49, C-58, C-73`
+- `C-3, C-4, C-15, C-23, C-35, C-58`
 
 ### Remaining XF-ID Status Mapping (50)
 
@@ -360,12 +383,7 @@ Audit result:
 
 | ID | Current Status | Closure Condition to Promote |
 | --- | --- | --- |
-| SB-4 | Partial | Remove non-production fallback secret path and enforce single required secret source across all runtime environments. |
-| SB-5 | Partial | Add missing required env keys (including QuickBooks set) to validation contract and invoke `validateServerEnvironment()` at startup/runtime entrypoints. |
 | SB-6 | Partial | Apply role-source hardening migration to target DB and capture runtime proof that signup role reads from `raw_app_meta_data` only. |
-| C-10 | Partial | Add direct nav affordances for `dispatch` and `scheduling` modules in sidebar IA and verify route/module parity in admin shell. |
-| C-13 | Partial | Replace exact timestamp equality checks with overlap-window conflict detection in quote-to-job and lead quick-check paths. |
-| C-39 | Partial | Align assignment conflict strategy to availability windows (not exact timestamp) across scheduling and job-create flows. |
 | C-40 | Partial | Promote multi-crew RLS policy fix with runtime cross-crew visibility tests in target environment. |
 | C-41 | Partial | Capture admin runtime write/read proof for `scheduled_date` and `scheduled_time` fields after migration deployment. |
 | C-42 | Partial | Capture runtime proof that `checklist_completed_at` is written and read correctly through completion flow. |
@@ -407,3 +425,13 @@ If transcript claims and code differ:
 - 2026-04-12: Added findings count hierarchy note (`~1060 -> 166 -> 129 + reconciled remainder`).
 - 2026-04-12: Added Validation Batch 2 placeholder for Session 13 implementation verification.
 - 2026-04-12: Added explicit closure conditions for all items currently marked `Partial`.
+- 2026-04-12: Executed Validation Batch 2 implementation pass and promoted multiple C/SB items to `Resolved (Code)` with fresh evidence references.
+- 2026-04-12: Added quick-win runtime hardening in Batch 2 for C-2 and C-31.
+- 2026-04-12: Extended Batch 2 promotions for SB-3 and C-1 plus env/ticket/review-flow hardening updates.
+- 2026-04-12: Extended implementation pass for C-6 continuity and stronger C-39 availability-policy alignment.
+- 2026-04-12: Promoted C-24 to non-destructive rework-safe implementation.
+- 2026-04-12: Promoted C-25/C-26/C-27 and C-39 after mobile lead-board and availability-policy parity updates; corrected duplicate migration numbering (`0025_jobs_title_compatibility.sql`).
+- 2026-04-12: Promoted C-16 to `Resolved (Code)` by moving ticket creation to atomic DB RPC (`0026_ticket_create_atomic.sql`) and updated SB-6 evidence note after baseline migration role-source hardening in `0018_core_schema_bootstrap.sql`.
+- 2026-04-12: Promoted C-11/C-19 and C-54 to `Resolved (Code)` by replacing static Weekly Pulse values with computed 7-day metrics and fixing revenue trend baseline to compare against previous snapshot; also corrected Unified Insights notifications table usage (`notification_dispatch_queue`) addressing C-49 pathing.
+- 2026-04-13: Added runtime schema-compatibility hardening across admin loaders (removed brittle `jobs` relation selects to `issue_reports`, `job_messages`, `clients`; decoupled lead->quote relation loading; added overview scheduling fallbacks) and created end-to-end admin/employee test guide at `blueprint/active/admin-employee-e2e-test-guide.md`.
+- 2026-04-13: Promoted C-63 and C-73 to `Resolved (Code)` by replacing in-memory employment rate limiting with shared distributed limiter integration and enabling guarded employee completion-report generation via API ownership checks + employee portal status-complete trigger.

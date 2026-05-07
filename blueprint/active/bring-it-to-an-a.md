@@ -88,6 +88,16 @@ Defer unless explicit business trigger exists (high effort or strategic capabili
 4. Promote only artifact-backed items to `Resolved (Runtime Verified)`.
 5. Re-prioritize deferred net-new capability items by business ROI.
 
+### Execution Baseline Snapshot (2026-04-12)
+- Program progress: ~92% complete overall, with validation complete and execution work remaining.
+- Deferred by owner decision: SB-2 testimonial replacement stays placeholder until real testimonials are provided.
+- Recently closed in code: C-16 now uses an atomic DB transaction boundary via `admin_create_ticket_atomic`; baseline SB-6 migration role source was hardened to `raw_app_meta_data`.
+- Remaining high-priority technical closures before A-grade promotion:
+  - SB-6 runtime exploit-regression proof in target DB
+  - C-40 runtime multi-crew RLS validation with seeded identities/data
+  - #1047 runtime retry-path proof and naming-collision closure (`attempts` vs `attempt_count`)
+  - C-11/C-19/C-54 dashboard metric authenticity cleanup
+
 ---
 
 ## Table of Contents
@@ -5649,4 +5659,61 @@ To get from current B- to A/A+, you don't need all 682 hours. Here's the efficie
 |---|---|---|---|
 | **Phase 1** | Finish 10-session fixes + Tier 1 from this pass | 24 | **B+** — functional, honest, user gets feedback |
 | **Phase 2** | Security (first pass) +
+
+---
+
+## Runtime Findings Addendum (2026-04-13)
+
+Context:
+- Local admin smoke run surfaced multiple runtime failures across admin modules (`tickets`, `insights`, `operations`, `inventory`, `notifications`, `configuration`, `scheduling`).
+- These findings are now explicitly tracked here as pre-upgrade stabilization requirements.
+
+### New Required Deliverable (Add To Program Scope)
+
+Create a full end-to-end test guide for admin and employee functions before continuing broad upgrade rollout.
+
+Guide location:
+- `blueprint/active/admin-employee-e2e-test-guide.md`
+
+Required guide content:
+1. Environment and seed prerequisites (auth users, profiles, jobs, leads, quotes, supplies, requests, issue reports).
+2. Module-by-module smoke scripts for admin and employee portals.
+3. API route validation checklist for all admin actions.
+4. PostgREST relationship verification checklist (joins used by each UI module).
+5. RLS/auth expectation matrix by role (anon, employee, admin, service role).
+6. Known-failure triage flow (400/401/404 classification, where to inspect, and expected remediation path).
+7. Evidence capture template (screenshot + network trace + DB query output + pass/fail).
+
+### Findings Captured From Runtime Logs and Screenshots
+
+1. Relationship failures (HTTP 400, schema-cache relation missing):
+- `jobs` -> `issue_reports`
+- `jobs` -> `job_messages`
+- `jobs` -> `clients` (`client_id` join in insights)
+- multiple `jobs` and `job_assignments` join queries returning 400 in admin modules
+
+2. Missing table failures (HTTP 404):
+- `public.supplies`
+- `public.supply_requests`
+- `public.issue_reports`
+- `public.quickbooks_invoice_cache`
+- `public.quotes`
+
+3. Auth/session failures:
+- `Auth session missing!` shown in multiple admin modules
+- `Unauthorized.` state in notifications/preferences
+- `/api/post-job-settings` returning 401
+
+4. UI-level impact observed:
+- Inventory module blocked by missing `supplies` table
+- Operations module blocked by missing `jobs` relationship to `job_messages`
+- Tickets module blocked by missing `jobs` relationship to `issue_reports`
+- Unified Insights loaded with warnings and degraded metrics due failed source queries
+
+5. Non-product noise to ignore in triage:
+- Browser extension message: `Could not establish connection. Receiving end does not exist.`
+
+### Execution Note
+
+Before implementing additional A-roadmap upgrades, stabilize schema parity and relation mapping in the target Supabase environment, then run the new admin/employee test guide end-to-end and attach artifacts.
 

@@ -42,12 +42,51 @@ interface DashboardData {
     completedYesterday: number;
     unclaimedLeads: number;
     yesterdayValue: number;
+    weeklyLeadConversion: number;
+    weeklyQaPassRate: number;
   };
   leadAlerts: LeadAlertItem[];
   qaPending: QAPendingItem[];
   todaySchedule: ScheduleItem[];
   waitingQuotes: WaitingQuoteItem[];
   loading: boolean;
+}
+
+function DashboardSparkIcon() {
+  return (
+    <svg className="h-5 w-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.2 2.2M16.9 16.9l2.2 2.2M4.9 19.1l2.2-2.2M16.9 7.1l2.2-2.2" />
+    </svg>
+  );
+}
+
+function QuickToolIcon({ kind }: { kind: "job" | "quote" | "inventory" }) {
+  if (kind === "job") {
+    return (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <rect x="7" y="4" width="10" height="16" rx="2" />
+        <path d="M9 4.5h6" />
+        <path d="M9 10h6M9 14h6" />
+      </svg>
+    );
+  }
+
+  if (kind === "quote") {
+    return (
+      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <path d="M5 12h14" />
+        <path d="m12 5 7 7-7 7" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" />
+      <path d="m4 7.5 8 4.5 8-4.5" />
+    </svg>
+  );
 }
 
 /**
@@ -61,6 +100,8 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
       completedYesterday: 0,
       unclaimedLeads: 0,
       yesterdayValue: 0,
+      weeklyLeadConversion: 0,
+      weeklyQaPassRate: 0,
     },
     leadAlerts: [],
     qaPending: [],
@@ -80,6 +121,9 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
       
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
+
+      const weekStart = new Date(today);
+      weekStart.setDate(weekStart.getDate() - 7);
       
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
@@ -91,7 +135,8 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
         qaPendingResult,
         todayScheduleResult,
         waitingQuotesResult,
-        yesterdayQuotesResult,
+        weeklyLeadsResult,
+        weeklyQaJobsResult,
       ] = await Promise.all([
         // 1. Unclaimed Leads
         supabase
@@ -135,18 +180,68 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
         // 6. Waiting on quote responses
         supabase
           .from("leads")
-          .select("id, name, company_name, updated_at")
+          .select("id, name, updated_at")
           .eq("status", "quoted")
           .order("updated_at", { ascending: true })
           .limit(10),
 
-        // 7. Yesterday's quote value (proxy for wins value)
+        // 7. Weekly lead conversion basis
         supabase
-          .from("quotes")
-          .select("total, created_at")
-          .gte("created_at", yesterday.toISOString())
-          .lt("created_at", today.toISOString()),
+          .from("leads")
+          .select("id, status")
+          .gte("created_at", weekStart.toISOString()),
+
+        // 8. Weekly QA pass-rate basis
+        supabase
+          .from("jobs")
+          .select("id, qa_status")
+          .gte("created_at", weekStart.toISOString()),
       ]);
+
+      let activeJobs = jobsTodayResult.count || 0;
+      if (jobsTodayResult.error) {
+        const { count } = await supabase
+          .from("jobs")
+          .select("id", { count: "exact", head: true })
+          .gte("scheduled_start", today.toISOString())
+          .lt("scheduled_start", tomorrow.toISOString());
+        activeJobs = count || 0;
+      }
+
+      let scheduleRows = (todayScheduleResult.data || []) as Array<{
+        id: string;
+        title: string;
+        address: string;
+        clean_type: string;
+        scheduled_date: string | null;
+        scheduled_time: string | null;
+      }>;
+      if (todayScheduleResult.error) {
+        const fallbackSchedule = await supabase
+          .from("jobs")
+          .select("id, title, address, clean_type, scheduled_start")
+          .gte("scheduled_start", today.toISOString())
+          .lt("scheduled_start", tomorrow.toISOString())
+          .order("scheduled_start", { ascending: true });
+
+        scheduleRows = ((fallbackSchedule.data || []) as Array<{
+          id: string;
+          title: string;
+          address: string;
+          clean_type: string;
+          scheduled_start: string | null;
+        }>).map((job) => {
+          const parsed = job.scheduled_start ? new Date(job.scheduled_start) : null;
+          return {
+            id: job.id,
+            title: job.title,
+            address: job.address,
+            clean_type: job.clean_type,
+            scheduled_date: parsed ? parsed.toISOString().slice(0, 10) : null,
+            scheduled_time: parsed ? parsed.toISOString().slice(11, 16) : null,
+          };
+        });
+      }
 
       const leadAlerts = ((leadsResult.data || []) as Array<{ id: string; name: string; phone: string | null; created_at: string }>)
         .filter((lead) => new Date(lead.created_at) < oneHourAgo)
@@ -162,7 +257,7 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
         jobId: assignment.job_id,
       }));
 
-      const todaySchedule = ((todayScheduleResult.data || []) as Array<{
+      const todaySchedule = (scheduleRows as Array<{
         id: string;
         title: string;
         address: string;
@@ -181,24 +276,37 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
       const waitingQuotes = ((waitingQuotesResult.data || []) as Array<{
         id: string;
         name: string;
-        company_name: string | null;
         updated_at: string;
       }>).map((lead) => ({
         id: lead.id,
         name: lead.name,
-        companyName: lead.company_name,
+        companyName: null,
         updatedAt: lead.updated_at,
       }));
 
-      const yesterdayValue = ((yesterdayQuotesResult.data || []) as Array<{ total: number | string | null }>)
-        .reduce((sum, row) => sum + Number(row.total || 0), 0);
+      const yesterdayValue = 0;
+
+      const weeklyLeads = ((weeklyLeadsResult.data || []) as Array<{ status: string }>);
+      const weeklyWonLeads = weeklyLeads.filter((lead) => lead.status === "won").length;
+      const weeklyLeadConversion = weeklyLeads.length
+        ? Math.round((weeklyWonLeads / weeklyLeads.length) * 100)
+        : 0;
+
+      const weeklyQaJobs = ((weeklyQaJobsResult.data || []) as Array<{ qa_status: string | null }>);
+      const weeklyQaEligible = weeklyQaJobs.filter((job) => ["approved", "flagged", "needs_rework"].includes(job.qa_status ?? "")).length;
+      const weeklyQaApproved = weeklyQaJobs.filter((job) => job.qa_status === "approved").length;
+      const weeklyQaPassRate = weeklyQaEligible
+        ? Math.round((weeklyQaApproved / weeklyQaEligible) * 100)
+        : 0;
 
       setData({
         stats: {
-          activeJobs: jobsTodayResult.count || 0,
+          activeJobs,
           completedYesterday: jobsYesterdayResult.count || 0,
           unclaimedLeads: (leadsResult.data || []).length,
           yesterdayValue,
+          weeklyLeadConversion,
+          weeklyQaPassRate,
         },
         leadAlerts,
         qaPending,
@@ -230,7 +338,10 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
   return (
     <div className="space-y-8">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 className="text-xl font-semibold text-slate-900">☀️ {greeting} — Here&apos;s Your Day</h2>
+        <h2 className="flex items-center gap-2 text-xl font-semibold text-slate-900">
+          <DashboardSparkIcon />
+          {greeting} — Here&apos;s Your Day
+        </h2>
         <p className="mt-2 text-sm text-slate-600">No action items — great job today! appears automatically when a section is clear.</p>
       </section>
 
@@ -361,7 +472,7 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
                 onClick={() => onModuleSelect("tickets")}
                 className="flex items-center gap-3 rounded-lg bg-white/5 p-3 transition hover:bg-white/10"
               >
-                <span className="text-xl">📋</span>
+                <span className="text-slate-200"><QuickToolIcon kind="job" /></span>
                 <div className="text-left">
                   <p className="text-sm font-medium">Create Job</p>
                   <p className="text-[10px] text-slate-400">Add to weekly schedule</p>
@@ -371,7 +482,7 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
                 onClick={() => onModuleSelect("leads")}
                 className="flex items-center gap-3 rounded-lg bg-white/5 p-3 transition hover:bg-white/10"
               >
-                <span className="text-xl">🎯</span>
+                <span className="text-slate-200"><QuickToolIcon kind="quote" /></span>
                 <div className="text-left">
                   <p className="text-sm font-medium">New Quote</p>
                   <p className="text-[10px] text-slate-400">Convert a lead manually</p>
@@ -381,7 +492,7 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
                 onClick={() => onModuleSelect("inventory")}
                 className="flex items-center gap-3 rounded-lg bg-white/5 p-3 transition hover:bg-white/10"
               >
-                <span className="text-xl">📦</span>
+                <span className="text-slate-200"><QuickToolIcon kind="inventory" /></span>
                 <div className="text-left">
                   <p className="text-sm font-medium">Stock Count</p>
                   <p className="text-[10px] text-slate-400">Update supply levels</p>
@@ -396,11 +507,11 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
                {/* Simplified pulse metrics */}
                <div className="flex items-center justify-between">
                  <span className="text-sm text-slate-600">Lead Conversion</span>
-                 <span className="text-sm font-semibold">28%</span>
+                 <span className="text-sm font-semibold">{data.stats.weeklyLeadConversion}%</span>
                </div>
                <div className="flex items-center justify-between">
                  <span className="text-sm text-slate-600">QA Pass Rate</span>
-                 <span className="text-sm font-semibold text-emerald-600">94%</span>
+                 <span className="text-sm font-semibold text-emerald-600">{data.stats.weeklyQaPassRate}%</span>
                </div>
             </div>
             <button

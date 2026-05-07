@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { isDevPreviewEnabled } from "@/lib/env";
+import { isDevPreviewEnabled, validateServerEnvironment } from "@/lib/env";
 import { evaluateAuth } from "@/lib/middleware/auth";
 import { type RequestLog, logRequest } from "@/lib/middleware/logging";
 import { applySecurityHeaders } from "@/lib/middleware/security-headers";
@@ -9,6 +9,9 @@ import {
   rateLimitResponse,
   setRateLimitHeaders,
 } from "@/lib/rate-limit";
+
+// Startup env check: surfaces missing server configuration in runtime logs early.
+void validateServerEnvironment();
 
 // ============================================================
 // Helpers

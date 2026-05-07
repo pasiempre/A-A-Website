@@ -16,6 +16,80 @@ type QuoteCreateJobBody = {
   employeeId?: string;
 };
 
+function normalizeRelation<T>(relation: T[] | T | null | undefined): T | null {
+  if (!relation) return null;
+  return Array.isArray(relation) ? relation[0] ?? null : relation;
+}
+
+function getAvailabilityWindow(scheduledStart: string): { startIso: string; endIso: string } | null {
+  const parsed = new Date(scheduledStart);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  const ninetyMinutes = 90 * 60 * 1000;
+  return {
+    startIso: new Date(parsed.getTime() - ninetyMinutes).toISOString(),
+    endIso: new Date(parsed.getTime() + ninetyMinutes).toISOString(),
+  };
+}
+
+async function hasScheduleConflict(options: {
+  supabase: ReturnType<typeof createAdminClient>;
+  employeeId: string;
+  scheduledStart: string;
+}): Promise<{ conflict: boolean; reason?: string; status?: number; error?: string }> {
+  const availabilityWindow = getAvailabilityWindow(options.scheduledStart);
+  if (!availabilityWindow) {
+    return { conflict: true, reason: "Invalid scheduled start value.", status: 400 };
+  }
+
+  const { data: conflictAssignment, error: conflictError } = await options.supabase
+    .from("job_assignments")
+    .select("id, jobs!inner(id, title, scheduled_start, status)")
+    .eq("employee_id", options.employeeId)
+    .gte("jobs.scheduled_start", availabilityWindow.startIso)
+    .lte("jobs.scheduled_start", availabilityWindow.endIso)
+    .in("jobs.status", ["scheduled", "in_progress"])
+    .maybeSingle();
+
+  if (conflictError) {
+    return { conflict: true, error: conflictError.message, status: 500 };
+  }
+
+  if (conflictAssignment) {
+    return {
+      conflict: true,
+      reason: "Selected crew member is already assigned at that time. Choose another start time or crew member.",
+      status: 409,
+    };
+  }
+
+  const { data: unavailableBlock, error: availabilityError } = await options.supabase
+    .from("employee_availability")
+    .select("id")
+    .eq("employee_id", options.employeeId)
+    .in("status", ["unavailable", "limited"])
+    .lt("starts_at", availabilityWindow.endIso)
+    .gt("ends_at", availabilityWindow.startIso)
+    .limit(1)
+    .maybeSingle();
+
+  if (availabilityError) {
+    return { conflict: true, error: availabilityError.message, status: 500 };
+  }
+
+  if (unavailableBlock) {
+    return {
+      conflict: true,
+      reason: "Selected crew member is unavailable during that time window.",
+      status: 409,
+    };
+  }
+
+  return { conflict: false };
+}
+
 export async function POST(request: Request) {
   const auth = await authorizeAdmin();
   if (!auth.ok) {
@@ -73,7 +147,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: quoteError?.message ?? "Quote not found." }, { status: 404 });
     }
 
-    const lead = quote.leads?.[0];
+    const lead = normalizeRelation(quote.leads);
     if (!lead) {
       return NextResponse.json({ error: "Lead details are required to create the job." }, { status: 400 });
     }
@@ -104,6 +178,22 @@ export async function POST(request: Request) {
       body.title?.trim() ||
       `${lead.company_name || lead.name} ${lead.service_type ? `- ${lead.service_type}` : "- Cleaning Job"}`;
     const scheduledStart = body.scheduledStart?.trim() || null;
+    const employeeId = body.employeeId?.trim() || null;
+
+    if (employeeId && scheduledStart) {
+      const conflictResult = await hasScheduleConflict({
+        supabase,
+        employeeId,
+        scheduledStart,
+      });
+
+      if (conflictResult.conflict) {
+        if (conflictResult.error) {
+          return NextResponse.json({ error: conflictResult.error }, { status: conflictResult.status ?? 500 });
+        }
+        return NextResponse.json({ error: conflictResult.reason }, { status: conflictResult.status ?? 409 });
+      }
+    }
 
     const { data: createdJob, error: jobError } = await supabase
       .from("jobs")
@@ -127,35 +217,12 @@ export async function POST(request: Request) {
     }
 
     let assignmentId: string | null = null;
-    if (body.employeeId?.trim()) {
-      if (scheduledStart) {
-        const { data: conflictAssignment, error: conflictError } = await supabase
-          .from("job_assignments")
-          .select("id, jobs!inner(id, title, scheduled_start, status)")
-          .eq("employee_id", body.employeeId.trim())
-          .eq("jobs.scheduled_start", scheduledStart)
-          .in("jobs.status", ["scheduled", "in_progress"])
-          .maybeSingle();
-
-        if (conflictError) {
-          return NextResponse.json({ error: conflictError.message }, { status: 500 });
-        }
-
-        if (conflictAssignment) {
-          return NextResponse.json(
-            {
-              error: "Selected crew member is already assigned at that time. Choose another start time or crew member.",
-            },
-            { status: 409 },
-          );
-        }
-      }
-
+    if (employeeId) {
       const { data: assignment, error: assignmentError } = await supabase
         .from("job_assignments")
         .insert({
           job_id: createdJob.id,
-          employee_id: body.employeeId.trim(),
+          employee_id: employeeId,
           assigned_by: auth.userId,
           role: "lead",
           status: "assigned",

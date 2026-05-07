@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { announceStatus } from "@/lib/status-announcer";
 import { createClient } from "@/lib/supabase/client";
 
 type ApplicationRow = {
@@ -416,7 +417,9 @@ export function HiringInboxClient() {
 
       const appName =
         applications.find((app) => app.id === appId)?.full_name ?? "Application";
-      setStatusText(`${appName} → ${STATUS_CONFIG[newStatus].label}`);
+      const successMessage = `${appName} → ${STATUS_CONFIG[newStatus].label}`;
+      setStatusText(successMessage);
+      announceStatus(successMessage);
 
       void loadStatusCounts();
     } catch (error) {
@@ -464,6 +467,7 @@ export function HiringInboxClient() {
         ),
       );
       setStatusText("Notes saved.");
+      announceStatus("Notes saved.");
     } catch (error) {
       setErrorText(
         error instanceof Error ? error.message : "Failed to save notes.",
@@ -741,7 +745,7 @@ export function HiringInboxClient() {
               Admin Notes
             </label>
             <textarea
-              className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="mt-1.5 w-full rounded-md border border-slate-300 px-3 py-2.5 text-base"
               rows={3}
               placeholder="Internal notes about this applicant..."
               value={adminNotesDraft[app.id] ?? ""}
@@ -754,7 +758,7 @@ export function HiringInboxClient() {
             />
             <button
               type="button"
-              className="mt-2 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              className="mt-2 min-h-[44px] rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
               disabled={isSaving}
               onClick={() => void saveAdminNotes(app.id)}
             >
@@ -776,7 +780,7 @@ export function HiringInboxClient() {
                       key={nextStatus}
                       type="button"
                       disabled={isSaving}
-                      className={`rounded-md border px-3 py-1.5 text-xs font-medium transition disabled:opacity-60 ${
+                      className={`min-h-[44px] rounded-md border px-3 py-2 text-sm font-medium transition disabled:opacity-60 ${
                         isDestructive
                           ? "border-red-200 bg-red-50 text-red-700 hover:bg-red-100"
                           : nextStatus === "hired"
@@ -839,7 +843,7 @@ export function HiringInboxClient() {
           </div>
           <button
             type="button"
-            className="text-sm font-medium text-slate-700 underline"
+            className="min-h-[44px] rounded-md px-3 text-sm font-medium text-slate-700 underline"
             onClick={() => void loadApplications()}
           >
             Refresh
@@ -865,7 +869,7 @@ export function HiringInboxClient() {
             placeholder="Search by name, email, phone, or city..."
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
-            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm placeholder:text-slate-400"
+            className="w-full rounded-md border border-slate-300 px-3 py-2.5 text-base placeholder:text-slate-400"
           />
         </div>
 
@@ -879,7 +883,7 @@ export function HiringInboxClient() {
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveFilter(tab.key)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                className={`min-h-[44px] rounded-full px-3 py-2 text-sm font-medium transition ${
                   isActive
                     ? "bg-slate-900 text-white"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"

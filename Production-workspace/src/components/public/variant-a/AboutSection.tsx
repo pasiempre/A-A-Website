@@ -1,11 +1,13 @@
 import Image from "next/image";
 
+import { COMPANY_STATS } from "@/lib/company";
+
 import { QuoteCTA } from "./QuoteCTA";
 import { ScrollReveal } from "./ScrollReveal";
 
 const PROOF_POINTS = [
-  { value: "500+", label: "Projects delivered" },
-  { value: "6+", label: "Years in Austin" },
+  { value: COMPANY_STATS.projectsDelivered, label: "Projects delivered" },
+  { value: COMPANY_STATS.yearsExperience, label: "Years in Austin" },
   { value: "24hr", label: "Turnaround capability" },
 ];
 

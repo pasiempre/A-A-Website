@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { announceStatus } from "@/lib/status-announcer";
 import { createClient } from "@/lib/supabase/client";
 import { normalizeNotificationPreferences, type NotificationPreferences } from "@/lib/notifications";
 
@@ -22,9 +23,14 @@ type AssignmentNotificationRow = {
   notification_status: string;
   notification_error: string | null;
   notified_at: string | null;
-  profiles: { full_name: string | null }[] | null;
-  jobs: { title: string; address: string }[] | null;
+  profiles: { full_name: string | null }[] | { full_name: string | null } | null;
+  jobs: { title: string; address: string }[] | { title: string; address: string } | null;
 };
+
+function normalizeRelation<T>(relation: T[] | T | null | undefined): T | null {
+  if (!relation) return null;
+  return Array.isArray(relation) ? relation[0] ?? null : relation;
+}
 
 export function NotificationCenterClient() {
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -105,6 +111,7 @@ export function NotificationCenterClient() {
       }
 
       setStatusText("Notification preferences saved.");
+      announceStatus("Notification preferences saved.");
       await loadData();
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : "Unable to save preferences.");
@@ -132,6 +139,7 @@ export function NotificationCenterClient() {
     }
 
     setStatusText("Notification re-queued.");
+    announceStatus("Notification re-queued.");
     await loadData();
   };
 
@@ -152,6 +160,7 @@ export function NotificationCenterClient() {
     }
 
     setStatusText("Assignment notification re-sent.");
+    announceStatus("Assignment notification re-sent.");
     await loadData();
   };
 
@@ -170,7 +179,9 @@ export function NotificationCenterClient() {
         throw new Error(payload?.error ?? "Dispatch request failed.");
       }
 
-      setStatusText(`Dispatch complete. Processed ${payload.queuedCount ?? 0}, sent ${payload.sent ?? 0}, failed ${payload.failed ?? 0}.`);
+      const successMessage = `Dispatch complete. Processed ${payload.queuedCount ?? 0}, sent ${payload.sent ?? 0}, failed ${payload.failed ?? 0}.`;
+      setStatusText(successMessage);
+      announceStatus(successMessage);
       await loadData();
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : "Unable to run dispatch.");
@@ -195,7 +206,7 @@ export function NotificationCenterClient() {
             <label className="block text-sm text-slate-700">
               Timezone
               <input
-                className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                className="mt-1 w-full rounded border border-slate-300 px-3 py-2.5 text-base"
                 value={preferences.timezone}
                 onChange={(event) => setPreferences((prev) => (prev ? { ...prev, timezone: event.target.value } : prev))}
               />
@@ -206,7 +217,7 @@ export function NotificationCenterClient() {
                 Quiet hours start
                 <input
                   type="time"
-                  className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                  className="mt-1 w-full rounded border border-slate-300 px-3 py-2.5 text-base"
                   value={preferences.quiet_hours_start}
                   onChange={(event) =>
                     setPreferences((prev) => (prev ? { ...prev, quiet_hours_start: event.target.value } : prev))
@@ -217,7 +228,7 @@ export function NotificationCenterClient() {
                 Quiet hours end
                 <input
                   type="time"
-                  className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                  className="mt-1 w-full rounded border border-slate-300 px-3 py-2.5 text-base"
                   value={preferences.quiet_hours_end}
                   onChange={(event) =>
                     setPreferences((prev) => (prev ? { ...prev, quiet_hours_end: event.target.value } : prev))
@@ -230,7 +241,7 @@ export function NotificationCenterClient() {
               Summary time
               <input
                 type="time"
-                className="mt-1 w-full rounded border border-slate-300 px-3 py-2"
+                className="mt-1 w-full rounded border border-slate-300 px-3 py-2.5 text-base"
                 value={preferences.notification_summary_time}
                 onChange={(event) =>
                   setPreferences((prev) => (prev ? { ...prev, notification_summary_time: event.target.value } : prev))
@@ -269,7 +280,7 @@ export function NotificationCenterClient() {
               type="button"
               disabled={isSaving}
               onClick={() => void savePreferences()}
-              className="rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
+              className="min-h-[44px] rounded bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
             >
               {isSaving ? "Saving..." : "Save Preferences"}
             </button>
@@ -284,14 +295,14 @@ export function NotificationCenterClient() {
             <p className="mt-1 text-sm text-slate-600">Queued, sent, and failed dispatch visibility with retry actions.</p>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={() => void loadData()} className="text-sm font-medium text-slate-700 underline">
+            <button type="button" onClick={() => void loadData()} className="min-h-[44px] rounded-md px-3 text-sm font-medium text-slate-700 underline">
               Refresh
             </button>
             <button
               type="button"
               disabled={isDispatching}
               onClick={() => void runDispatch()}
-              className="rounded bg-slate-900 px-3 py-2 text-xs font-medium text-white disabled:opacity-60"
+              className="min-h-[44px] rounded bg-slate-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-60"
             >
               {isDispatching ? "Dispatching..." : "Run Dispatch"}
             </button>
@@ -320,7 +331,7 @@ export function NotificationCenterClient() {
                     <button
                       type="button"
                       onClick={() => void retryQueueRow(row.id)}
-                      className="mt-3 rounded border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700"
+                      className="mt-3 min-h-[44px] rounded border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
                     >
                       Retry
                     </button>
@@ -335,9 +346,11 @@ export function NotificationCenterClient() {
             <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-slate-500">Assignment SMS</h3>
             <div className="mt-3 space-y-3">
               {assignments.map((assignment) => {
-                const employeeName = assignment.profiles?.[0]?.full_name || "Employee";
-                const jobTitle = assignment.jobs?.[0]?.title || "Job";
-                const jobAddress = assignment.jobs?.[0]?.address || "";
+                const profile = normalizeRelation(assignment.profiles);
+                const job = normalizeRelation(assignment.jobs);
+                const employeeName = profile?.full_name || "Employee";
+                const jobTitle = job?.title || "Job";
+                const jobAddress = job?.address || "";
 
                 return (
                   <div key={assignment.id} className="rounded border border-slate-200 bg-slate-50 p-3">
@@ -354,7 +367,7 @@ export function NotificationCenterClient() {
                       <button
                         type="button"
                         onClick={() => void retryAssignment(assignment.id)}
-                        className="mt-3 rounded border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700"
+                        className="mt-3 min-h-[44px] rounded border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
                       >
                         Retry Assignment SMS
                       </button>

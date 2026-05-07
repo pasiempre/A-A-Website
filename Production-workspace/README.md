@@ -1,106 +1,210 @@
-# A&A Cleaning Platform (Next.js Workspace)
+# A&A Cleaning Platform (Production Workspace)
 
-This is the new implementation workspace for the A&A Cleaning platform using Next.js App Router + TypeScript + Tailwind.
+Next.js App Router workspace powering:
 
-## Stack
-- Next.js 16 (App Router)
-- TypeScript
+- Public website (Variant A componentized)
+- Admin dashboard (leads → quotes → jobs, ops/quality/notifications/inventory)
+- Employee portal (tickets + assignments, Spanish-first)
+- API routes for lead capture, quote delivery/acceptance, post-job automation, notifications, and QuickBooks sync
+
+This folder is the “real app” (see `Production-workspace/src`). Other top-level folders in the repo include legacy HTML variants and planning/blueprint docs.
+
+## Tech stack
+
+- Next.js 16 (App Router) + Turbopack dev server
+- React 19 + TypeScript
 - Tailwind CSS
-- ESLint
+- Supabase (Postgres + Auth)
+- Sentry (optional)
+- Upstash Redis rate limiting (optional; degraded allow-all if unset)
 
-## Run
-1. Install dependencies:
-   npm install
-2. Start dev server:
-   npm run dev
-3. Build production:
-   npm run build
-4. Start production server:
-   npm run start
+## Docs / maps (recommended reading)
 
-## Environment
-Copy `.env.example` to `.env.local` and fill in keys for Supabase, Twilio, Resend, and QuickBooks.
+- `CODEBASE-MAP.md` — comprehensive route/component map
+- `CRITICAL CHECKS BEFORE DEPLOYMENT.md` — deployment-critical validation checklist
+- `docs/post-job-automation-acceptance-runbook.md` — F-07 end-to-end acceptance runbook + evidence requirements
+- `docs/sprint-0-1-plan.md` — foundation/MVP delivery plan
 
-## Sprint 1 Foundation Added
-- Supabase client wiring in `src/lib/supabase`
-- Auth route guards via `middleware.ts` for `/admin` and `/employee`
-- Admin login route: `/auth/admin`
-- Employee OTP route: `/auth/employee`
-- Camera spike route: `/camera-spike`
-- MVP schema migration: `supabase/migrations/0001_mvp_core.sql`
-- Lead pipeline + quote workflow migration: `supabase/migrations/0004_lead_pipeline_and_quotes.sql`
-- Phase 2 quality + messaging migration: `supabase/migrations/0005_phase2_quality_and_messaging.sql`
-- Notification preferences + queue migration: `supabase/migrations/0006_notification_preferences_and_queue.sql`
-- Phase 4/5 foundations migration: `supabase/migrations/0007_phase4_phase5_foundations.sql`
-- Quote delivery + hiring migration: `supabase/migrations/0008_quote_delivery_and_hiring.sql`
-- Lead intake API with Twilio admin alerts: `/api/quote-request`
-- Lead follow-up reminder endpoint (1h/4h uncalled): `/api/lead-followup`
-- Queued notification dispatch endpoint: `/api/notification-dispatch`
-- QuickBooks sync scaffold endpoint: `/api/quickbooks-sync`
-- AI quote assistant endpoint: `/api/ai-assistant`
-- Quote send / accept / create-job endpoints: `/api/quote-send`, `/api/quote-response`, `/api/quote-create-job`
-- Employment application endpoint: `/api/employment-application`
+## Quick start (local)
 
-## Apply Database Migration
-1. Open Supabase SQL editor for your project.
-2. Run `supabase/migrations/0001_mvp_core.sql`.
-3. Run `supabase/migrations/0002_ticketing_enhancements.sql`.
-4. Run `supabase/migrations/0003_ops_and_conversion.sql`.
-5. Run `supabase/migrations/0004_lead_pipeline_and_quotes.sql`.
-6. Run `supabase/migrations/0005_phase2_quality_and_messaging.sql`.
-7. Run `supabase/migrations/0006_notification_preferences_and_queue.sql`.
-8. Run `supabase/migrations/0007_phase4_phase5_foundations.sql`.
-9. Run `supabase/migrations/0008_quote_delivery_and_hiring.sql`.
-10. Create users in Supabase Auth and set profile roles (`admin` / `employee`) in `public.profiles`.
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-## Supabase + Twilio Linking Checklist
-1. Copy `.env.example` to `.env.local`.
-2. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` from your Supabase project.
-3. Set Twilio variables (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`) and `ADMIN_ALERT_PHONE`.
-4. Start app with `npm run dev` and submit a quote from `/` to verify lead insert + admin SMS alert.
-5. (Optional) Protect follow-up endpoint with `CRON_SECRET`, then configure cron to `POST /api/lead-followup` every 15 minutes.
-6. (Optional) Configure cron to `POST /api/notification-dispatch` every 10-15 minutes to flush queued quiet-hours notifications.
-7. (Optional) Configure `ANTHROPIC_API_KEY` to switch AI assistant responses from fallback mode to Claude-backed replies.
+Then:
 
-## Phase 4/5 Modules Added
-- Unified insights dashboard (operations, quality, financials, inventory) in admin.
-- Scheduling & availability module with reassignment history logging.
-- Inventory module with stock alerts and supply request review actions.
-- QuickBooks sync endpoint with safe simulation fallback when QB credentials are not connected.
-- Public AI quote assistant widget with bilingual mode and persistent chat sessions.
-- Notification center with preference editing, queue visibility, and assignment SMS retry.
-- Public about, services, careers, and quote-response routes.
-- Employment application intake with admin hiring inbox.
+- Public: `http://localhost:3000/`
+- Admin login: `http://localhost:3000/auth/admin`
+- Employee login: `http://localhost:3000/auth/employee`
 
-## First-Run Onboarding (Admin)
-- First admin session now includes a setup wizard on `/admin` when there are no clients/jobs.
-- Wizard steps: create first client, create sample job, assign to self or crew member.
-- The sample job title defaults to `Sample — Delete or edit me` so Areli can edit or remove it after setup.
+### Useful scripts
 
-## Sprint 0/1 Checklist
-- [ ] Confirm blocking dependencies from master spec
-- [ ] Complete camera/photo spike on real crew Android devices
-- [ ] Build public Variant A sections as React components
-- [ ] Wire quote form to leads + SMS notifications
-- [ ] Build admin lead pipeline + quote workflow
-- [ ] Build employee portal status + photo upload flow
-- [ ] Add smoke tests for critical MVP paths
+- `npm run dev` — start dev server (Turbopack)
+- `npm run build` / `npm run start` — production build + server
+- `npm run lint` — ESLint
+- `npm run analyze` — build with bundle analyzer (`ANALYZE=true`)
+- `npm run preflight:f07` — preflight for post-job automation (F-07)
+- `npm run smoke:f07` — focused smoke tests for F-07 foundations
 
-## Route Groups
-- `src/app/(public)`
-- `src/app/(admin)`
-- `src/app/(employee)`
+## Environment variables
 
-## Dev Preview Mode (No Supabase/Auth Required)
-To preview `/admin` and `/employee` layout shells without configuring Supabase yet:
-
-1. Set `NEXT_PUBLIC_DEV_PREVIEW_MODE=true` in `.env.local`
-2. Run `npm run dev`
-3. Visit `/admin` and `/employee`
+Start by copying `.env.example` to `.env.local`.
 
 Notes:
-- Preview mode is guarded to non-production environments only.
-- This mode shows module layout and structure only (no live data, no auth, no writes).
 
-## Notes
-This workspace is intentionally scaffolded for Phase 1 MVP delivery and componentization of Variant A.
+- The server performs startup validation (see `src/lib/env.ts`). Missing variables will be logged early.
+- Some integrations are optional and have safe fallbacks (e.g., QuickBooks sync runs in simulated mode until configured).
+
+### Required (core app)
+
+Supabase:
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` (server-side admin client)
+
+Lead enrichment token signing (required for `/api/quote-request` step2):
+
+- `ENRICHMENT_TOKEN_SECRET`
+
+Cron / internal endpoints (fail-closed if missing):
+
+- `CRON_SECRET`
+
+Notifications (SMS + email):
+
+- `TWILIO_ACCOUNT_SID`
+- `TWILIO_AUTH_TOKEN`
+- `TWILIO_FROM_NUMBER`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
+
+App URLs:
+
+- `NEXT_PUBLIC_APP_URL` (defaults to `http://localhost:3000`)
+
+### Optional (feature / production hardening)
+
+- `ADMIN_ALERT_PHONE` — default admin phone for lead alerts (recommended)
+- `ADMIN_NOTIFICATION_EMAIL` — admin inbox for employment application email notifications
+- `GOOGLE_REVIEW_URL` — used by post-job review invite automation
+- `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` — distributed rate limiting (recommended in production)
+- `ANTHROPIC_API_KEY` — enables Anthropic-backed AI assistant (otherwise uses a rules-based fallback)
+- `SENTRY_DSN` or `NEXT_PUBLIC_SENTRY_DSN` — enable Sentry (server/client)
+- `NEXT_PUBLIC_SITE_URL` — used for SEO/canonical URL generation in some places
+
+QuickBooks Online (optional; enabled when configured):
+
+- `QUICKBOOKS_CLIENT_ID`
+- `QUICKBOOKS_CLIENT_SECRET`
+- `QUICKBOOKS_REDIRECT_URI`
+- `QUICKBOOKS_ENCRYPTION_KEY`
+- `QUICKBOOKS_ENVIRONMENT` (default `sandbox`)
+
+### Development-only
+
+- `NEXT_PUBLIC_DEV_PREVIEW_MODE=true` — bypasses *all* auth guards for `/admin` + `/employee` routes.
+  - Only takes effect when `NODE_ENV != production`.
+  - Must never be enabled in production.
+
+## Database (Supabase) and migrations
+
+SQL migrations live in `supabase/migrations/`.
+
+Typical workflow:
+
+1. Create / select the Supabase project.
+2. Apply any migrations your project is missing via the Supabase SQL editor.
+
+Notes:
+
+- The migration set includes a schema bootstrap (`0018_core_schema_bootstrap.sql`) intended to reconcile environments that are missing foundational tables.
+- Several migrations are written to be idempotent (`IF NOT EXISTS`) so they can be re-run safely, but you should still apply changes in numeric order when possible.
+
+### Roles / auth model (important)
+
+There are two places “role” matters:
+
+- **Route middleware** (`middleware.ts`) gates `/admin` and `/employee` using Supabase Auth `raw_app_meta_data.role`.
+- **Admin-protected API routes** use `public.profiles.role` (queried via `src/lib/auth.ts`).
+
+The signup trigger `handle_new_user()` writes `profiles.role` from `raw_app_meta_data.role` (see migration `0024_fix_handle_new_user_role_source.sql`).
+
+Practical implication:
+
+- To grant admin access, set a user’s **Auth app metadata** role to `admin` (not user metadata), and ensure `public.profiles.role` is `admin`.
+
+## Routes (high-level)
+
+Route groups:
+
+- `src/app/(public)` — public site + service pages + quote response pages
+- `src/app/(admin)` — admin dashboard
+- `src/app/(employee)` — employee portal
+- `src/app/(auth)` — login flows
+
+Useful pages:
+
+- `/camera-spike` — internal camera/testing page
+- `/quote/[token]` — quote response landing (accept/reject)
+
+## API surface (selected)
+
+Lead + quote pipeline:
+
+- `POST /api/quote-request` — lead intake (dedup + multi-step enrichment token)
+- `POST /api/quote-send` — send quote
+- `POST /api/quote-response` — accept/reject quote
+- `POST /api/quote-create-job` — convert quote → job
+
+Notifications + follow-up (cron/internal):
+
+- `POST|GET /api/lead-followup` — sends 1h/4h/24h “uncalled lead” alerts (requires `Authorization: Bearer <CRON_SECRET>`)
+- `POST /api/notification-dispatch` — flush queued SMS with dedup + retry (supports cron + admin auth)
+
+Post-job automation (F-07):
+
+- `POST /api/post-job-sequence` — starts post-job sequence (admin)
+- `POST /api/post-job-scheduler` — processes due steps (cron-protected)
+- `POST /api/post-job-rating` — Twilio inbound rating webhook
+- `GET|PATCH /api/post-job-settings` — admin automation settings
+
+QuickBooks:
+
+- `GET /api/quickbooks-callback` — OAuth callback
+- `GET|POST /api/quickbooks-sync` — sync preview/confirm + safe simulation fallback
+
+Other:
+
+- `POST /api/employment-application` — careers application intake (Resend email)
+- `POST /api/ai-assistant` — public AI quote assistant (Anthropic w/ fallback)
+- `POST /api/ticket-create` — ticket creation (admin)
+- `POST /api/conversion-event` — conversion telemetry
+
+## Ops / validation
+
+Deployment-critical notes are tracked in:
+
+- `CRITICAL CHECKS BEFORE DEPLOYMENT.md`
+- `docs/post-job-automation-acceptance-runbook.md`
+
+Recommended pre-deploy validation (see the critical checks doc):
+
+```bash
+npx tsc --noEmit
+npm run lint
+npm run build
+```
+
+## Security model (overview)
+
+- `middleware.ts` applies: auth gates (admin/employee), rate limiting, structured request logging, and security headers.
+- Cron endpoints are fail-closed: if `CRON_SECRET` is missing, they reject all requests (see `src/lib/cron-auth.ts`).
+- Twilio webhooks enforce signature verification in production unless explicitly overridden (`TWILIO_ALLOW_UNSIGNED_WEBHOOK=true` is for debugging only).
+
+## Redirects / compatibility
+
+- `/admin.html` → `/admin`
+- `/employee.html` → `/employee`

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { rateLimit, rateLimitResponse, setRateLimitHeaders } from "@/lib/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -67,10 +68,6 @@ const VALID_DAYS = [
   "saturday",
   "sunday",
 ] as const;
-
-const submissionTimestamps = new Map<string, number[]>();
-const RATE_LIMIT_WINDOW_MS = 60_000 * 15;
-const RATE_LIMIT_MAX = 3;
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -385,36 +382,6 @@ async function sendEmail(params: {
   return { ok: false, error: "Exhausted retry attempts." };
 }
 
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = submissionTimestamps.get(ip) ?? [];
-  const recent = timestamps.filter(
-    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS,
-  );
-
-  if (recent.length >= RATE_LIMIT_MAX) {
-    return true;
-  }
-
-  recent.push(now);
-  submissionTimestamps.set(ip, recent);
-
-  if (submissionTimestamps.size > 1000) {
-    for (const [key, values] of submissionTimestamps) {
-      const filtered = values.filter(
-        (timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS,
-      );
-      if (filtered.length === 0) {
-        submissionTimestamps.delete(key);
-      } else {
-        submissionTimestamps.set(key, filtered);
-      }
-    }
-  }
-
-  return false;
-}
-
 async function isDuplicateApplication(
   supabase: ReturnType<typeof createAdminClient>,
   email: string,
@@ -449,13 +416,9 @@ export async function POST(request: Request) {
   const forwarded = request.headers.get("x-forwarded-for");
   const ip = forwarded?.split(",")[0]?.trim() ?? "unknown";
 
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      {
-        error: "Too many applications submitted. Please try again later.",
-      },
-      { status: 429 },
-    );
+  const rateLimitResult = await rateLimit(`employment-application:${ip}`, "strict");
+  if (!rateLimitResult.allowed) {
+    return rateLimitResponse(rateLimitResult);
   }
 
   let body: EmploymentApplicationBody;
@@ -515,7 +478,7 @@ export async function POST(request: Request) {
   const supabase = createAdminClient();
   const dedup = await isDuplicateApplication(supabase, sanitized.email);
   if (dedup.isDuplicate) {
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         success: true,
         applicationId: dedup.existingId,
@@ -525,6 +488,8 @@ export async function POST(request: Request) {
       },
       { status: 200 },
     );
+    setRateLimitHeaders(response.headers, rateLimitResult);
+    return response;
   }
 
   const { data: application, error: insertError } = await supabase
@@ -611,7 +576,7 @@ export async function POST(request: Request) {
     console.info("[employment-application] Success:", JSON.stringify(telemetry));
   }
 
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       success: true,
       applicationId: application.id,
@@ -621,6 +586,8 @@ export async function POST(request: Request) {
     },
     { status: 201 },
   );
+  setRateLimitHeaders(response.headers, rateLimitResult);
+  return response;
 }
 
 export async function GET(request: Request) {

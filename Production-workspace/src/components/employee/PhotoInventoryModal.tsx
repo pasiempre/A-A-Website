@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { listPendingPhotoUploads, removePendingPhotoUpload, type PendingPhotoUpload } from "@/lib/photo-upload-queue";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 interface PhotoInventoryModalProps {
   open: boolean;
@@ -13,6 +14,10 @@ export function PhotoInventoryModal({ open, onClose, onFlush }: PhotoInventoryMo
   const [pending, setPending] = useState<PendingPhotoUpload[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const titleId = useId();
+  const modalRef = useRef<HTMLDivElement | null>(null);
+
+  useFocusTrap(modalRef, open);
 
   const refresh = useCallback(async () => {
     setIsLoading(true);
@@ -71,10 +76,17 @@ export function PhotoInventoryModal({ open, onClose, onFlush }: PhotoInventoryMo
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden />
 
-      <div className="relative z-10 w-full max-w-lg rounded-t-xl bg-white shadow-xl sm:m-4 sm:rounded-xl">
+      <div
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        className="relative z-10 w-full max-w-lg rounded-t-xl bg-white shadow-xl sm:m-4 sm:rounded-xl"
+      >
         <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3 sm:px-5">
           <div>
-            <h2 className="text-base font-semibold text-slate-900">Fotos Pendientes</h2>
+            <h2 id={titleId} className="text-base font-semibold text-slate-900">Fotos Pendientes</h2>
             <p className="text-xs text-slate-500">
               {pending.length} foto{pending.length !== 1 ? "s" : ""} esperando conexión
             </p>
@@ -96,7 +108,14 @@ export function PhotoInventoryModal({ open, onClose, onFlush }: PhotoInventoryMo
             <p className="py-8 text-center text-sm text-slate-500">Cargando...</p>
           ) : pending.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-2xl">✅</p>
+              <span
+                className="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+                aria-hidden
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
               <p className="mt-2 text-sm text-slate-600">No hay fotos pendientes. Todo sincronizado.</p>
             </div>
           ) : (
@@ -104,7 +123,21 @@ export function PhotoInventoryModal({ open, onClose, onFlush }: PhotoInventoryMo
               {pending.map((item) => (
                 <li key={item.id} className="flex items-start gap-3 rounded-lg border border-slate-200 p-3">
                   <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md bg-slate-100">
-                    <span className="text-lg">{item.type === "completion" ? "📸" : "⚠️"}</span>
+                    {item.type === "completion" ? (
+                      <svg className="h-5 w-5 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M3 7a2 2 0 012-2h3l1-1h6l1 1h3a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 10a3 3 0 100 6 3 3 0 000-6z" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.29 3.86L1.82 18A2 2 0 003.55 21h16.9a2 2 0 001.73-3l-8.47-14.14a2 2 0 00-3.46 0z" />
+                      </svg>
+                    )}
                   </div>
 
                   <div className="min-w-0 flex-1">

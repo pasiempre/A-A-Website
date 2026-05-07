@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 
-import { optionalServerEnv } from "@/lib/env";
+import { optionalServerEnv, requireServerEnv } from "@/lib/env";
 import { dispatchSmsWithQuietHours, sendSmsWithRetry } from "@/lib/notifications";
 import { rateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { sendEmailResilient } from "@/lib/resilient-email";
@@ -34,14 +34,18 @@ type QuoteRequestBody = {
 // Sufficient for double-click prevention at MVP scale.
 // ============================================================
 
-const recentSubmissions = new Map<string, number>();
+type RecentSubmissionEntry = {
+  timestamp: number;
+  leadId: string | null;
+};
+
+const recentSubmissions = new Map<string, RecentSubmissionEntry>();
 const DEDUP_WINDOW_MS = 60_000;
 const DEDUP_MAX_ENTRIES = 1_000;
 
 const ENRICHMENT_TOKEN_TTL_MS = 15 * 60_000;
 const UUID_V4_LIKE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ENRICHMENT_TOKEN_SECRET_FALLBACK = "dev-enrichment-secret-change-me";
 
 function extractMissingColumnFromSchemaCacheError(message?: string): string | null {
   if (!message) {
@@ -61,19 +65,7 @@ function base64UrlDecode(value: string): string {
 }
 
 function getEnrichmentTokenSecret(): string {
-  const configuredSecret = optionalServerEnv("ENRICHMENT_TOKEN_SECRET");
-  if (configuredSecret) {
-    return configuredSecret;
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "ENRICHMENT_TOKEN_SECRET must be set in production. " +
-        "Refusing to fall back to service role key or hardcoded dev secret.",
-    );
-  }
-
-  return ENRICHMENT_TOKEN_SECRET_FALLBACK;
+  return requireServerEnv("ENRICHMENT_TOKEN_SECRET");
 }
 
 function signTokenPayload(payloadBase64: string, secret: string): string {
@@ -135,26 +127,28 @@ function buildDedupKey(name: string, phone: string): string {
   return `${name.toLowerCase().trim()}::${phone.replace(/\D/g, "")}`;
 }
 
-function isDuplicateSubmission(key: string): boolean {
+function getRecentSubmission(key: string): RecentSubmissionEntry | null {
   const now = Date.now();
-  const lastSubmission = recentSubmissions.get(key);
+  const entry = recentSubmissions.get(key);
 
-  if (lastSubmission && now - lastSubmission < DEDUP_WINDOW_MS) {
-    return true;
+  if (entry && now - entry.timestamp < DEDUP_WINDOW_MS) {
+    return entry;
   }
 
-  recentSubmissions.set(key, now);
+  return null;
+}
 
-  // Prevent unbounded memory growth
+function rememberSubmission(key: string, leadId: string | null) {
+  const now = Date.now();
+  recentSubmissions.set(key, { timestamp: now, leadId });
+
   if (recentSubmissions.size > DEDUP_MAX_ENTRIES) {
-    for (const [k, timestamp] of recentSubmissions) {
-      if (now - timestamp > DEDUP_WINDOW_MS) {
-        recentSubmissions.delete(k);
+    for (const [entryKey, entry] of recentSubmissions) {
+      if (now - entry.timestamp > DEDUP_WINDOW_MS) {
+        recentSubmissions.delete(entryKey);
       }
     }
   }
-
-  return false;
 }
 
 // ============================================================
@@ -324,14 +318,42 @@ export async function POST(request: Request) {
 
   // --- Dedup guard ---
   const dedupKey = buildDedupKey(name, phone);
-  if (isDuplicateSubmission(dedupKey)) {
-    // Return success without creating a duplicate lead.
-    // The client cannot distinguish this from a real success,
-    // which is the desired UX for double-click prevention.
-    return NextResponse.json(
-      { success: true, leadId: "deduped" },
-      { status: 201 },
-    );
+  const recentSubmission = getRecentSubmission(dedupKey);
+  if (recentSubmission) {
+    const resolvedLeadId = recentSubmission.leadId;
+    if (resolvedLeadId) {
+      const enrichmentToken = issueEnrichmentToken(resolvedLeadId, enrichmentTokenSecret);
+      return NextResponse.json(
+        { success: true, leadId: resolvedLeadId, enrichmentToken, deduped: true },
+        { status: 201 },
+      );
+    }
+
+    try {
+      const supabase = createAdminClient();
+      const { data: existingLead } = await supabase
+        .from("leads")
+        .select("id")
+        .eq("name", name)
+        .eq("phone", phone)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (existingLead?.id) {
+        rememberSubmission(dedupKey, existingLead.id);
+        const enrichmentToken = issueEnrichmentToken(existingLead.id, enrichmentTokenSecret);
+        return NextResponse.json(
+          { success: true, leadId: existingLead.id, enrichmentToken, deduped: true },
+          { status: 201 },
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { success: true, leadId: "deduped" },
+        { status: 201 },
+      );
+    }
   }
 
   // --- Sanitize for SMS/email output ---
@@ -490,6 +512,7 @@ export async function POST(request: Request) {
     }
 
     const enrichmentToken = issueEnrichmentToken(insertedLead.id, enrichmentTokenSecret);
+    rememberSubmission(dedupKey, insertedLead.id);
 
     return NextResponse.json(
       { success: true, leadId: insertedLead.id, enrichmentToken },

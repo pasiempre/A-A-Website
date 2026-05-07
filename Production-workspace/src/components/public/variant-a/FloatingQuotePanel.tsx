@@ -4,6 +4,7 @@ import { useEffect, useId, useRef } from "react";
 
 import { trackConversionEvent } from "@/lib/analytics";
 import { COMPANY_PHONE_E164 } from "@/lib/company";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 import { useQuoteForm } from "./useQuoteForm";
 
 type FloatingQuotePanelProps = {
@@ -22,6 +23,8 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const wasOpenRef = useRef(false);
   const previousInitialServiceTypeRef = useRef<string | undefined>(initialServiceType);
+
+  useFocusTrap(panelRef, isOpen);
 
   useEffect(() => {
     const wasOpen = wasOpenRef.current;
@@ -88,39 +91,10 @@ export function FloatingQuotePanel({ isOpen, onClose, initialServiceType }: Floa
       }
     };
 
-    const handleTabTrap = (event: KeyboardEvent) => {
-      if (event.key !== "Tab" || !panelRef.current) {
-        return;
-      }
-
-      const focusable = Array.from(
-        panelRef.current.querySelectorAll<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        ),
-      ).filter((element) => !element.hasAttribute("disabled"));
-
-      if (focusable.length === 0) {
-        return;
-      }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
     document.addEventListener("keydown", handleEscape);
-    document.addEventListener("keydown", handleTabTrap);
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.removeEventListener("keydown", handleTabTrap);
     };
   }, [isOpen, onClose]);
 

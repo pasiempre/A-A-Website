@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { announceStatus } from "@/lib/status-announcer";
 import { createClient } from "@/lib/supabase/client";
 import {
   CLEAN_TYPE_OPTIONS,
@@ -9,7 +10,6 @@ import {
   PRIORITY_OPTIONS,
   formatCleanType,
   formatPriority,
-  parseAreas,
 } from "@/lib/ticketing";
 
 type TicketFilters = {
@@ -136,7 +136,7 @@ export function TicketManagementClient({
       supabase
         .from("jobs")
         .select(
-          "id, title, address, clean_type, priority, status, qa_status, qa_notes, qa_reviewed_at, scope, areas, assigned_week_start, created_at, duplicate_source_job_id, job_assignments(employee_id, role, status, profiles:employee_id(full_name)), issue_reports(id, description, status, created_at)",
+          "id, title, address, clean_type, priority, status, qa_status, qa_notes, qa_reviewed_at, scope, areas, assigned_week_start, created_at, duplicate_source_job_id, job_assignments(employee_id, role, status, profiles:employee_id(full_name))",
         )
         .order("created_at", { ascending: false })
         .limit(100),
@@ -152,7 +152,10 @@ export function TicketManagementClient({
     if (jobsError) {
       setFormError(jobsError.message);
     } else {
-      const nextJobs = (jobsData as JobRow[]) ?? [];
+      const nextJobs = (((jobsData as Omit<JobRow, "issue_reports">[]) ?? []).map((job) => ({
+        ...job,
+        issue_reports: null,
+      })) as JobRow[]);
       setJobs(nextJobs);
       setQaStatusByJob(
         nextJobs.reduce<Record<string, JobRow["qa_status"]>>((acc, job) => {
@@ -192,85 +195,29 @@ export function TicketManagementClient({
     setStatusText(null);
 
     try {
-      const supabase = getSupabase();
-      const areas = parseAreas(form.areasCsv);
-
-      const { data: createdJob, error: createError } = await supabase
-        .from("jobs")
-        .insert({
+      const response = await fetch("/api/ticket-create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           title: form.title,
           address: form.address,
-          clean_type: form.cleanType,
+          cleanType: form.cleanType,
           priority: form.priority,
-          scope: form.scope || null,
-          areas,
-          assigned_week_start: form.assignedWeekStart || null,
-          checklist_template_id: form.checklistTemplateId || null,
-          status: "scheduled",
-        })
-        .select("id")
-        .single();
+          scope: form.scope,
+          areasCsv: form.areasCsv,
+          assignedWeekStart: form.assignedWeekStart,
+          workerId: form.workerId,
+          checklistTemplateId: form.checklistTemplateId,
+        }),
+      });
 
-      if (createError) {
-        throw createError;
-      }
-
-      if (createdJob && form.workerId) {
-        const { data: assignmentRow, error: assignmentError } = await supabase
-          .from("job_assignments")
-          .insert({
-          job_id: createdJob.id,
-          employee_id: form.workerId,
-          role: "lead",
-          status: "assigned",
-          notification_status: "pending",
-        })
-          .select("id")
-          .single();
-
-        if (assignmentError || !assignmentRow) {
-          throw assignmentError;
-        }
-
-        const notifyResponse = await fetch("/api/assignment-notify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ assignmentId: assignmentRow.id }),
-        });
-
-        if (!notifyResponse.ok) {
-          const payload = (await notifyResponse.json().catch(() => null)) as { error?: string } | null;
-          throw new Error(payload?.error ?? "Assignment SMS notification failed.");
-        }
-      }
-
-      if (createdJob && form.checklistTemplateId) {
-        const { data: templateItems, error: templateItemsError } = await supabase
-          .from("checklist_template_items")
-          .select("item_text, sort_order")
-          .eq("template_id", form.checklistTemplateId)
-          .order("sort_order", { ascending: true });
-
-        if (templateItemsError) {
-          throw templateItemsError;
-        }
-
-        if (templateItems && templateItems.length > 0) {
-          const { error: checklistInsertError } = await supabase.from("job_checklist_items").insert(
-            templateItems.map((item) => ({
-              job_id: createdJob.id,
-              item_text: item.item_text,
-              sort_order: item.sort_order,
-            })),
-          );
-
-          if (checklistInsertError) {
-            throw checklistInsertError;
-          }
-        }
+      const payload = (await response.json().catch(() => null)) as { error?: string; jobId?: string } | null;
+      if (!response.ok) {
+        throw new Error(payload?.error ?? "Failed to create ticket.");
       }
 
       setStatusText("Ticket created successfully.");
+      announceStatus("Ticket created successfully.");
       setForm(initialForm);
       await loadData();
     } catch (error) {
@@ -322,6 +269,7 @@ export function TicketManagementClient({
       }
 
       setStatusText("Ticket duplicated.");
+      announceStatus("Ticket duplicated.");
       await loadData();
     } catch (error) {
       setFormError(error instanceof Error ? error.message : "Failed to duplicate ticket.");
@@ -343,12 +291,21 @@ export function TicketManagementClient({
     }
 
     setStatusText("Ticket status updated.");
+    announceStatus("Ticket status updated.");
     await loadData();
   };
 
   const saveQaReview = async (job: JobRow) => {
     const selectedQaStatus = qaStatusByJob[job.id] ?? job.qa_status;
     const notes = qaNotesByJob[job.id]?.trim() || null;
+
+    if (
+      selectedQaStatus === "needs_rework"
+      && job.qa_status !== "needs_rework"
+      && !window.confirm("This will reset assignment/checklist progress for rework. Continue?")
+    ) {
+      return;
+    }
 
     setFormError(null);
     setStatusText(null);
@@ -387,33 +344,6 @@ export function TicketManagementClient({
       return;
     }
 
-    if (selectedQaStatus === "needs_rework") {
-      const [assignmentResult, checklistResult] = await Promise.all([
-        supabase
-          .from("job_assignments")
-          .update({ status: "assigned", started_at: null, completed_at: null })
-          .eq("job_id", job.id),
-        supabase
-          .from("job_checklist_items")
-          .update({
-            is_completed: false,
-            completed_at: null,
-            completed_by: null,
-          })
-          .eq("job_id", job.id),
-      ]);
-
-      if (assignmentResult.error || checklistResult.error) {
-        setFormError(
-          assignmentResult.error?.message ??
-            checklistResult.error?.message ??
-            "Failed resetting assignments or checklist.",
-        );
-        setQaSavingJobId(null);
-        return;
-      }
-    }
-
     let autoReportWarning: string | null = null;
     const shouldAutoTriggerReport =
       selectedQaStatus === "approved" && job.qa_status !== "approved";
@@ -447,14 +377,14 @@ export function TicketManagementClient({
 
     const baseMessage =
       selectedQaStatus === "needs_rework"
-        ? "Rework requested — assignments and checklist reset."
+        ? "Rework requested — progress preserved for targeted correction."
         : "QA review saved.";
 
-    setStatusText(
-      autoReportWarning
-        ? `${baseMessage} Report warning: ${autoReportWarning}`
-        : baseMessage,
-    );
+    const successMessage = autoReportWarning
+      ? `${baseMessage} Report warning: ${autoReportWarning}`
+      : baseMessage;
+    setStatusText(successMessage);
+    announceStatus(successMessage);
     setQaSavingJobId(null);
     await loadData();
   };
