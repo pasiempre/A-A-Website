@@ -6038,6 +6038,23 @@ Alerting:
 
 ## Beyond OWASP Top 10 — Additional Security Considerations
 
+### Security Protocol Set to Track
+
+Use OWASP as the application-security baseline, but do not treat it as the only protocol relevant to this platform. For A&A's launch stage, the practical security set is:
+
+| Protocol / Standard | Why it matters here | Launch posture |
+|---|---|---|
+| OWASP Top 10 | Baseline web-app risks for auth, access control, injection, crypto, file uploads, logging, and misconfiguration. | Pre-launch checklist item. |
+| OWASP API Security Top 10 | The admin dashboard, employee portal, quote flows, notifications, AI assistant, and QuickBooks all depend on API routes. | Pre-launch for public/admin route auth and rate-limit checks; deeper authenticated abuse testing post-launch. |
+| OWASP ASVS Level 1 | More structured verification checklist than the Top 10, useful for confirming launch controls without requiring enterprise overhead. | Post-launch month 2-3 checklist pass, with Level 2 items cherry-picked for sensitive data. |
+| Supabase RLS best practices | Database access is enforced through Supabase Auth JWTs, Postgres RLS, and service-role API routes. | Pre-launch for all sensitive tables and employee/admin object access. |
+| Least-privilege service-role usage | Service-role keys bypass RLS, so every API route using them must perform its own auth and input validation. | Pre-launch for service-role routes. |
+| Admin MFA | Admin dashboard controls leads, employees, jobs, financial sync state, notifications, and client data. | Pre-launch for admin accounts. |
+| File upload security | Job photos can expose client sites, access details, or regulated information accidentally captured in photos. | Pre-launch for MIME/size/storage policy checks; deeper photo-governance training post-launch. |
+| Secrets management and rotation | Vercel, Supabase, Twilio, Resend, Anthropic, QuickBooks, Upstash, GitHub, and domain accounts all affect production. | Pre-launch account inventory; rotation cadence post-launch. |
+| Audit/security event logging | Needed to detect misuse, failed auth patterns, rate-limit abuse, and sensitive admin changes. | Basic operational logs pre-launch; `security_events` table post-launch. |
+| Backup and recovery verification | Supabase backups exist, but restore confidence matters once the platform becomes operationally important. | Document recovery before launch; test restore post-launch. |
+
 ### API Security (OWASP API Security Top 10)
 
 The platform is API-driven (Next.js API routes serving admin, employee, and public clients). OWASP has a separate API Security Top 10 that's relevant:
@@ -7055,18 +7072,26 @@ This distills everything from Tier 1 into a single checklist that supplements th
 
 - [ ] Security headers added to next.config.js (X-Frame-Options, HSTS, X-Content-Type-Options, Referrer-Policy, Permissions-Policy)
 - [ ] Content Security Policy header configured (at minimum: default-src 'self', frame-ancestors 'none')
+- [ ] OWASP API Security Top 10 spot-check completed for all public and service-role API routes
+- [ ] OWASP ASVS Level 1 review scheduled as the post-launch verification checklist
+- [ ] Supabase RLS policies verified for admin/employee/client-facing tables with object-level access tests
+- [ ] Admin MFA enabled in Supabase Auth and required for externally exposed admin dashboard access
 - [ ] npm audit shows zero critical and zero high vulnerabilities
 - [ ] Dependabot enabled on GitHub repository
 - [ ] No instance of dangerouslySetInnerHTML renders user-generated content without sanitization
 - [ ] Quote public_token verified as cryptographically random (crypto.randomUUID() or equivalent) with sufficient length
 - [ ] Supabase service_role key confirmed absent from any NEXT_PUBLIC_ environment variable
 - [ ] Supabase service_role key confirmed absent from any client-side JavaScript bundle
+- [ ] Service-role API routes independently authorize the caller before reading/writing protected data
 - [ ] CORS policy restrictive to application domain only (or Next.js default which is same-origin)
 - [ ] Production error responses do not expose stack traces, file paths, or internal system details
 - [ ] Source maps confirmed not deployed to production
 - [ ] Next.js poweredBy header disabled
 - [ ] IDOR testing completed on at minimum: job fetch by employee, quote fetch by token, lead fetch by admin, employee profile fetch
 - [ ] File upload validation confirms photo uploads are restricted to image MIME types and reasonable file sizes
+- [ ] Account/secrets inventory exists for Vercel, Supabase, GitHub, domain/DNS, Twilio, Resend, Anthropic, Upstash, QuickBooks, and email accounts
+- [ ] Backup/recovery procedure is documented, including who can access Supabase backups and how a restore would be tested
+- [ ] Security event logging plan exists for failed auth spikes, rate-limit abuse, sensitive admin actions, and service-role route denials
 
 ### 6.2 Communication Compliance (TCPA/CAN-SPAM)
 

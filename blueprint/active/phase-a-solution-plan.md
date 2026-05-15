@@ -284,7 +284,10 @@ Counts above are Phase A planning classifications for open, partial, and runtime
 - Performance static/server-component cleanup for above-fold public sections: deferred to post-launch backlog.
 - Austin-local service-page body copy and service-card specificity: deferred to post-launch backlog unless SEO is promoted.
 - WCAG contrast/lang/carousel/disabled-state polish beyond small PR-8 inclusions: deferred to post-launch backlog.
-- Dynamic careers listings, employee tiers, seeds/demo data, realtime messaging, marketing-email unsubscribe model, security_events table, CSP, server-side upload MIME validation, and PWA/offline deeper audit: deferred to post-launch backlog.
+- Dynamic careers listings, employee tiers, seeds/demo data, realtime messaging, WhatsApp Business Platform integration, contractor/subcontractor login and workflow, offer/quote expiry management beyond the initial quote TTL fix, marketing-email unsubscribe model, security_events table, CSP, server-side upload MIME validation, and PWA/offline deeper audit: deferred to post-launch backlog.
+- Deep QuickBooks automation, including production OAuth debugging, tax handling, invoice/payment reconciliation, sync retry operations, and financial dashboard parity with QuickBooks as source of truth: deferred until the core launch workflow is stable.
+- Advanced inventory, including SDS document storage, receipt/photo-backed expense tracking, job-cost profitability, vendor reorder automation, and richer supply usage reporting: deferred to post-launch operations hardening.
+- Push notifications and realtime in-app notification feed are deferred until the launch-critical notification action map is complete and SMS/email dispatch is stable.
 - Vertical triggers for HIPAA/EPA/tax handling remain P3 triggered items until the business actually serves those regulated scenarios in production data.
 
 ## Open Questions Requiring Owner Decision (Before Phase C)
