@@ -165,7 +165,7 @@ export function AuthorityBar() {
           <div className="surface-panel-soft inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 text-xs text-slate-600 md:gap-3 md:px-5 md:py-3 md:text-sm">
             <span className="text-sm tracking-[0.22em] text-[#C9A94E] md:text-base" aria-hidden="true">★★★★★</span>
             <span className="sr-only">Rated 5 out of 5 stars</span>
-            <span className="font-light">Rated 5 stars across 200+ completed projects</span>
+            <span className="font-light">Rated 5 stars by Austin-area clients and project teams</span>
           </div>
         </div>
       </div>

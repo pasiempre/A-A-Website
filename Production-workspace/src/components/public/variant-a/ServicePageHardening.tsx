@@ -109,9 +109,9 @@ export function ServicePageHardening({
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
           <div className="max-w-3xl">
             <p className="text-xs font-bold uppercase tracking-widest text-[#C9A94E]">How Pricing Works</p>
-            <h3 className="mt-2 text-2xl font-serif tracking-tight text-[#0A1628] md:text-3xl">
+            <h2 className="mt-2 text-2xl font-serif tracking-tight text-[#0A1628] md:text-3xl">
               {pricing.heading}
-            </h3>
+            </h2>
             <p className="mt-3 text-sm leading-relaxed text-slate-600 md:text-base">
               Clear guidance first, then a final scope-confirmed quote.
             </p>
@@ -144,7 +144,7 @@ export function ServicePageHardening({
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <article className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-              <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Includes</h4>
+              <h3 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Includes</h3>
               <ul className="mt-3 space-y-2">
                 {pricing.includes.map((item) => (
                   <li key={item} className="text-sm leading-relaxed text-slate-600">
@@ -155,7 +155,7 @@ export function ServicePageHardening({
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-              <h4 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Common Add-Ons</h4>
+              <h3 className="text-sm font-bold uppercase tracking-wide text-[#0A1628]">Common Add-Ons</h3>
               <ul className="mt-3 space-y-2">
                 {pricing.addOns.map((item) => (
                   <li key={item} className="text-sm leading-relaxed text-slate-600">
@@ -196,7 +196,7 @@ export function ServicePageHardening({
                 </svg>
               </div>
               <div>
-                <h4 className="font-bold text-[#0A1628]">{obj.title}</h4>
+                <h3 className="font-bold text-[#0A1628]">{obj.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
                   {obj.desc}
                 </p>
@@ -208,9 +208,9 @@ export function ServicePageHardening({
 
       <section className="mx-auto max-w-7xl px-6">
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <h3 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
+          <h2 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
             Common Questions About This Service
-          </h3>
+          </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-600 md:text-base">
             Quick answers to the top concerns customers ask before booking.
           </p>
@@ -264,9 +264,9 @@ export function ServicePageHardening({
 
       <section className="mx-auto max-w-7xl px-6">
         <div className="rounded-3xl border border-slate-200 bg-[#FAFAF8] p-6 md:p-8">
-          <h3 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
+          <h2 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
             Popular Service Areas for This Scope
-          </h3>
+          </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-600 md:text-base">
             Explore city-specific pages with local project context, service availability, and nearby coverage details.
           </p>

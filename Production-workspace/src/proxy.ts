@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
-import { isDevPreviewEnabled } from "@/lib/env";
+import { isDevPreviewEnabled, validateServerEnvironment } from "@/lib/env";
 import { evaluateAuth } from "@/lib/middleware/auth";
 import { type RequestLog, logRequest } from "@/lib/middleware/logging";
 import { applySecurityHeaders } from "@/lib/middleware/security-headers";
@@ -10,9 +10,8 @@ import {
   setRateLimitHeaders,
 } from "@/lib/rate-limit";
 
-// ============================================================
-// Helpers
-// ============================================================
+// Startup env check: surfaces missing server configuration in runtime logs early.
+void validateServerEnvironment();
 
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -41,25 +40,19 @@ function buildLogEntry(
   };
 }
 
-// ============================================================
-// Middleware
-// ============================================================
-
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const startTime = Date.now();
   const { pathname } = request.nextUrl;
   const ip = getClientIp(request);
   const userAgent = request.headers.get("user-agent");
   const shared = { method: request.method, pathname, ip, userAgent, startTime };
 
-  // 1. Dev preview bypass
   if (isDevPreviewEnabled()) {
     const response = NextResponse.next({ request });
     applySecurityHeaders(response);
     return response;
   }
 
-  // 2. Rate limiting
   const rateCheck = await rateLimitByPath(ip, pathname);
   if (!rateCheck.allowed) {
     const response = rateLimitResponse(rateCheck);
@@ -68,7 +61,6 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // 3. Auth evaluation
   const response = NextResponse.next({ request });
   const { context, redirect } = await evaluateAuth(request, response);
 
@@ -88,7 +80,6 @@ export async function middleware(request: NextRequest) {
     return redirect;
   }
 
-  // 4. Success path
   setRateLimitHeaders(response.headers, rateCheck);
   applySecurityHeaders(response);
   logRequest(
@@ -101,10 +92,6 @@ export async function middleware(request: NextRequest) {
 
   return response;
 }
-
-// ============================================================
-// Route matcher
-// ============================================================
 
 export const config = {
   matcher: [

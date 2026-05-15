@@ -44,6 +44,7 @@ type JobAssignment = {
 type JobRow = {
   id: string;
   title: string;
+  customer_name: string | null;
   address: string;
   status: string;
   scheduled_start: string | null;
@@ -403,7 +404,7 @@ export function SchedulingAndAvailabilityClient() {
         supabase
           .from("jobs")
           .select(
-            "id, title, address, status, scheduled_start, scheduled_end, job_assignments(id, employee_id, role, status, profiles:employee_id(full_name))",
+            "id, title, customer_name, address, status, scheduled_start, scheduled_end, job_assignments(id, employee_id, role, status, profiles:employee_id(full_name))",
           )
           .in("status", ["scheduled", "en_route", "in_progress"])
           .order("scheduled_start", {
@@ -692,7 +693,7 @@ export function SchedulingAndAvailabilityClient() {
           </div>
           <button
             type="button"
-            className="min-h-[36px] rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
             onClick={() => void loadData()}
           >
             Refresh
@@ -713,7 +714,7 @@ export function SchedulingAndAvailabilityClient() {
         {conflicts.length > 0 ? (
           <div className="mt-3 rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
-              ⚠ Scheduling Conflicts ({conflicts.length})
+              Scheduling Conflicts ({conflicts.length})
             </p>
             <ul className="mt-1 space-y-0.5">
               {conflicts.slice(0, 5).map((conflict, index) => (
@@ -745,7 +746,7 @@ export function SchedulingAndAvailabilityClient() {
             onChange={(e) =>
               setForm((prev) => ({ ...prev, employeeId: e.target.value }))
             }
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2.5 text-base"
           >
             <option value="">Select employee</option>
             {employeeProfiles.map((profile) => (
@@ -761,7 +762,7 @@ export function SchedulingAndAvailabilityClient() {
             onChange={(e) =>
               setForm((prev) => ({ ...prev, startsAt: e.target.value }))
             }
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2.5 text-base"
             placeholder="Start"
           />
 
@@ -769,7 +770,7 @@ export function SchedulingAndAvailabilityClient() {
             type="datetime-local"
             value={form.endsAt}
             onChange={(e) => setForm((prev) => ({ ...prev, endsAt: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2.5 text-base"
             placeholder="End"
           />
 
@@ -781,7 +782,7 @@ export function SchedulingAndAvailabilityClient() {
                 status: e.target.value as AvailabilityStatus,
               }))
             }
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2.5 text-base"
           >
             <option value="available">Available</option>
             <option value="limited">Limited</option>
@@ -793,7 +794,7 @@ export function SchedulingAndAvailabilityClient() {
             placeholder="Notes (optional)"
             value={form.notes}
             onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2.5 text-base"
           />
 
           <button
@@ -813,7 +814,7 @@ export function SchedulingAndAvailabilityClient() {
           <div className="flex rounded-md border border-slate-300">
             <button
               type="button"
-              className={`min-h-[36px] px-3 py-2 text-xs font-medium ${
+              className={`min-h-[44px] px-3 py-2 text-sm font-medium ${
                 viewMode === "week"
                   ? "bg-slate-900 text-white"
                   : "text-slate-600 hover:bg-slate-50"
@@ -824,7 +825,7 @@ export function SchedulingAndAvailabilityClient() {
             </button>
             <button
               type="button"
-              className={`min-h-[36px] px-3 py-2 text-xs font-medium ${
+              className={`min-h-[44px] px-3 py-2 text-sm font-medium ${
                 viewMode === "day"
                   ? "bg-slate-900 text-white"
                   : "text-slate-600 hover:bg-slate-50"
@@ -838,21 +839,21 @@ export function SchedulingAndAvailabilityClient() {
           <div className="flex items-center gap-2">
             <button
               type="button"
-              className="min-h-[36px] rounded-md border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50"
+              className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
               onClick={viewMode === "week" ? goToPreviousWeek : goToPreviousDay}
             >
               ← Prev
             </button>
             <button
               type="button"
-              className="min-h-[36px] rounded-md border border-slate-300 px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
               onClick={goToThisWeek}
             >
               Today
             </button>
             <button
               type="button"
-              className="min-h-[36px] rounded-md border border-slate-300 px-3 py-2 text-xs text-slate-600 hover:bg-slate-50"
+              className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50"
               onClick={viewMode === "week" ? goToNextWeek : goToNextDay}
             >
               Next →
@@ -860,7 +861,7 @@ export function SchedulingAndAvailabilityClient() {
           </div>
 
           <select
-            className="min-h-[36px] rounded-md border border-slate-300 px-3 py-2 text-xs"
+            className="min-h-[44px] rounded-md border border-slate-300 px-3 py-2 text-sm"
             value={selectedEmployeeId ?? ""}
             onChange={(e) => setSelectedEmployeeId(e.target.value || null)}
           >
@@ -1018,7 +1019,7 @@ export function SchedulingAndAvailabilityClient() {
                                 minHeight: "28px",
                                 zIndex: 2,
                               }}
-                              title={`${job.title} — ${job.address}${
+                              title={`${job.customer_name || job.title} — ${job.address}${
                                 hasConflict ? ` ⚠ ${jobConflicts[0].reason}` : ""
                               }`}
                               draggable
@@ -1028,7 +1029,7 @@ export function SchedulingAndAvailabilityClient() {
                                 setSelectedJobId(selectedJobId === job.id ? null : job.id);
                               }}
                             >
-                              <p className="truncate font-semibold">{job.title}</p>
+                              <p className="truncate font-semibold">{job.customer_name || job.title}</p>
                               {hasConflict && (
                                 <p className="truncate text-[10px] font-medium text-red-600">
                                   ⚠ Conflict
@@ -1205,7 +1206,10 @@ export function SchedulingAndAvailabilityClient() {
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{job.title}</p>
+                      <p className="text-sm font-semibold text-slate-900">{job.customer_name || job.title}</p>
+                      {job.customer_name && job.customer_name !== job.title ? (
+                        <p className="text-xs text-slate-500">{job.title}</p>
+                      ) : null}
                       <p className="text-xs text-slate-600">{job.address}</p>
                       <p className="mt-1 text-xs text-slate-500">
                         Lead: {currentLead?.profiles?.[0]?.full_name ?? "Unassigned"}

@@ -26,7 +26,7 @@ type OverviewMetrics = {
   openIssues: number;
   resolvedIssues: number;
   newLeads: number;
-  wonLeads: number;
+  convertedLeads: number;
   quotedLeads: number;
   lostLeads: number;
   conversionRate: number;
@@ -74,14 +74,35 @@ type SupplyAlert = {
 };
 type HiringFunnel = { status: string; label: string; count: number };
 
-const TABS: { key: DashboardTab; label: string; icon: string }[] = [
-  { key: "overview", label: "Overview", icon: "📊" },
-  { key: "operations", label: "Operations", icon: "🔧" },
-  { key: "quality", label: "Quality", icon: "✅" },
-  { key: "financials", label: "Financials", icon: "💰" },
-  { key: "hiring", label: "Hiring", icon: "👥" },
-  { key: "inventory", label: "Inventory", icon: "📦" },
+type TabIconKey = "overview" | "operations" | "quality" | "financials" | "hiring" | "inventory";
+
+const TABS: { key: DashboardTab; label: string; icon: TabIconKey }[] = [
+  { key: "overview", label: "Overview", icon: "overview" },
+  { key: "operations", label: "Operations", icon: "operations" },
+  { key: "quality", label: "Quality", icon: "quality" },
+  { key: "financials", label: "Financials", icon: "financials" },
+  { key: "hiring", label: "Hiring", icon: "hiring" },
+  { key: "inventory", label: "Inventory", icon: "inventory" },
 ];
+
+function renderTabIcon(icon: TabIconKey) {
+  const baseClass = "h-4 w-4";
+
+  switch (icon) {
+    case "overview":
+      return <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 19h16"/><path d="M7 15V9M12 15V6M17 15v-4"/></svg>;
+    case "operations":
+      return <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1 1 0 1 1-1.4 1.4l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V19a1 1 0 1 1-2 0v-.2a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1 1 0 1 1-1.4-1.4l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H9a1 1 0 1 1 0-2h.2a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1 1 0 1 1 1.4-1.4l.1.1a1 1 0 0 0 1.1.2 1 1 0 0 0 .6-.9V5a1 1 0 1 1 2 0v.2a1 1 0 0 0 .6.9 1 1 0 0 0 1.1-.2l.1-.1a1 1 0 1 1 1.4 1.4l-.1.1a1 1 0 0 0-.2 1.1 1 1 0 0 0 .9.6h.2a1 1 0 1 1 0 2h-.2a1 1 0 0 0-.9.6"/></svg>;
+    case "quality":
+      return <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9"/><path d="m8.5 12.5 2.3 2.3 4.7-5"/></svg>;
+    case "financials":
+      return <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 3v18"/><path d="M17 7.5c0-1.4-1.8-2.5-4-2.5s-4 1.1-4 2.5 1.8 2.5 4 2.5 4 1.1 4 2.5-1.8 2.5-4 2.5-4-1.1-4-2.5"/></svg>;
+    case "hiring":
+      return <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="9" cy="9" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M4 19c0-2.7 2.2-4.5 5-4.5s5 1.8 5 4.5"/><path d="M14.5 19c.2-1.8 1.7-3.1 3.7-3.1 1 0 1.8.2 2.4.7"/></svg>;
+    case "inventory":
+      return <svg className={baseClass} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z"/><path d="m4 7.5 8 4.5 8-4.5"/></svg>;
+  }
+}
 
 const RANGE_OPTIONS: { key: RangeOption; label: string; days: number }[] = [
   { key: "week", label: "This Week", days: 7 },
@@ -149,24 +170,14 @@ function formatPercent(value: number): string {
 function detectJobOverlaps(
   assignments: Array<{
     employee_id: string;
-    jobs:
-      | {
-          scheduled_start: string | null;
-          scheduled_end: string | null;
-        }
-      | Array<{
-          scheduled_start: string | null;
-          scheduled_end: string | null;
-        }>
-      | null;
+    job_id: string;
   }>,
+  jobsById: Map<string, { scheduled_start: string | null; scheduled_end: string | null }>,
 ): Map<string, number> {
   const employeeTimeslots = new Map<string, Array<{ start: Date; end: Date }>>();
 
   for (const assignment of assignments) {
-    const jobData = Array.isArray(assignment.jobs)
-      ? (assignment.jobs[0] ?? null)
-      : assignment.jobs;
+    const jobData = jobsById.get(assignment.job_id) ?? null;
     if (!jobData?.scheduled_start) continue;
 
     const start = new Date(jobData.scheduled_start);
@@ -251,9 +262,7 @@ export function UnifiedInsightsClient() {
       ] = await Promise.all([
         supabase
           .from("jobs")
-          .select(
-            "id, status, qa_status, client_id, scheduled_start, scheduled_end, clients:client_id(company_name), created_at",
-          )
+          .select("id, status, qa_status, client_id, scheduled_start, scheduled_end, created_at")
           .gte("created_at", startIso),
         supabase
           .from("jobs")
@@ -277,7 +286,7 @@ export function UnifiedInsightsClient() {
           .from("financial_snapshots")
           .select("id, total_revenue, outstanding_invoices, overdue_invoices, created_at")
           .order("created_at", { ascending: false })
-          .limit(1),
+          .limit(2),
         supabase
           .from("quickbooks_invoice_cache")
           .select("id, amount_due, amount_total, status, due_date")
@@ -300,12 +309,10 @@ export function UnifiedInsightsClient() {
           .lt("submitted_at", prev.end),
         supabase
           .from("job_assignments")
-          .select(
-            "id, employee_id, role, status, profiles:employee_id(full_name), jobs:job_id(scheduled_start, scheduled_end, created_at)",
-          )
+          .select("id, job_id, employee_id, role, status")
           .gte("created_at", startIso),
         supabase
-          .from("notification_queue")
+          .from("notification_dispatch_queue")
           .select("id, status")
           .gte("created_at", startIso),
         supabase
@@ -347,10 +354,6 @@ export function UnifiedInsightsClient() {
         client_id: string | null;
         scheduled_start: string | null;
         scheduled_end: string | null;
-        clients:
-          | { company_name: string | null }
-          | Array<{ company_name: string | null }>
-          | null;
         created_at: string;
       }>;
       const prevJobs = (prevJobsResult.data ?? []) as Array<{
@@ -372,13 +375,20 @@ export function UnifiedInsightsClient() {
         status: string;
         created_at: string;
       }>;
+      const snapshots = (snapshotsResult.data ?? []) as Array<{
+        total_revenue: number;
+        outstanding_invoices: number;
+        overdue_invoices: number;
+        created_at: string;
+      }>;
       const latestSnapshot =
-        (snapshotsResult.data?.[0] as {
+        (snapshots[0] as {
           total_revenue: number;
           outstanding_invoices: number;
           overdue_invoices: number;
           created_at: string;
         } | null) ?? null;
+      const previousSnapshotRevenue = Number(snapshots[1]?.total_revenue ?? 0);
       const invoices = (invoicesResult.data ?? []) as Array<{
         id: string;
         amount_due: number;
@@ -404,26 +414,13 @@ export function UnifiedInsightsClient() {
       }>;
       const assignments = (assignmentsResult.data ?? []) as unknown as Array<{
         id: string;
+        job_id: string;
         employee_id: string;
         role: string;
         status: string;
-        profiles:
-          | { full_name: string | null }
-          | Array<{ full_name: string | null }>
-          | null;
-        jobs:
-          | {
-              scheduled_start: string | null;
-              scheduled_end: string | null;
-              created_at: string;
-            }
-          | Array<{
-              scheduled_start: string | null;
-              scheduled_end: string | null;
-              created_at: string;
-            }>
-          | null;
       }>;
+
+      const jobsById = new Map(jobs.map((job) => [job.id, job]));
       const notifications = (notificationsResult.data ?? []) as Array<{
         id: string;
         status: string;
@@ -441,7 +438,7 @@ export function UnifiedInsightsClient() {
       const qaReworked = jobs.filter((j) => j.qa_status === "needs_rework").length;
       const qaEligible = jobs.filter((j) => ["approved", "flagged", "needs_rework"].includes(j.qa_status)).length;
       const newLeads = leads.filter((l) => l.status === "new").length;
-      const wonLeads = leads.filter((l) => l.status === "won").length;
+      const convertedLeads = leads.filter((l) => l.status === "converted").length;
       const quotedLeads = leads.filter((l) => l.status === "quoted").length;
       const lostLeads = leads.filter((l) => l.status === "lost").length;
       const resolvedIssues = issues.filter((i) => i.status === "resolved").length;
@@ -452,7 +449,7 @@ export function UnifiedInsightsClient() {
       const hiredApps = applications.filter((a) => a.status === "hired").length;
       const lowStock = supplies.filter((s) => Number(s.current_stock) <= Number(s.reorder_threshold));
 
-      const overlapCounts = detectJobOverlaps(assignments);
+      const overlapCounts = detectJobOverlaps(assignments, jobsById);
       let totalConflicts = 0;
       for (const count of overlapCounts.values()) {
         totalConflicts += count;
@@ -468,10 +465,7 @@ export function UnifiedInsightsClient() {
         }
       >();
       for (const assignment of assignments) {
-        const profileData = Array.isArray(assignment.profiles)
-          ? (assignment.profiles[0] ?? null)
-          : assignment.profiles;
-        const name = profileData?.full_name ?? "Unknown";
+        const name = `Employee ${assignment.employee_id.slice(0, 8)}`;
         const existing = crewMap.get(assignment.employee_id) ?? {
           name,
           jobCount: 0,
@@ -480,9 +474,7 @@ export function UnifiedInsightsClient() {
         };
         existing.jobCount++;
 
-        const jobData = Array.isArray(assignment.jobs)
-          ? (assignment.jobs[0] ?? null)
-          : assignment.jobs;
+        const jobData = jobsById.get(assignment.job_id) ?? null;
         if (jobData?.scheduled_start && jobData?.scheduled_end) {
           const hours =
             (new Date(jobData.scheduled_end).getTime() -
@@ -508,10 +500,10 @@ export function UnifiedInsightsClient() {
         openIssues,
         resolvedIssues,
         newLeads,
-        wonLeads,
+        convertedLeads,
         quotedLeads,
         lostLeads,
-        conversionRate: leads.length > 0 ? Math.round((wonLeads / leads.length) * 100) : 0,
+        conversionRate: leads.length > 0 ? Math.round((convertedLeads / leads.length) * 100) : 0,
         revenueTotal: Number(latestSnapshot?.total_revenue ?? 0),
         outstandingTotal: Number(latestSnapshot?.outstanding_invoices ?? 0),
         overdueTotal: Number(latestSnapshot?.overdue_invoices ?? 0),
@@ -531,16 +523,13 @@ export function UnifiedInsightsClient() {
       setTrends({
         jobs: computeTrend(jobs.length, prevJobs.length),
         leads: computeTrend(leads.length, prevLeads.length),
-        revenue: computeTrend(Number(latestSnapshot?.total_revenue ?? 0), 0),
+        revenue: computeTrend(Number(latestSnapshot?.total_revenue ?? 0), previousSnapshotRevenue),
         applications: computeTrend(applications.length, prevApplications.length),
       });
 
       const clientMap = new Map<string, { count: number; revenue: number }>();
       for (const job of jobs) {
-        const clientData = Array.isArray(job.clients)
-          ? (job.clients[0] ?? null)
-          : job.clients;
-        const clientName = clientData?.company_name ?? "Unlinked";
+        const clientName = job.client_id ? `Client ${job.client_id.slice(0, 8)}` : "Unlinked";
         const existing = clientMap.get(clientName) ?? { count: 0, revenue: 0 };
         existing.count++;
         clientMap.set(clientName, existing);
@@ -672,7 +661,7 @@ export function UnifiedInsightsClient() {
         rows.push(`qa_approval_rate,${metrics.qaApprovalRate}%`);
         rows.push(`open_issues,${metrics.openIssues}`);
         rows.push(`new_leads,${metrics.newLeads}`);
-        rows.push(`won_leads,${metrics.wonLeads}`);
+        rows.push(`converted_leads,${metrics.convertedLeads}`);
         rows.push(`conversion_rate,${metrics.conversionRate}%`);
         rows.push(`revenue_total,${metrics.revenueTotal}`);
         rows.push(`outstanding_total,${metrics.outstandingTotal}`);
@@ -810,7 +799,7 @@ export function UnifiedInsightsClient() {
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
-            <span className="mr-1">{tab.icon}</span>
+            <span className="mr-1 inline-flex" aria-hidden>{renderTabIcon(tab.icon)}</span>
             {tab.label}
           </button>
         ))}
@@ -869,7 +858,7 @@ export function UnifiedInsightsClient() {
             <MetricCard
               label="Lead Conversion"
               value={`${metrics.conversionRate}%`}
-              subtitle={`${metrics.wonLeads} won / ${metrics.quotedLeads} quoted / ${metrics.lostLeads} lost`}
+              subtitle={`${metrics.convertedLeads} converted / ${metrics.quotedLeads} quoted / ${metrics.lostLeads} lost`}
             />
             <MetricCard
               label="Outstanding"
@@ -1206,7 +1195,7 @@ export function UnifiedInsightsClient() {
           ) : (
             <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
               <p className="text-sm font-medium text-green-700">
-                ✅ All supplies are above reorder thresholds.
+                All supplies are above reorder thresholds.
               </p>
             </div>
           )}
@@ -1217,7 +1206,7 @@ export function UnifiedInsightsClient() {
 }
 
 function leadsTotal(m: OverviewMetrics): number {
-  return m.newLeads + m.wonLeads + m.quotedLeads + m.lostLeads;
+  return m.newLeads + m.convertedLeads + m.quotedLeads + m.lostLeads;
 }
 
 function applicationsTotal(m: OverviewMetrics): number {

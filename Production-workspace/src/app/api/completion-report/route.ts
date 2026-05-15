@@ -256,7 +256,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "jobId is required." }, { status: 400 });
   }
 
-  const autoTriggered = body.autoTriggered === true;
+  const requestedAutoTriggered = body.autoTriggered === true;
 
   const allRecipients: string[] = [];
   if (body.recipientEmail && isValidEmail(body.recipientEmail)) {
@@ -282,8 +282,43 @@ export async function POST(request: Request) {
   }
 
   const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).single();
-  if (!profile || profile.role !== "admin") {
-    return NextResponse.json({ error: "Admin role required." }, { status: 403 });
+  if (!profile || (profile.role !== "admin" && profile.role !== "employee")) {
+    return NextResponse.json({ error: "Admin or employee role required." }, { status: 403 });
+  }
+
+  const isAdmin = profile.role === "admin";
+  const isEmployee = profile.role === "employee";
+  const autoTriggered = isAdmin && requestedAutoTriggered;
+
+  if (isEmployee) {
+    if (requestedAutoTriggered) {
+      return NextResponse.json(
+        { error: "Employees cannot auto-trigger post-job workflows." },
+        { status: 403 },
+      );
+    }
+
+    if (body.recipientEmail || (body.ccEmails?.length ?? 0) > 0) {
+      return NextResponse.json(
+        { error: "Employees cannot send completion reports by email." },
+        { status: 403 },
+      );
+    }
+
+    const { data: assignment } = await supabase
+      .from("job_assignments")
+      .select("id")
+      .eq("job_id", jobId)
+      .eq("employee_id", user.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (!assignment) {
+      return NextResponse.json(
+        { error: "Employee is not assigned to this job." },
+        { status: 403 },
+      );
+    }
   }
 
   const { data: job, error: jobError } = await supabase
@@ -432,8 +467,8 @@ export async function POST(request: Request) {
     .insert({
       job_id: jobId,
       created_by: user.id,
-      recipient_email: body.recipientEmail || null,
-      cc_emails: body.ccEmails?.length ? body.ccEmails : null,
+      recipient_email: isAdmin ? body.recipientEmail || null : null,
+      cc_emails: isAdmin && body.ccEmails?.length ? body.ccEmails : null,
       auto_triggered: autoTriggered,
       status: emailSent ? "sent" : allRecipients.length > 0 ? "email_failed" : "generated",
       report_payload: reportPayload,

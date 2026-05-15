@@ -2,22 +2,33 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { announceStatus } from "@/lib/status-announcer";
 import { createClient } from "@/lib/supabase/client";
 
 type LeadStatus =
   | "new"
-  | "qualified"
   | "contacted"
-  | "site_visit_scheduled"
   | "quoted"
-  | "won"
+  | "converted"
   | "lost"
-  | "dormant";
+  | "followup";
 
 type EmployeeOption = {
   id: string;
   full_name: string | null;
   role: "admin" | "employee";
+};
+
+type LeadQuoteRow = {
+  lead_id?: string;
+  id: string;
+  quote_number: string | null;
+  status: string;
+  delivery_status: string;
+  delivery_error: string | null;
+  total: number;
+  valid_until: string | null;
+  created_at: string;
 };
 
 type LeadRow = {
@@ -33,18 +44,7 @@ type LeadRow = {
   status: LeadStatus;
   created_at: string;
   converted_client_id: string | null;
-  quotes:
-    | {
-        id: string;
-        quote_number: string | null;
-        status: string;
-        delivery_status: string;
-        delivery_error: string | null;
-        total: number;
-        valid_until: string | null;
-        created_at: string;
-      }[]
-    | null;
+  quotes: LeadQuoteRow[] | null;
 };
 
 type QuoteDraft = {
@@ -89,11 +89,10 @@ type QuoteTemplateRow = {
 const statusColumns: { key: LeadStatus; label: string }[] = [
   { key: "new", label: "New" },
   { key: "contacted", label: "Contacted" },
-  { key: "site_visit_scheduled", label: "Visit Scheduled" },
   { key: "quoted", label: "Quoted" },
-  { key: "won", label: "Won" },
+  { key: "converted", label: "Converted" },
   { key: "lost", label: "Lost" },
-  { key: "dormant", label: "Dormant" },
+  { key: "followup", label: "Follow-up" },
 ];
 
 const defaultQuoteDraft: QuoteDraft = {
@@ -180,6 +179,24 @@ function buildScheduledStartFromPreset(preset: DispatchPreset) {
   return local.toISOString().slice(0, 16);
 }
 
+function normalizeRelation<T>(relation: T[] | T | null | undefined): T | null {
+  if (!relation) return null;
+  return Array.isArray(relation) ? relation[0] ?? null : relation;
+}
+
+function buildAvailabilityWindow(scheduledStart: string): { startIso: string; endIso: string } | null {
+  const parsed = new Date(scheduledStart);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  const ninetyMinutes = 90 * 60 * 1000;
+  return {
+    startIso: new Date(parsed.getTime() - ninetyMinutes).toISOString(),
+    endIso: new Date(parsed.getTime() + ninetyMinutes).toISOString(),
+  };
+}
+
 export function LeadPipelineClient() {
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [employees, setEmployees] = useState<EmployeeOption[]>([]);
@@ -188,16 +205,19 @@ export function LeadPipelineClient() {
   const [statusText, setStatusText] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
   const [activeQuoteLeadId, setActiveQuoteLeadId] = useState<string | null>(null);
+  const [reviewQuoteLeadId, setReviewQuoteLeadId] = useState<string | null>(null);
   const [activeJobLeadId, setActiveJobLeadId] = useState<string | null>(null);
   const [quoteDraftByLead, setQuoteDraftByLead] = useState<Record<string, QuoteDraft>>({});
   const [jobDraftByLead, setJobDraftByLead] = useState<Record<string, JobDraft>>({});
   const [dispatchPresetByLead, setDispatchPresetByLead] = useState<Record<string, DispatchPreset>>({});
   const [busyEmployeeIdsByLead, setBusyEmployeeIdsByLead] = useState<Record<string, string[]>>({});
+  const [jobIdByQuoteId, setJobIdByQuoteId] = useState<Record<string, string>>({});
   const [isSavingQuoteForLead, setIsSavingQuoteForLead] = useState<string | null>(null);
   const [isConvertingLead, setIsConvertingLead] = useState<string | null>(null);
   const [isCreatingJobForLead, setIsCreatingJobForLead] = useState<string | null>(null);
   const [isSendingMessage, setIsSendingMessage] = useState<string | null>(null);
   const [isCheckingAvailabilityForLead, setIsCheckingAvailabilityForLead] = useState<string | null>(null);
+  const [mobileActiveStatus, setMobileActiveStatus] = useState<LeadStatus>("new");
 
   const sendQuickResponse = async (leadId: string, templateId: string) => {
     if (!templateId) return;
@@ -219,6 +239,7 @@ export function LeadPipelineClient() {
       }
 
       setStatusText("Quick response sent via SMS and logged to notes.");
+      announceStatus("Quick response sent via SMS and logged to notes.");
       await loadData();
     } catch {
       setErrorText("Error sending message.");
@@ -236,7 +257,7 @@ export function LeadPipelineClient() {
       supabase
         .from("leads")
         .select(
-          "id, name, company_name, phone, email, service_type, timeline, description, notes, status, created_at, converted_client_id, quotes(id, quote_number, status, delivery_status, delivery_error, total, valid_until, created_at)",
+          "id, name, phone, email, service_type, timeline, description, notes, status, created_at",
         )
         .order("created_at", { ascending: false })
         .limit(200),
@@ -262,7 +283,55 @@ export function LeadPipelineClient() {
       return;
     }
 
-    setLeads((leadsResult.data as LeadRow[]) ?? []);
+    const baseLeads: LeadRow[] = (
+      (leadsResult.data as Array<
+        Pick<
+          LeadRow,
+          "id" | "name" | "phone" | "email" | "service_type" | "timeline" | "description" | "notes" | "status" | "created_at"
+        >
+      >) ?? []
+    ).map((lead) => ({
+      ...lead,
+      company_name: null,
+      converted_client_id: null,
+      quotes: null,
+    }));
+
+    // Quotes are loaded separately so lead loading still works when relation metadata is missing.
+    const leadIds = baseLeads.map((lead) => lead.id);
+    if (leadIds.length > 0) {
+      const { data: quoteRows, error: quotesError } = await supabase
+        .from("quotes")
+        .select("id, lead_id, quote_number, status, delivery_status, delivery_error, total, valid_until, created_at")
+        .in("lead_id", leadIds)
+        .order("created_at", { ascending: false });
+
+      if (!quotesError && quoteRows) {
+        const quotesByLead = new Map<string, LeadRow["quotes"]>();
+        for (const quote of quoteRows as LeadQuoteRow[]) {
+          if (!quote.lead_id) continue;
+          const existing = quotesByLead.get(quote.lead_id) ?? [];
+          existing.push(quote);
+          quotesByLead.set(quote.lead_id, existing);
+        }
+
+        for (const lead of baseLeads) {
+          const quotes = quotesByLead.get(lead.id);
+          if (quotes && quotes.length > 0) {
+            lead.quotes = quotes;
+          }
+        }
+      }
+    }
+
+    const normalizedLeads = baseLeads.map((lead) => ({
+      ...lead,
+      quotes: lead.quotes
+        ? [...lead.quotes].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        : null,
+    }));
+
+    setLeads(normalizedLeads);
     setEmployees((profilesResult.data as EmployeeOption[]) ?? []);
     setQuoteTemplates((templatesResult.data as QuoteTemplateRow[] | null) ?? []);
     setIsLoading(false);
@@ -275,17 +344,19 @@ export function LeadPipelineClient() {
   const leadsByStatus = useMemo(() => {
     const grouped: Record<LeadStatus, LeadRow[]> = {
       new: [],
-      qualified: [],
       contacted: [],
-      site_visit_scheduled: [],
       quoted: [],
-      won: [],
+      converted: [],
       lost: [],
-      dormant: [],
+      followup: [],
     };
 
     for (const lead of leads) {
-      grouped[lead.status] = [...grouped[lead.status], lead];
+      if (lead.status in grouped) {
+        grouped[lead.status].push(lead);
+      } else {
+        grouped.followup.push(lead);
+      }
     }
 
     return grouped;
@@ -300,14 +371,19 @@ export function LeadPipelineClient() {
       patch.contacted_at = new Date().toISOString();
     }
 
-    const { error } = await createClient().from("leads").update(patch).eq("id", leadId);
-    if (error) {
-      setErrorText(error.message);
-      return;
-    }
+    try {
+      const { error } = await createClient().from("leads").update(patch).eq("id", leadId);
+      if (error) {
+        setErrorText(error.message);
+        return;
+      }
 
-    setStatusText("Lead status updated.");
-    await loadData();
+      setStatusText("Lead status updated.");
+      announceStatus("Lead status updated.");
+      await loadData();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Unable to update lead status.");
+    }
   };
 
   const applyQuoteTemplate = (leadId: string, templateId: string) => {
@@ -390,14 +466,19 @@ export function LeadPipelineClient() {
         return;
       }
 
-      setStatusText(
-        payload?.emailed
-          ? `Quote ${payload.quoteNumber} emailed successfully.`
-          : `Quote ${payload?.quoteNumber} created. Share link: ${payload?.shareUrl}`,
-      );
+      const successMessage = payload?.emailed
+        ? `Quote ${payload.quoteNumber} emailed successfully.`
+        : payload?.deliveryStatus === "failed" && payload.deliveryError
+          ? `Quote ${payload?.quoteNumber} created, but email delivery failed: ${payload.deliveryError}. Share link: ${payload?.shareUrl}`
+          : `Quote ${payload?.quoteNumber} created. Share link: ${payload?.shareUrl}`;
+      setStatusText(successMessage);
+      announceStatus(successMessage);
+      setReviewQuoteLeadId(null);
       setActiveQuoteLeadId(null);
       setQuoteDraftByLead((prev) => ({ ...prev, [lead.id]: defaultQuoteDraft }));
       await loadData();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Unable to send quote.");
     } finally {
       setIsSavingQuoteForLead(null);
     }
@@ -435,7 +516,7 @@ export function LeadPipelineClient() {
 
       const { error: leadUpdateError } = await supabase
         .from("leads")
-        .update({ status: "won", converted_client_id: convertedClientId })
+        .update({ status: "converted", converted_client_id: convertedClientId })
         .eq("id", lead.id);
 
       if (leadUpdateError) {
@@ -443,8 +524,11 @@ export function LeadPipelineClient() {
         return;
       }
 
-      setStatusText("Lead converted to client and marked won.");
+      setStatusText("Lead converted to client.");
+      announceStatus("Lead converted to client.");
       await loadData();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Unable to convert lead.");
     } finally {
       setIsConvertingLead(null);
     }
@@ -481,10 +565,20 @@ export function LeadPipelineClient() {
         return;
       }
 
-      setStatusText(payload?.existing ? "Job already existed for this quote." : "Job created from accepted quote.");
+      if (payload?.jobId) {
+        setJobIdByQuoteId((prev) => ({ ...prev, [quoteId]: payload.jobId! }));
+      }
+
+      const successMessage = payload?.existing
+        ? `Job already exists for this quote (${payload?.jobId ?? "id unavailable"}).`
+        : `Job created from accepted quote (${payload?.jobId ?? "id unavailable"}).`;
+      setStatusText(successMessage);
+      announceStatus(successMessage);
       setActiveJobLeadId(null);
       setJobDraftByLead((prev) => ({ ...prev, [lead.id]: defaultJobDraft }));
       await loadData();
+    } catch (error) {
+      setErrorText(error instanceof Error ? error.message : "Unable to create job from quote.");
     } finally {
       setIsCreatingJobForLead(null);
     }
@@ -498,21 +592,40 @@ export function LeadPipelineClient() {
 
     setIsCheckingAvailabilityForLead(leadId);
 
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("job_assignments")
-      .select("employee_id, jobs!inner(scheduled_start, status)")
-      .eq("jobs.scheduled_start", scheduledStart)
-      .in("jobs.status", ["scheduled", "in_progress"]);
-
-    if (error) {
-      setErrorText(error.message);
+    const windowBounds = buildAvailabilityWindow(scheduledStart);
+    if (!windowBounds) {
+      setErrorText("Enter a valid start time.");
       setBusyEmployeeIdsByLead((prev) => ({ ...prev, [leadId]: [] }));
       setIsCheckingAvailabilityForLead(null);
       return;
     }
 
-    const busyIds = Array.from(new Set(((data as { employee_id: string }[] | null) ?? []).map((row) => row.employee_id)));
+    const supabase = createClient();
+    const [assignmentResult, availabilityResult] = await Promise.all([
+      supabase
+        .from("job_assignments")
+        .select("employee_id, jobs!inner(scheduled_start, status)")
+        .gte("jobs.scheduled_start", windowBounds.startIso)
+        .lte("jobs.scheduled_start", windowBounds.endIso)
+        .in("jobs.status", ["scheduled", "in_progress"]),
+      supabase
+        .from("employee_availability")
+        .select("employee_id")
+        .in("status", ["unavailable", "limited"])
+        .lt("starts_at", windowBounds.endIso)
+        .gt("ends_at", windowBounds.startIso),
+    ]);
+
+    if (assignmentResult.error || availabilityResult.error) {
+      setErrorText(assignmentResult.error?.message ?? availabilityResult.error?.message ?? "Unable to check availability.");
+      setBusyEmployeeIdsByLead((prev) => ({ ...prev, [leadId]: [] }));
+      setIsCheckingAvailabilityForLead(null);
+      return;
+    }
+
+    const assignmentBusyIds = ((assignmentResult.data as { employee_id: string }[] | null) ?? []).map((row) => row.employee_id);
+    const unavailableBusyIds = ((availabilityResult.data as { employee_id: string }[] | null) ?? []).map((row) => row.employee_id);
+    const busyIds = Array.from(new Set([...assignmentBusyIds, ...unavailableBusyIds]));
     setBusyEmployeeIdsByLead((prev) => ({ ...prev, [leadId]: busyIds }));
     setIsCheckingAvailabilityForLead(null);
   };
@@ -533,9 +646,31 @@ export function LeadPipelineClient() {
       {errorText ? <p className="mt-3 text-sm text-red-600">{errorText}</p> : null}
       {isLoading ? <p className="mt-4 text-sm text-slate-500">Loading leads...</p> : null}
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-5">
+      <div className="mt-4 flex gap-2 overflow-x-auto pb-1 lg:hidden">
         {statusColumns.map((column) => (
-          <article key={column.key} className="rounded-md border border-slate-200 bg-slate-50 p-3">
+          <button
+            key={column.key}
+            type="button"
+            onClick={() => setMobileActiveStatus(column.key)}
+            className={`whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium ${
+              mobileActiveStatus === column.key
+                ? "border-slate-900 bg-slate-900 text-white"
+                : "border-slate-300 bg-white text-slate-700"
+            }`}
+          >
+            {column.label} ({leadsByStatus[column.key]?.length ?? 0})
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2 xl:grid-cols-4 2xl:grid-cols-5">
+        {statusColumns.map((column) => (
+          <article
+            key={column.key}
+            className={`rounded-md border border-slate-200 bg-slate-50 p-3 ${
+              column.key !== mobileActiveStatus ? "hidden lg:block" : ""
+            }`}
+          >
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-700">{column.label}</h3>
               <span className="rounded-full bg-white px-2 py-0.5 text-xs text-slate-600">{leadsByStatus[column.key]?.length ?? 0}</span>
@@ -543,10 +678,11 @@ export function LeadPipelineClient() {
 
             <div className="space-y-3">
               {(leadsByStatus[column.key] ?? []).map((lead) => {
-                const latestQuote = lead.quotes?.[0] ?? null;
+                const latestQuote = normalizeRelation(lead.quotes);
                 const quoteDraft = quoteDraftByLead[lead.id] ?? defaultQuoteDraft;
                 const jobDraft = jobDraftByLead[lead.id] ?? defaultJobDraft;
                 const canCreateJob = latestQuote?.status === "accepted";
+                const createdJobId = latestQuote ? jobIdByQuoteId[latestQuote.id] : undefined;
                 const draftSubtotal = Number.parseFloat(quoteDraft.quantity || "0") * Number.parseFloat(quoteDraft.unitPrice || "0");
                 const matchingTemplates = quoteTemplates.filter((template) => template.service_type === lead.service_type);
                 const fallbackTemplates = quoteTemplates.filter((template) => template.service_type !== lead.service_type);
@@ -559,7 +695,12 @@ export function LeadPipelineClient() {
                   <div key={lead.id} className="rounded-md border border-slate-200 bg-white p-3">
                     <p className="text-sm font-semibold text-slate-900">{lead.company_name || lead.name}</p>
                     <p className="mt-1 text-xs text-slate-600">{lead.name}</p>
-                    <p className="mt-1 text-xs text-slate-600">{lead.phone}</p>
+                    <p className="mt-1 text-xs text-slate-600">Text: {lead.phone || "No phone on file"}</p>
+                    {lead.email ? (
+                      <p className="mt-1 break-all text-xs text-slate-600">Email: {lead.email}</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-amber-700">No email on file. Quote will create a share link only.</p>
+                    )}
                     <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">
                       {lead.service_type || "general"} • {timeAgo(lead.created_at)}
                     </p>
@@ -570,7 +711,7 @@ export function LeadPipelineClient() {
                       <div className="mt-3 rounded border border-slate-200 bg-slate-50 p-2">
                         <div className="flex items-center justify-between gap-2">
                           <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">
-                            {latestQuote.quote_number || "Quote"} • ${latestQuote.total.toFixed(2)}
+                            {latestQuote.quote_number || "Quote"} • ${Number(latestQuote.total ?? 0).toFixed(2)}
                           </p>
                           <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium uppercase ${statusBadge(latestQuote.status)}`}>
                             {latestQuote.status}
@@ -583,13 +724,13 @@ export function LeadPipelineClient() {
 
                     <div className="mt-3 grid gap-2">
                       <select
-                        className="rounded-md border border-blue-300 bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800 outline-none disabled:opacity-50"
+                        className="rounded-md border border-blue-300 bg-blue-50 px-3 py-1.5 text-sm font-medium text-blue-800 outline-none disabled:opacity-50"
                         value=""
                         disabled={isSendingMessage === lead.id}
                         onChange={(e) => void sendQuickResponse(lead.id, e.target.value)}
                       >
                         <option value="" disabled>
-                          {isSendingMessage === lead.id ? "Sending..." : "Quick Response"}
+                          {isSendingMessage === lead.id ? "Sending text..." : "Text Response"}
                         </option>
                         <option value="awaiting_scope">Awaiting Scope</option>
                         <option value="quote_sent">Quote Sent</option>
@@ -597,24 +738,24 @@ export function LeadPipelineClient() {
                       </select>
 
                       <select
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                        className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
                         value={lead.status}
                         onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
                       >
                         <option value="new">New</option>
                         <option value="contacted">Contacted</option>
-                        <option value="site_visit_scheduled">Site Visit Scheduled</option>
                         <option value="quoted">Quoted</option>
-                        <option value="won">Won</option>
+                        <option value="converted">Converted</option>
                         <option value="lost">Lost</option>
-                        <option value="dormant">Dormant</option>
+                        <option value="followup">Follow-up</option>
                       </select>
 
                       <button
                         type="button"
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-700"
+                        className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700"
                         onClick={() => {
                           setActiveQuoteLeadId((prev) => (prev === lead.id ? null : lead.id));
+                          setReviewQuoteLeadId((prev) => (prev === lead.id ? null : prev));
                           setQuoteDraftByLead((prev) => ({ ...prev, [lead.id]: prev[lead.id] ?? defaultQuoteDraft }));
                         }}
                       >
@@ -623,17 +764,21 @@ export function LeadPipelineClient() {
 
                       <button
                         type="button"
-                        className="rounded-md bg-slate-900 px-2 py-1 text-xs font-medium text-white hover:bg-slate-700 disabled:opacity-70"
+                        className="rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-70"
                         disabled={isConvertingLead === lead.id}
                         onClick={() => void convertLeadToClient(lead)}
                       >
                         {isConvertingLead === lead.id ? "Converting..." : "Convert to Client"}
                       </button>
 
-                      {canCreateJob ? (
+                      {createdJobId ? (
+                        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+                          Job created: {createdJobId.slice(0, 8)}
+                        </div>
+                      ) : canCreateJob ? (
                         <button
                           type="button"
-                          className="rounded-md border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-800"
+                          className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"
                           onClick={() => {
                             setActiveJobLeadId((prev) => (prev === lead.id ? null : lead.id));
                             const defaultPreset = dispatchPresetByLead[lead.id] ?? defaultDispatchPreset;
@@ -667,7 +812,7 @@ export function LeadPipelineClient() {
                             Template Suggestions for {humanizeServiceType(lead.service_type)}
                           </p>
                           <select
-                            className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                             defaultValue=""
                             onChange={(event) => applyQuoteTemplate(lead.id, event.target.value)}
                             disabled={!hasAnyTemplates}
@@ -702,7 +847,7 @@ export function LeadPipelineClient() {
                         </div>
 
                         <input
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           placeholder="Site address"
                           value={quoteDraft.siteAddress}
                           onChange={(event) =>
@@ -713,7 +858,7 @@ export function LeadPipelineClient() {
                           }
                         />
                         <textarea
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           rows={2}
                           placeholder="Scope description"
                           value={quoteDraft.scopeDescription}
@@ -725,7 +870,7 @@ export function LeadPipelineClient() {
                           }
                         />
                         <input
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           placeholder="Line item description"
                           value={quoteDraft.lineDescription}
                           onChange={(event) =>
@@ -737,7 +882,7 @@ export function LeadPipelineClient() {
                         />
                         <div className="grid grid-cols-2 gap-2">
                           <input
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
                             placeholder="Qty"
                             value={quoteDraft.quantity}
                             onChange={(event) =>
@@ -748,7 +893,7 @@ export function LeadPipelineClient() {
                             }
                           />
                           <input
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
                             placeholder="Unit price"
                             value={quoteDraft.unitPrice}
                             onChange={(event) =>
@@ -761,7 +906,7 @@ export function LeadPipelineClient() {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           <select
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
                             value={quoteDraft.unit}
                             onChange={(event) =>
                               setQuoteDraftByLead((prev) => ({
@@ -777,7 +922,7 @@ export function LeadPipelineClient() {
                           </select>
                           <input
                             type="date"
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
                             value={quoteDraft.validUntil}
                             onChange={(event) =>
                               setQuoteDraftByLead((prev) => ({
@@ -788,7 +933,7 @@ export function LeadPipelineClient() {
                           />
                         </div>
                         <input
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           placeholder="Tax amount"
                           value={quoteDraft.taxAmount}
                           onChange={(event) =>
@@ -799,7 +944,7 @@ export function LeadPipelineClient() {
                           }
                         />
                         <textarea
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           rows={2}
                           placeholder="Quote notes"
                           value={quoteDraft.notes}
@@ -813,14 +958,48 @@ export function LeadPipelineClient() {
                         <p className="text-[11px] text-slate-500">
                           Estimated subtotal: ${Number.isFinite(draftSubtotal) ? draftSubtotal.toFixed(2) : "0.00"}
                         </p>
-                        <button
-                          type="button"
-                          className="w-full rounded-md bg-[#0A1628] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1E293B] disabled:opacity-70"
-                          disabled={isSavingQuoteForLead === lead.id}
-                          onClick={() => void createQuote(lead)}
-                        >
-                          {isSavingQuoteForLead === lead.id ? "Sending..." : "Send Quote"}
-                        </button>
+                        {reviewQuoteLeadId === lead.id ? (
+                          <div className="rounded-md border border-slate-200 bg-slate-50 p-2">
+                            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">Review Before Sending</p>
+                            <p className="mt-1 text-[11px] text-slate-600">Description: {quoteDraft.lineDescription || "Cleaning scope"}</p>
+                            <p className="text-[11px] text-slate-600">
+                              Quantity: {quoteDraft.quantity || "0"} {quoteDraft.unit} @ ${Number.parseFloat(quoteDraft.unitPrice || "0").toFixed(2)}
+                            </p>
+                            <p className="text-[11px] text-slate-600">Tax: ${Number.parseFloat(quoteDraft.taxAmount || "0").toFixed(2)}</p>
+                            <p className="text-[11px] font-medium text-slate-700">Subtotal: ${Number.isFinite(draftSubtotal) ? draftSubtotal.toFixed(2) : "0.00"}</p>
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                className="rounded-md border border-slate-300 px-2 py-1.5 text-xs font-medium text-slate-700"
+                                onClick={() => setReviewQuoteLeadId(null)}
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                className="rounded-md bg-[#0A1628] px-2 py-1.5 text-xs font-medium text-white hover:bg-[#1E293B] disabled:opacity-70"
+                                disabled={isSavingQuoteForLead === lead.id}
+                                onClick={() => void createQuote(lead)}
+                              >
+                                {isSavingQuoteForLead === lead.id
+                                  ? lead.email
+                                    ? "Emailing..."
+                                    : "Creating..."
+                                  : lead.email
+                                    ? "Create & Email Quote"
+                                    : "Create Share Link"}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            className="w-full rounded-md bg-[#0A1628] px-3 py-1.5 text-xs font-medium text-white hover:bg-[#1E293B]"
+                            onClick={() => setReviewQuoteLeadId(lead.id)}
+                          >
+                            Review Quote
+                          </button>
+                        )}
                       </div>
                     ) : null}
 
@@ -841,7 +1020,7 @@ export function LeadPipelineClient() {
 
                         <div className="grid grid-cols-2 gap-2">
                           <select
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
                             value={(dispatchPresetByLead[lead.id] ?? defaultDispatchPreset).day}
                             onChange={(event) => {
                               const nextPreset: DispatchPreset = {
@@ -871,7 +1050,7 @@ export function LeadPipelineClient() {
                           </select>
 
                           <select
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="rounded-md border border-slate-300 px-3 py-2 text-sm"
                             value={(dispatchPresetByLead[lead.id] ?? defaultDispatchPreset).window}
                             onChange={(event) => {
                               const nextPreset: DispatchPreset = {
@@ -902,7 +1081,7 @@ export function LeadPipelineClient() {
                         </div>
 
                         <input
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           placeholder="Job title"
                           value={jobDraft.title}
                           onChange={(event) =>
@@ -914,7 +1093,7 @@ export function LeadPipelineClient() {
                         />
                         <input
                           type="datetime-local"
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           value={jobDraft.scheduledStart}
                             onChange={(event) => {
                               const nextScheduledStart = event.target.value;
@@ -926,7 +1105,7 @@ export function LeadPipelineClient() {
                             }}
                         />
                         <select
-                          className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
                           value={jobDraft.employeeId}
                           onChange={(event) =>
                             setJobDraftByLead((prev) => ({

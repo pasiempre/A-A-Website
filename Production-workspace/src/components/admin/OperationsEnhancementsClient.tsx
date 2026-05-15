@@ -127,9 +127,7 @@ export function OperationsEnhancementsClient() {
             "scope",
             "client_id",
             "checklist_template_id",
-            "job_messages(id, message_text, created_at)",
             "job_checklist_items(id, item_text, sort_order, is_completed, completed_at, completed_by)",
-            "issue_reports(id, description, status)",
             "job_photos(id, storage_path, created_at)",
           ].join(", "),
         )
@@ -148,7 +146,11 @@ export function OperationsEnhancementsClient() {
       return;
     }
 
-    const loadedJobs = (jobsResult.data as unknown as JobOps[]) ?? [];
+    const loadedJobs = (((jobsResult.data as unknown as Omit<JobOps, "job_messages" | "issue_reports">[]) ?? []).map((job) => ({
+      ...job,
+      job_messages: null,
+      issue_reports: null,
+    })) as JobOps[]);
     setJobs(loadedJobs);
     setTemplates((templatesResult.data as TemplateRow[]) ?? []);
 

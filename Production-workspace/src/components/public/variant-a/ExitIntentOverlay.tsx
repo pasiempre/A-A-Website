@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { trackConversionEvent } from "@/lib/analytics";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 type ExitIntentOverlayProps = {
   onOpenQuote: () => void;
@@ -10,9 +11,13 @@ type ExitIntentOverlayProps = {
 
 export function ExitIntentOverlay({ onOpenQuote }: ExitIntentOverlayProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const titleId = useId();
   const hasShownRef = useRef(false);
   const hasScrolledRef = useRef(false);
   const timeOnPageRef = useRef(0);
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+
+  useFocusTrap(dialogRef, isVisible);
 
   useEffect(() => {
     const startTime = Date.now();
@@ -85,6 +90,21 @@ export function ExitIntentOverlay({ onOpenQuote }: ExitIntentOverlayProps) {
     });
   };
 
+  useEffect(() => {
+    if (!isVisible) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        dismiss();
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isVisible]);
+
   if (!isVisible) {
     return null;
   }
@@ -99,10 +119,12 @@ export function ExitIntentOverlay({ onOpenQuote }: ExitIntentOverlayProps) {
       }}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         className="relative w-full max-w-md overflow-hidden rounded-3xl bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="exit-intent-heading"
+        aria-labelledby={titleId}
       >
         <div className="h-1.5 bg-gradient-to-r from-[#C9A94E] via-[#2563EB] to-[#C9A94E]" aria-hidden="true" />
 
@@ -139,7 +161,7 @@ export function ExitIntentOverlay({ onOpenQuote }: ExitIntentOverlayProps) {
             </div>
           </div>
 
-          <h2 id="exit-intent-heading" className="text-2xl tracking-tight text-[#0A1628] md:text-3xl">
+          <h2 id={titleId} className="text-2xl tracking-tight text-[#0A1628] md:text-3xl">
             Get your free quote in under a minute
           </h2>
 

@@ -45,15 +45,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body id="site-main-content">
+      <body>
         <RouteProgressBar />
         <a
-          href="#site-main-content"
+          href="#main-content"
           className="sr-only left-4 top-4 z-[70] rounded bg-[#0A1628] px-3 py-2 text-sm font-medium text-white focus:not-sr-only focus:fixed"
         >
           Skip to main content
         </a>
-        {children}
+        <div id="main-content">{children}</div>
       </body>
     </html>
   );

@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PublicPageShell } from "@/components/public/PublicPageShell";
+import { AccordionFAQ } from "@/components/public/variant-a/AccordionFAQ";
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import {
   COMPANY_NAME,
   COMPANY_SHORT_NAME,
@@ -14,6 +15,7 @@ import { SERVICE_AREA_CITIES } from "@/lib/service-areas";
 import {
   SERVICE_AREA_VISUAL_POINTS,
 } from "@/data/service-area-visual";
+import { SERVICES } from "@/data/services";
 
 export const metadata: Metadata = {
   title: "Service Area — Austin Metro Cleaning Coverage",
@@ -77,24 +79,6 @@ const VISUAL_REGION_MAP: Record<"north" | "central" | "south", "North" | "Centra
   central: "Central",
   south: "South",
 };
-
-const SERVICES_ACROSS_AREAS = [
-  {
-    title: "Post-Construction Cleaning",
-    detail: "Rough and final cleaning support for active jobsite closeouts and handoff readiness.",
-    href: "/services/post-construction-cleaning",
-  },
-  {
-    title: "Commercial Cleaning",
-    detail: "Recurring and scheduled support for offices, retail environments, and facility operations.",
-    href: "/services/commercial-cleaning",
-  },
-  {
-    title: "Move-In / Move-Out",
-    detail: "Unit turnover and transition cleaning support for leasing and occupancy timelines.",
-    href: "/services/move-in-move-out-cleaning",
-  },
-];
 
 const COVERAGE_FAQS = [
   {
@@ -167,8 +151,7 @@ export default function ServiceAreaIndexPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <PublicPageShell>
-        <main className="pb-24 md:pb-0">
+      <main>
           <section className="relative overflow-hidden border-b border-slate-200 bg-[#0A1628] pb-20 pt-32 md:pb-28 md:pt-40">
             <div className="pointer-events-none absolute inset-0 opacity-[0.04]" aria-hidden="true">
               <div
@@ -399,15 +382,15 @@ export default function ServiceAreaIndexPage() {
                 Built for Consistent Coverage
               </h2>
 
-              <div className="mt-8 grid gap-4 md:grid-cols-3">
-                {SERVICES_ACROSS_AREAS.map((service) => (
+              <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {SERVICES.map((service) => (
                   <Link
-                    key={service.title}
+                    key={service.anchor}
                     href={service.href}
                     className="group rounded-2xl border border-slate-200 bg-[#FAFAF8] p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-white"
                   >
-                    <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{service.detail}</p>
+                    <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.titleLines.join(" ")}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-slate-600">{service.description}</p>
                     <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#2563EB]">
                       Learn more
                       <svg
@@ -442,18 +425,8 @@ export default function ServiceAreaIndexPage() {
                 Common Questions About Service Area Coverage
               </h2>
 
-              <div className="mt-6 space-y-3">
-                {COVERAGE_FAQS.map((faq) => (
-                  <details key={faq.question} className="rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] md:text-base">
-                      <span className="inline-flex items-center gap-2">
-                        <span className="text-[#2563EB]">+</span>
-                        {faq.question}
-                      </span>
-                    </summary>
-                    <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
-                  </details>
-                ))}
+              <div className="mt-6">
+                <AccordionFAQ items={COVERAGE_FAQS} />
               </div>
 
               <div className="mt-6 text-sm text-slate-600">
@@ -500,22 +473,23 @@ export default function ServiceAreaIndexPage() {
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Link href="/contact" className="cta-primary px-6 py-3">
+                    <CTAButton ctaId="service_area_hub_coverage" actionType="link" href="/contact" className="cta-primary px-6 py-3">
                       Request Coverage
-                    </Link>
-                    <a
+                    </CTAButton>
+                    <CTAButton
+                      ctaId="service_area_hub_closing_call"
+                      actionType="call"
                       href={`tel:${COMPANY_PHONE_E164}`}
                       className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:border-white/60 hover:bg-white/10"
                     >
                       Call {COMPANY_PHONE}
-                    </a>
+                    </CTAButton>
                   </div>
                 </div>
               </div>
             </div>
           </section>
-        </main>
-      </PublicPageShell>
+      </main>
     </>
   );
 }

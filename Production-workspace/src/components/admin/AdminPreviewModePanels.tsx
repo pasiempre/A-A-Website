@@ -6,7 +6,7 @@ const modules = [
   },
   {
     title: "Lead Pipeline",
-    detail: "New → Contacted → Quoted → Won/Lost lifecycle board and quote actions.",
+    detail: "New → Contacted → Quoted → Converted/Lost lifecycle board and quote actions.",
     status: "Revenue Ops",
   },
   {

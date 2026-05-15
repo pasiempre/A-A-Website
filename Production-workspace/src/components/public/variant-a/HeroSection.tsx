@@ -230,16 +230,6 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* Desktop scroll indicator — unchanged */}
-      <div className="absolute bottom-[72px] left-1/2 z-30 hidden -translate-x-1/2 opacity-0 md:block" style={fadeUp(1860, 900)}>
-        <div className="hero-bounce-subtle flex flex-col items-center gap-1 text-white/55">
-          <span className="text-[8px] font-medium uppercase tracking-[0.3em]">Scroll</span>
-          <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4">
-            <path d="m5.5 7.5 4.5 5 4.5-5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.2" />
-          </svg>
-        </div>
-      </div>
-
       {/* MOBILE-HARDENING: Absolute trust bar now desktop-only (hidden md:block).
           On mobile, inline version above handles trust signals in the content flow. */}
       <div className="absolute bottom-0 left-0 z-20 hidden w-full border-t border-white/20 bg-[#07101d]/45 opacity-0 md:block md:backdrop-blur-md" style={fadeUp(1760, 900)}>

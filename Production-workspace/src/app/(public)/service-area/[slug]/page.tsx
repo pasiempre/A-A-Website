@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AccordionFAQ } from "@/components/public/variant-a/AccordionFAQ";
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
+import { SERVICES } from "@/data/services";
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { getSiteUrl } from "@/lib/site";
 import { SERVICE_AREA_BY_SLUG, SERVICE_AREA_CITIES } from "@/lib/service-areas";
@@ -150,7 +154,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <main id="main-content" className="bg-[#F1F0EE]">
+      <main id="main-content" className="bg-[#FAFAF8]">
         <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-6 pt-28 md:pt-32">
           <ol className="flex items-center gap-2 text-xs text-slate-500">
             <li><Link href="/" className="hover:text-[#0A1628]">Home</Link></li>
@@ -179,8 +183,8 @@ export default async function LocationPage({ params }: LocationPageProps) {
           </ul>
 
           <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-            <Link href="/#quote-request" className="cta-primary px-8 py-4">Request a Quote</Link>
-            <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
+            <QuoteCTA ctaId={`city_${location.slug}_hero_quote`} className="cta-primary px-8 py-4">Request a Quote</QuoteCTA>
+            <CTAButton ctaId={`city_${location.slug}_hero_call`} actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</CTAButton>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -214,31 +218,15 @@ export default async function LocationPage({ params }: LocationPageProps) {
         <section className="border-t border-slate-200 bg-white py-16 md:py-24">
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">Services Available in {location.name}</h2>
-            <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {[
-                {
-                  title: "Post-Construction",
-                  body: "Rough and final clean for active construction sites and new builds.",
-                  href: "/services/post-construction-cleaning",
-                },
-                {
-                  title: "Turnover Cleaning",
-                  body: "Fast vacant unit turns for property managers and leasing teams.",
-                  href: "/services/move-in-move-out-cleaning",
-                },
-                {
-                  title: "Commercial Cleaning",
-                  body: "Ongoing facility care for offices, retail, and commercial spaces.",
-                  href: "/services/commercial-cleaning",
-                },
-              ].map((service) => (
+            <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {SERVICES.map((service) => (
                 <Link
-                  key={service.title}
+                  key={service.anchor}
                   href={service.href}
                   className="surface-panel group p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                 >
-                  <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{service.body}</p>
+                  <h3 className="text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">{service.titleLines.join(" ")}</h3>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">{service.description}</p>
                   <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#2563EB]">
                     Learn more
                     <svg
@@ -260,7 +248,7 @@ export default async function LocationPage({ params }: LocationPageProps) {
           </div>
         </section>
 
-        <section className="border-t border-slate-200 bg-[#F1F0EE] py-12">
+        <section className="border-t border-slate-200 bg-[#FAFAF8] py-12">
           <div className="mx-auto max-w-7xl px-6">
             <h2 className="font-serif text-lg font-semibold text-[#0A1628]">Also serving nearby areas</h2>
             <div className="mt-4 flex flex-wrap gap-3">
@@ -284,18 +272,8 @@ export default async function LocationPage({ params }: LocationPageProps) {
             <h2 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
               Coverage Questions in {location.name}
             </h2>
-            <div className="mt-5 space-y-3">
-              {locationFaqs.map((faq) => (
-                <details key={faq.question} className="rounded-2xl border border-slate-200 bg-[#FAFAF8] shadow-sm">
-                  <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] md:text-base">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="text-[#2563EB]">+</span>
-                      {faq.question}
-                    </span>
-                  </summary>
-                  <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{faq.answer}</p>
-                </details>
-              ))}
+            <div className="mt-5">
+              <AccordionFAQ items={locationFaqs} />
             </div>
 
             <div className="mt-6 text-sm text-slate-600">
@@ -329,13 +307,15 @@ export default async function LocationPage({ params }: LocationPageProps) {
             <h2 className="font-serif text-3xl tracking-tight text-white md:text-4xl">Ready to get started in {location.name}?</h2>
             <p className="mt-4 text-base font-light text-slate-300">Same standards, same responsiveness — wherever the project is.</p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote-request" className="cta-gold px-8 py-4">Get a Quote</Link>
-              <a
+              <QuoteCTA ctaId={`city_${location.slug}_closing_quote`} className="cta-gold px-8 py-4">Get a Quote</QuoteCTA>
+              <CTAButton
+                ctaId={`city_${location.slug}_closing_call`}
+                actionType="call"
                 href={`tel:${COMPANY_PHONE_E164}`}
-                className="text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"
+                className="min-h-0 text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"
               >
                 Or call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
           </div>
         </section>

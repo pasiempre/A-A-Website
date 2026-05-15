@@ -11,13 +11,32 @@ type TabId = "tickets" | "inventory";
 interface TabMeta {
   id: TabId;
   label: string;
-  icon: string;
+  icon: "clipboard" | "box";
 }
 
 const ALL_TABS: TabMeta[] = [
-  { id: "tickets", label: "Mis Trabajos", icon: "📋" },
-  { id: "inventory", label: "Suministros", icon: "📦" },
+  { id: "tickets", label: "Mis Trabajos", icon: "clipboard" },
+  { id: "inventory", label: "Suministros", icon: "box" },
 ];
+
+function renderTabIcon(icon: TabMeta["icon"]) {
+  if (icon === "clipboard") {
+    return (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <rect x="7" y="4" width="10" height="16" rx="2" />
+        <path d="M9 4.5h6" />
+        <path d="M9 10h6M9 14h6" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9z" />
+      <path d="m4 7.5 8 4.5 8-4.5" />
+    </svg>
+  );
+}
 
 function isTabId(value: string | null): value is TabId {
   return value === "tickets" || value === "inventory";
@@ -79,7 +98,7 @@ export function EmployeePortalTabs() {
                 }
               `}
             >
-              <span className="text-base leading-none">{tab.icon}</span>
+              <span className="flex-shrink-0">{renderTabIcon(tab.icon)}</span>
               <span>{tab.label}</span>
             </button>
           );

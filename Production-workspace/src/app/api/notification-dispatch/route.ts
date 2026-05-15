@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { authorizeCronRequest } from "@/lib/cron-auth";
+import { authorizeAdmin } from "@/lib/auth";
 import { sendSmsWithRetry } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -278,13 +279,16 @@ function parseRequestBody(body: unknown): {
 // ============================================================
 
 export async function POST(request: Request) {
-  // --- Auth (fail-closed) ---
-  const auth = authorizeCronRequest(request);
-  if (!auth.authorized) {
-    return NextResponse.json(
-      { success: false, error: auth.error ?? "Unauthorized." },
-      { status: 401 },
-    );
+  // --- Auth (fail-closed): allow cron header OR authenticated admin session ---
+  const cronAuth = authorizeCronRequest(request);
+  if (!cronAuth.authorized) {
+    const adminAuth = await authorizeAdmin();
+    if (!adminAuth.ok) {
+      return NextResponse.json(
+        { success: false, error: cronAuth.error ?? adminAuth.error ?? "Unauthorized." },
+        { status: 401 },
+      );
+    }
   }
 
   try {

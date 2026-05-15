@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import {
   COMPANY_CITY,
   COMPANY_NAME,
@@ -62,7 +64,7 @@ export default function AboutPage() {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
 
-      <main className="bg-[#FAFAF8] pb-24 md:pb-0">
+      <main className="bg-[#FAFAF8]">
         <section className="border-b border-slate-200 bg-white pb-14 pt-28 md:pt-36">
           <div className="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
             <div>
@@ -157,7 +159,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="border-y border-slate-200 bg-[#F1F0EE] py-12 md:py-16">
+        <section className="border-y border-slate-200 bg-[#FAFAF8] py-12 md:py-16">
           <div className="mx-auto max-w-7xl px-6">
             <p className="section-kicker">By the Numbers</p>
             <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -247,6 +249,10 @@ export default function AboutPage() {
               <Link href="/faq" className="font-semibold text-[#2563EB]">
                 View FAQ
               </Link>
+              {" • "}
+              <Link href="/careers" className="font-semibold text-[#2563EB]">
+                Careers
+              </Link>
             </div>
           </div>
         </section>
@@ -260,12 +266,12 @@ export default function AboutPage() {
             </p>
 
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href="/#quote-request" className="cta-gold min-h-[48px]">
+              <QuoteCTA ctaId="about_closing_quote" className="cta-gold min-h-[48px]">
                 Request a Quote
-              </Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/35 text-white hover:bg-white hover:text-[#0A1628]">
+              </QuoteCTA>
+              <CTAButton ctaId="about_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-light min-h-[48px]">
                 Call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
           </div>
         </section>

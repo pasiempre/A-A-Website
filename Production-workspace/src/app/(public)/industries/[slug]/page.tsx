@@ -3,6 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { AccordionFAQ } from "@/components/public/variant-a/AccordionFAQ";
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
 import { INDUSTRIES, type IndustryData } from "@/data/industries";
 import { SERVICES } from "@/data/services";
 import { COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
@@ -58,14 +61,6 @@ type IndustryPageContent = {
   conversionHeadline: string;
 };
 
-const SERVICE_LINK_BY_ANCHOR: Record<string, string> = {
-  "service-post-construction": "/services/post-construction-cleaning",
-  "service-final-clean": "/services/final-clean",
-  "service-commercial": "/services/commercial-cleaning",
-  "service-move": "/services/move-in-move-out-cleaning",
-  "service-windows": "/services/windows-power-wash",
-};
-
 const INDUSTRY_PAGE_CONTENT: Record<IndustrySlug, IndustryPageContent> = {
   "general-contractors": {
     title: "Post-Construction Cleaning for General Contractors | Austin TX",
@@ -117,8 +112,8 @@ const INDUSTRY_PAGE_CONTENT: Record<IndustrySlug, IndustryPageContent> = {
     socialProof: {
       quote:
         "A&A has been our go-to final-clean partner for closeout pressure jobs. They show up on schedule and deliver to walkthrough standard.",
-      name: "Marcus Torres",
-      role: "Project Manager, Top-Tier Construction",
+      name: "Project Manager",
+      role: "General Contractor, Austin TX",
       tag: "Post-Construction",
       stats: ["200+ closeouts on schedule", "Zero cleaning punch-list callbacks", "15+ years field experience"],
     },
@@ -203,8 +198,8 @@ const INDUSTRY_PAGE_CONTENT: Record<IndustrySlug, IndustryPageContent> = {
     socialProof: {
       quote:
         "We depend on unit-ready consistency, and A&A has helped us reduce turnover stress across active leasing cycles.",
-      name: "James Rodriguez",
-      role: "Operations Director, Prestige Developments",
+      name: "Operations Director",
+      role: "Property Management, Austin TX",
       tag: "Turnover Support",
       stats: ["48hr average turnaround", "Inspection-ready handoff focus", "Portfolio-scale scheduling support"],
     },
@@ -289,8 +284,8 @@ const INDUSTRY_PAGE_CONTENT: Record<IndustrySlug, IndustryPageContent> = {
     socialProof: {
       quote:
         "A&A keeps our occupied spaces presentation-ready without disrupting operations. Their consistency is exactly what we needed.",
-      name: "David Chen",
-      role: "Site Superintendent, BuildCo Partners",
+      name: "Site Superintendent",
+      role: "Commercial Operations, Austin TX",
       tag: "Commercial Build",
       stats: ["15+ active facilities weekly", "Off-hours capable crews", "Recurring and deep-clean support"],
     },
@@ -423,14 +418,25 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
     url: `${baseUrl}/industries/${industry.slug}`,
   };
 
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+      { "@type": "ListItem", position: 2, name: "Industries", item: `${baseUrl}/industries` },
+      { "@type": "ListItem", position: 3, name: industry.title, item: `${baseUrl}/industries/${industry.slug}` },
+    ],
+  };
+
   const relatedIndustries = INDUSTRIES.filter((item) => item.slug !== industry.slug).slice(0, 2);
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
 
-      <main className="bg-[#FAFAF8] pb-24 md:pb-0">
+      <main className="bg-[#FAFAF8]">
         <section className="relative overflow-hidden border-b border-slate-200 bg-[#0A1628] pb-16 pt-28 md:pt-36">
           <Image
             src={content.hero.image}
@@ -452,7 +458,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
                 </li>
                 <li aria-hidden="true">/</li>
                 <li>
-                  <Link href="/#industries" className="hover:text-white">Industries</Link>
+                  <Link href="/industries" className="hover:text-white">Industries</Link>
                 </li>
                 <li aria-hidden="true">/</li>
                 <li className="font-semibold text-white">{industry.title}</li>
@@ -464,18 +470,18 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-slate-200 md:text-lg">{content.hero.subtitle}</p>
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Link href={`/?serviceType=${defaultService}#quote-request`} className="cta-primary min-h-[48px]">
+              <QuoteCTA ctaId={`industry_${industry.slug}_hero_quote`} serviceType={defaultService} className="cta-primary min-h-[48px]">
                 Request a Quote
-              </Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/30 bg-white/5 text-white hover:bg-white hover:text-[#0A1628]">
+              </QuoteCTA>
+              <CTAButton ctaId={`industry_${industry.slug}_hero_call`} actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-light min-h-[48px]">
                 Call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
               <span className="info-chip-dark">Licensed &amp; Insured</span>
               <span className="info-chip-dark">Response Within 1 Hour</span>
-              <span className="info-chip-dark">Se Habla Espanol</span>
+              <span className="info-chip-dark">Se Habla Espa&ntilde;ol</span>
             </div>
 
             <div className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs text-slate-200">
@@ -536,7 +542,7 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
                     ))}
                   </div>
                   <Link
-                    href={SERVICE_LINK_BY_ANCHOR[service.anchor] ?? "/services"}
+                    href={service.href}
                     className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#2563EB]"
                   >
                     Learn more
@@ -550,7 +556,8 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
 
         <section className="bg-[#0A1628] py-12 md:py-16">
           <div className="mx-auto max-w-5xl px-6">
-            <p className="section-kicker !text-slate-300">Verified Results</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#C9A94E]">Verified Results</p>
+            <h2 className="sr-only">Social Proof and Verified Results</h2>
             <article className="dark-surface-panel mt-4 p-6 md:p-8">
               <div className="inline-flex rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-200">
                 {content.socialProof.tag}
@@ -637,18 +644,8 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
             <p className="section-kicker">Common Questions</p>
             <h2 className="mt-3 font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">Questions {industry.title} Ask</h2>
 
-            <div className="mt-6 space-y-3">
-              {content.faqs.map((item) => (
-                <details key={item.question} className="surface-panel group overflow-hidden">
-                  <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-[#0A1628] marker:content-none md:text-base">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="text-[#2563EB]">+</span>
-                      {item.question}
-                    </span>
-                  </summary>
-                  <p className="border-t border-slate-200 px-5 py-4 text-sm leading-relaxed text-slate-600">{item.answer}</p>
-                </details>
-              ))}
+            <div className="mt-6">
+              <AccordionFAQ items={content.faqs} />
             </div>
 
             <div className="mt-5 text-sm text-slate-600">
@@ -666,18 +663,18 @@ export default async function IndustryPage({ params }: { params: Promise<{ slug:
             </p>
 
             <div className="mt-7 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-              <Link href={`/?serviceType=${defaultService}#quote-request`} className="cta-gold min-h-[48px]">
+              <QuoteCTA ctaId={`industry_${industry.slug}_closing_quote`} serviceType={defaultService} className="cta-gold min-h-[48px]">
                 Request a Quote
-              </Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark min-h-[48px] border-white/35 text-white hover:bg-white hover:text-[#0A1628]">
+              </QuoteCTA>
+              <CTAButton ctaId={`industry_${industry.slug}_closing_call`} actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-light min-h-[48px]">
                 Call {COMPANY_PHONE}
-              </a>
+              </CTAButton>
             </div>
 
             <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
               <span className="info-chip-dark">Response Within 1 Hour</span>
               <span className="info-chip-dark">Licensed &amp; Insured</span>
-              <span className="info-chip-dark">Se Habla Espanol</span>
+              <span className="info-chip-dark">Se Habla Espa&ntilde;ol</span>
             </div>
 
             <div className="mt-8 text-sm text-slate-300">

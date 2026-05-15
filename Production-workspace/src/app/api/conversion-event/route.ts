@@ -8,7 +8,12 @@ type ConversionBody = {
 };
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as ConversionBody;
+  let body: ConversionBody;
+  try {
+    body = (await request.json()) as ConversionBody;
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
 
   if (!body.eventName) {
     return NextResponse.json({ error: "eventName is required" }, { status: 400 });
@@ -23,12 +28,16 @@ export async function POST(request: Request) {
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  await supabase.from("conversion_events").insert({
+  const { error } = await supabase.from("conversion_events").insert({
     event_name: body.eventName,
     page_path: typeof body.metadata?.pagePath === "string" ? body.metadata.pagePath : null,
     source: body.source ?? null,
     metadata: body.metadata ?? {},
   });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

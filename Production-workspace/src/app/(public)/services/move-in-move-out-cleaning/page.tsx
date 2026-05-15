@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
+import { SERVICES } from "@/data/services";
 import { COMPANY_CITY, COMPANY_NAME, COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
 import { SERVICE_FAQS } from "@/lib/service-faqs";
 import { getSiteUrl } from "@/lib/site";
@@ -76,7 +79,7 @@ export default function MoveInMoveOutCleaningPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify([serviceData, breadcrumbData, faqData]) }}
       />
 
-      <main id="main-content" className="bg-[#F1F0EE]">
+      <main id="main-content" className="bg-[#FAFAF8]">
         <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-6 pt-28 md:pt-32">
           <ol className="flex items-center gap-2 text-xs text-slate-500">
             <li><Link href="/" className="hover:text-[#0A1628]">Home</Link></li>
@@ -112,8 +115,8 @@ export default function MoveInMoveOutCleaningPage() {
               </ul>
 
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <Link href="/#quote-request" className="cta-primary px-8 py-4">Request a Quote</Link>
-                <a href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</a>
+                <QuoteCTA ctaId="move_in_out_hero_quote" serviceType="turnover" className="cta-primary px-8 py-4">Request a Quote</QuoteCTA>
+                <CTAButton ctaId="move_in_out_hero_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="cta-outline-dark px-8 py-4">Call {COMPANY_PHONE}</CTAButton>
               </div>
             </div>
 
@@ -154,13 +157,40 @@ export default function MoveInMoveOutCleaningPage() {
 
         <ServicePageHardening serviceType="turnover" />
 
+        <section className="border-t border-slate-200 bg-white py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-6">
+            <p className="section-kicker">Related Services</p>
+            <h2 className="mt-3 font-serif text-3xl tracking-tight text-[#0A1628] md:text-4xl">
+              Explore Other Services
+            </h2>
+            <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {SERVICES.filter((service) => service.href !== PAGE_PATH).slice(0, 3).map((service) => (
+                <Link
+                  key={service.anchor}
+                  href={service.href}
+                  className="surface-panel group p-5 transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2563EB]">{service.packageLabel}</p>
+                  <h3 className="mt-2 text-lg font-semibold text-[#0A1628] group-hover:text-[#2563EB]">
+                    {service.titleLines.join(" ")}
+                  </h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{service.description}</p>
+                  <span className="mt-4 inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-[#2563EB]">
+                    Learn more <span aria-hidden="true">&rarr;</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <section className="bg-[#0A1628] py-16 text-center md:py-20">
           <div className="mx-auto max-w-3xl px-6">
             <h2 className="font-serif text-3xl tracking-tight text-white md:text-4xl">Need faster move-in readiness across your units?</h2>
             <p className="mt-4 text-base font-light text-slate-300">Share your property type and timeline, and we&apos;ll align service quickly.</p>
             <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              <Link href="/#quote-request" className="cta-gold px-8 py-4">Get a Quote</Link>
-              <a href={`tel:${COMPANY_PHONE_E164}`} className="text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white">Or call {COMPANY_PHONE}</a>
+              <QuoteCTA ctaId="move_in_out_closing_quote" serviceType="turnover" className="cta-gold px-8 py-4">Get a Quote</QuoteCTA>
+              <CTAButton ctaId="move_in_out_closing_call" actionType="call" href={`tel:${COMPANY_PHONE_E164}`} className="min-h-0 text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white">Or call {COMPANY_PHONE}</CTAButton>
             </div>
           </div>
         </section>

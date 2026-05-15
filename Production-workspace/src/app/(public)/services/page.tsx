@@ -1,60 +1,201 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
+import { QuoteCTA } from "@/components/public/variant-a/QuoteCTA";
+import { SERVICES } from "@/data/services";
+import { COMPANY_PHONE, COMPANY_PHONE_E164 } from "@/lib/company";
+import { getSiteUrl } from "@/lib/site";
+
 export const metadata: Metadata = {
-  title: "Services",
+  title: "Cleaning Services | A&A Cleaning Austin TX",
   description:
-    "Explore A&A Cleaning services for post-construction final clean, builder turnover, recurring site care, and commercial presentation readiness.",
+    "Post-construction, final clean, commercial, turnover, and exterior cleaning services for Austin contractors, property managers, and commercial teams.",
   alternates: {
     canonical: "/services",
   },
+  openGraph: {
+    title: "Cleaning Services | A&A Cleaning Austin TX",
+    description:
+      "Post-construction, final clean, commercial, turnover, and exterior cleaning services for Austin contractors, property managers, and commercial teams.",
+    url: `${getSiteUrl()}/services`,
+    type: "website",
+  },
 };
 
-export default function ServicesPage() {
-  const services = [
-    {
-      title: "Builder Turnover",
-      description: "Fast, standards-driven turnover support for units, common areas, and final readiness before walkthrough.",
-    },
-    {
-      title: "Final Clean",
-      description: "Detail-heavy finish cleaning for glass, fixtures, millwork, and visible touchpoints where callbacks happen.",
-    },
-    {
-      title: "Recurring Site Care",
-      description: "Ongoing cleaning support for offices, model units, and light commercial environments that need consistency.",
-    },
-    {
-      title: "Vacant Unit Turnover",
-      description: "Apartment and property turns with dependable resets, scope clarity, and responsive scheduling.",
-    },
-    {
-      title: "Exterior Detail Upgrade",
-      description: "Windows, washdown, and exterior-facing finishing work when presentation matters at handoff.",
-    },
-  ];
+export default function ServicesIndexPage() {
+  const baseUrl = getSiteUrl();
+
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: baseUrl },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Services",
+            item: `${baseUrl}/services`,
+          },
+        ],
+      },
+      {
+        "@type": "ItemList",
+        name: "Cleaning Services",
+        numberOfItems: SERVICES.length,
+        itemListElement: SERVICES.map((service, index) => ({
+          "@type": "ListItem",
+          position: index + 1,
+          item: {
+            "@type": "Service",
+            name: service.titleLines.join(" "),
+            description: service.description,
+            url: `${baseUrl}${service.href}`,
+          },
+        })),
+      },
+    ],
+  };
 
   return (
-    <main className="min-h-screen bg-[#FAFAF8] px-6 py-12 md:px-10 md:py-16">
-      <div className="mx-auto max-w-5xl space-y-8">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Services</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-900 md:text-5xl">Scopes built for GC expectations, property turnover, and commercial upkeep.</h1>
-        </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
 
-        <div className="grid gap-5 md:grid-cols-2">
-          {services.map((service) => (
-            <article key={service.title} className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-slate-900">{service.title}</h2>
-              <p className="mt-3 text-sm leading-7 text-slate-600">{service.description}</p>
-            </article>
-          ))}
-        </div>
+      <main className="bg-[#FAFAF8]">
+        <section className="border-b border-slate-200 bg-white pb-14 pt-28 md:pt-36">
+          <div className="mx-auto max-w-7xl px-6">
+            <nav aria-label="Breadcrumb" className="mb-5">
+              <ol className="flex items-center gap-2 text-xs text-slate-500">
+                <li>
+                  <Link href="/" className="hover:text-[#0A1628]">
+                    Home
+                  </Link>
+                </li>
+                <li aria-hidden="true">/</li>
+                <li className="font-semibold text-[#0A1628]">Services</li>
+              </ol>
+            </nav>
 
-        <Link href="/" className="inline-flex rounded bg-slate-900 px-4 py-2.5 text-sm font-medium text-white">
-          Request a Quote
-        </Link>
-      </div>
-    </main>
+            <p className="section-kicker">Our Services</p>
+            <h1 className="mt-4 max-w-3xl font-serif text-4xl tracking-tight text-[#0A1628] md:text-5xl lg:text-6xl">
+              Scopes Built for Contractor Standards and Turnover Timelines
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg font-light leading-relaxed text-slate-600">
+              From post-construction closeouts to recurring commercial care, every service is structured
+              around schedule discipline, first-pass quality, and clear scope definitions.
+            </p>
+          </div>
+        </section>
+
+        <section className="py-16 md:py-24">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {SERVICES.map((service) => (
+                <Link
+                  key={service.anchor}
+                  href={service.href}
+                  className="surface-panel group flex h-full flex-col p-8 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#2563EB]">
+                    {service.packageLabel}
+                  </p>
+                  <h2 className="mt-2 font-serif text-2xl tracking-tight text-[#0A1628] group-hover:text-[#2563EB]">
+                    {service.titleLines.join(" ")}
+                  </h2>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                    {service.description}
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {service.bullets.map((bullet) => (
+                      <span key={bullet} className="info-chip text-slate-600">
+                        {bullet}
+                      </span>
+                    ))}
+                  </div>
+                  <span className="mt-auto inline-flex items-center gap-2 pt-5 text-xs font-semibold uppercase tracking-wide text-[#2563EB]">
+                    Learn more <span aria-hidden="true">→</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-slate-200 bg-white py-14 md:py-16">
+          <div className="mx-auto max-w-5xl px-6 text-center">
+            <p className="section-kicker">Keep Exploring</p>
+            <h2 className="mt-3 font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">
+              Find the Right Fit for Your Project
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-slate-600">
+              See how our services align with your industry, location, or project type.
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+              <Link
+                href="/industries/general-contractors"
+                className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]"
+              >
+                General Contractors
+              </Link>
+              <Link
+                href="/industries/property-managers"
+                className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]"
+              >
+                Property Managers
+              </Link>
+              <Link
+                href="/service-area"
+                className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]"
+              >
+                Service Area
+              </Link>
+              <Link
+                href="/faq"
+                className="surface-panel p-4 text-sm font-semibold text-[#0A1628] transition hover:-translate-y-0.5 hover:text-[#2563EB]"
+              >
+                FAQ
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-[#0A1628] py-14 text-center md:py-18">
+          <div className="mx-auto max-w-4xl px-6">
+            <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#C9A94E]">
+              Ready to Start?
+            </p>
+            <h2 className="mt-3 font-serif text-3xl tracking-tight text-white md:text-4xl">
+              Tell us about your project scope.
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-slate-300">
+              Share your timeline and service needs. We respond quickly with clear next steps.
+            </p>
+
+            <div className="mt-7 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <QuoteCTA
+                ctaId="services_index_closing_quote"
+                className="cta-gold min-h-[48px]"
+              >
+                Get a Quote
+              </QuoteCTA>
+              <CTAButton
+                ctaId="services_index_closing_call"
+                actionType="call"
+                href={`tel:${COMPANY_PHONE_E164}`}
+                className="min-h-0 text-sm font-semibold uppercase tracking-wide text-slate-300 transition hover:text-white"
+              >
+                Or call {COMPANY_PHONE}
+              </CTAButton>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
 }

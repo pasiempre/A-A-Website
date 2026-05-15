@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 import { AdminSidebarNav } from "@/components/admin/AdminSidebarNav";
+import { AdminModuleErrorBoundary } from "@/components/admin/AdminModuleErrorBoundary";
 import { ConfigurationClient } from "@/components/admin/ConfigurationClient";
 import { DispatchModule } from "@/components/admin/DispatchModule";
 import { HiringInboxClient } from "@/components/admin/HiringInboxClient";
@@ -16,6 +17,9 @@ import { SchedulingAndAvailabilityClient } from "@/components/admin/SchedulingAn
 import { TicketManagementClient } from "@/components/admin/TicketManagementClient";
 import { UnifiedInsightsClient } from "@/components/admin/UnifiedInsightsClient";
 import { AuthSignOutButton } from "@/components/ui/AuthSignOutButton";
+import { StatusAnnouncer } from "@/components/ui/StatusAnnouncer";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
+import { announceStatus } from "@/lib/status-announcer";
 
 export type ModuleId =
   | "overview"
@@ -50,7 +54,7 @@ const MODULE_META: Record<ModuleId, ModuleMeta> = {
   leads: {
     id: "leads",
     title: "Lead Pipeline",
-    subtitle: "New → Contacted → Quoted → Won/Lost lifecycle and quote actions.",
+    subtitle: "New → Contacted → Quoted → Converted/Lost lifecycle and quote actions.",
   },
   tickets: {
     id: "tickets",
@@ -104,12 +108,6 @@ function resolveInitialModule(paramValue: string | null): ModuleId {
   if (isModuleId(paramValue)) {
     return paramValue;
   }
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("aa_admin_active_module");
-    if (isModuleId(saved)) {
-      return saved;
-    }
-  }
   return "overview";
 }
 
@@ -123,17 +121,53 @@ export function AdminShell() {
   const paramModule = searchParams.get("module");
   const activeModule = isModuleId(paramModule) ? paramModule : activeModuleState;
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-    return localStorage.getItem("aa_admin_sidebar_collapsed") === "true";
-  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [moduleAnnouncement, setModuleAnnouncement] = useState("");
+  const mainContentRef = useRef<HTMLElement | null>(null);
+  const mobileNavRef = useRef<HTMLElement | null>(null);
+
+  useFocusTrap(mobileNavRef, mobileNavOpen);
+
+  useEffect(() => {
+    if (paramModule) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const saved = localStorage.getItem("aa_admin_active_module");
+      if (isModuleId(saved)) {
+        setActiveModuleState(saved);
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [paramModule]);
 
   useEffect(() => {
     localStorage.setItem("aa_admin_active_module", activeModule);
+  }, [activeModule]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setSidebarCollapsed(localStorage.getItem("aa_admin_sidebar_collapsed") === "true");
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      if (mainContentRef.current) {
+        mainContentRef.current.focus();
+      }
+      const nextMessage = `${MODULE_META[activeModule].title} loaded.`;
+      setModuleAnnouncement(nextMessage);
+      announceStatus(nextMessage);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, [activeModule]);
 
   useEffect(() => {
@@ -176,9 +210,25 @@ export function AdminShell() {
 
   return (
     <div className="flex min-h-screen">
+      <a
+        href="#admin-content"
+        className="sr-only left-4 top-4 z-[80] rounded bg-[#0A1628] px-3 py-2 text-sm font-medium text-white focus:not-sr-only focus:fixed"
+      >
+        Skip to admin content
+      </a>
+
+      <StatusAnnouncer />
+
+      <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {moduleAnnouncement}
+      </p>
+
       {mobileNavOpen && <div className="fixed inset-0 z-40 bg-black/30 md:hidden" onClick={() => setMobileNavOpen(false)} aria-hidden />}
 
       <aside
+        ref={mobileNavRef}
+        tabIndex={-1}
+        aria-label="Admin navigation"
         className={`
           fixed inset-y-0 left-0 z-50 flex flex-col border-r border-slate-200 bg-white
           transition-all duration-200 ease-in-out
@@ -200,7 +250,7 @@ export function AdminShell() {
           )}
           <button
             onClick={() => setSidebarCollapsed((prev) => !prev)}
-            className="hidden rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 md:block"
+            className="hidden min-h-[44px] min-w-[44px] rounded p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 md:block"
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             type="button"
           >
@@ -216,7 +266,7 @@ export function AdminShell() {
           </button>
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="rounded p-1.5 text-slate-400 hover:bg-slate-100 md:hidden"
+            className="min-h-[44px] min-w-[44px] rounded p-1.5 text-slate-400 hover:bg-slate-100 md:hidden"
             aria-label="Close navigation"
             type="button"
           >
@@ -237,7 +287,7 @@ export function AdminShell() {
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur-sm md:px-6">
           <button
             onClick={() => setMobileNavOpen(true)}
-            className="rounded p-1.5 text-slate-500 hover:bg-slate-100 md:hidden"
+            className="min-h-[44px] min-w-[44px] rounded p-1.5 text-slate-500 hover:bg-slate-100 md:hidden"
             aria-label="Open navigation"
             type="button"
           >
@@ -253,13 +303,20 @@ export function AdminShell() {
           </nav>
         </header>
 
-        <main className="flex-1 px-4 py-6 md:px-6 md:py-8">
+        <main
+          id="admin-content"
+          ref={mainContentRef}
+          tabIndex={-1}
+          className="flex-1 px-4 py-6 outline-none md:px-6 md:py-8"
+        >
           <div className="mb-6">
             <h1 className="text-2xl font-semibold tracking-tight text-slate-900 md:text-3xl">{meta.title}</h1>
             <p className="mt-1 text-sm text-slate-600">{meta.subtitle}</p>
           </div>
 
-          <ModuleContent moduleId={activeModule} onModuleSelect={navigateToModule} />
+          <AdminModuleErrorBoundary key={activeModule} onRetry={() => navigateToModule(activeModule)}>
+            <ModuleContent moduleId={activeModule} onModuleSelect={navigateToModule} />
+          </AdminModuleErrorBoundary>
         </main>
       </div>
     </div>

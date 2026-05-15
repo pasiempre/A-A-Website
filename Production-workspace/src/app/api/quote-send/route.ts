@@ -162,29 +162,34 @@ export async function POST(request: Request) {
     let emailed = false;
 
     if (lead.email) {
-      const emailResult = await sendEmailResilient({
-        to: lead.email,
-        subject: `${quoteNumber} from A&A Cleaning`,
-        html: buildQuoteEmailHtml({
-          recipientName: lead.name,
-          quoteNumber,
-          total,
-          scopeDescription: scopeDescription || lead.description || null,
-          shareUrl,
-          validUntil,
-        }),
-        attachments: [
-          {
-            filename: `${quoteNumber}.pdf`,
-            contentBase64: pdfBuffer.toString("base64"),
-          },
-        ],
-        tag: "quote-send",
-      });
+      if (!process.env.RESEND_API_KEY || !process.env.RESEND_FROM_EMAIL) {
+        deliveryStatus = "failed";
+        deliveryError = "Resend environment variables are not configured.";
+      } else {
+        const emailResult = await sendEmailResilient({
+          to: lead.email,
+          subject: `${quoteNumber} from A&A Cleaning`,
+          html: buildQuoteEmailHtml({
+            recipientName: lead.name,
+            quoteNumber,
+            total,
+            scopeDescription: scopeDescription || lead.description || null,
+            shareUrl,
+            validUntil,
+          }),
+          attachments: [
+            {
+              filename: `${quoteNumber}.pdf`,
+              contentBase64: pdfBuffer.toString("base64"),
+            },
+          ],
+          tag: "quote-send",
+        });
 
-      emailed = emailResult.success;
-      deliveryStatus = emailResult.success ? "sent" : "failed";
-      deliveryError = emailResult.success ? null : emailResult.error ?? "Quote email failed.";
+        emailed = emailResult.success;
+        deliveryStatus = emailResult.success ? "sent" : "failed";
+        deliveryError = emailResult.success ? null : emailResult.error ?? "Quote email failed.";
+      }
     }
 
     await supabase

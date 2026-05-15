@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import { trackConversionEvent } from "@/lib/analytics";
+import { useFocusTrap } from "@/hooks/useFocusTrap";
 
 type ChatMessage = {
   id: string;
@@ -57,6 +58,8 @@ export function AIQuoteAssistant() {
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const scrollAnchorRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useFocusTrap(assistantRef, isOpen);
 
   useEffect(() => {
     scrollAnchorRef.current?.scrollIntoView({ behavior: "smooth" });

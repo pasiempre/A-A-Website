@@ -8,6 +8,13 @@ type QuotePageProps = {
   params: Promise<{ token: string }>;
 };
 
+function normalizeRelation<T>(value: T | T[] | null | undefined): T | null {
+  if (Array.isArray(value)) {
+    return value[0] ?? null;
+  }
+  return value ?? null;
+}
+
 export default async function QuotePage({ params }: QuotePageProps) {
   const { token } = await params;
   const supabase = createAdminClient();
@@ -28,7 +35,7 @@ export default async function QuotePage({ params }: QuotePageProps) {
     await supabase.from("quotes").update({ viewed_at: new Date().toISOString() }).eq("id", quote.id);
   }
 
-  const lead = quote.leads?.[0] ?? null;
+  const lead = normalizeRelation(quote.leads);
   const lineItems = [...(quote.quote_line_items ?? [])].sort((a, b) => a.sort_order - b.sort_order);
 
   return (

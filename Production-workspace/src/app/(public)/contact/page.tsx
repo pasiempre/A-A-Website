@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { PublicPageShell } from "@/components/public/PublicPageShell";
+import { CTAButton } from "@/components/public/variant-a/CTAButton";
 import { ContactPageClient } from "./ContactPageClient";
 import {
   COMPANY_NAME,
@@ -10,10 +10,11 @@ import {
   COMPANY_PHONE,
   COMPANY_PHONE_E164,
 } from "@/lib/company";
+import { SERVICE_AREA_CITIES } from "@/lib/service-areas";
 import { getSiteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact Us",
+  title: "Contact Us | A&A Cleaning Austin TX",
   description: `Contact ${COMPANY_NAME} for post-construction, commercial, and turnover cleaning quotes in the Austin, TX metro area. Call, email, or submit a request online.`,
   alternates: { canonical: "/contact" },
   openGraph: {
@@ -64,7 +65,7 @@ const QUICK_FACTS = [
   },
   {
     title: "Coverage",
-    body: "Austin, Round Rock, Pflugerville, Georgetown, Hutto, Buda, Kyle, and San Marcos.",
+    body: "Austin, Round Rock, Pflugerville, Georgetown, Buda, Kyle, and San Marcos.",
     icon: "coverage" as const,
   },
   {
@@ -236,8 +237,7 @@ export default function ContactPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
 
-      <PublicPageShell>
-        <main className="pb-24 md:pb-0">
+      <main>
           <section className="relative overflow-hidden border-b border-slate-200 bg-[#0A1628] pb-20 pt-32 md:pb-24 md:pt-40">
             <div className="pointer-events-none absolute inset-0 opacity-[0.04]" aria-hidden="true">
               <div
@@ -353,6 +353,19 @@ export default function ContactPage() {
                     All fields marked with * are required.
                   </p>
 
+                  <div className="mt-5 rounded-2xl border border-slate-200 bg-white p-4">
+                    <p className="text-sm font-semibold text-[#0A1628]">Need Spanish support?</p>
+                    <p className="mt-1 text-sm text-slate-600">Nuestro equipo tambien atiende en Español por telefono.</p>
+                    <CTAButton
+                      ctaId="contact_spanish_call"
+                      actionType="call"
+                      href={`tel:${COMPANY_PHONE_E164}`}
+                      className="mt-3 cta-outline-dark"
+                    >
+                      Llamar En Español
+                    </CTAButton>
+                  </div>
+
                   <div className="mt-10">
                     <ContactPageClient serviceTypes={SERVICE_TYPES} />
                   </div>
@@ -415,7 +428,9 @@ export default function ContactPage() {
                       Our team is standing by during business hours. Call now and speak with someone who can
                       review your project scope.
                     </p>
-                    <a
+                    <CTAButton
+                      ctaId="contact_sidebar_call"
+                      actionType="call"
                       href={`tel:${COMPANY_PHONE_E164}`}
                       className="mt-4 inline-flex items-center gap-2 rounded-lg bg-[#C9A94E] px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#0A1628] transition-all duration-300 hover:bg-[#d4b85e] hover:shadow-lg hover:shadow-[#C9A94E]/20"
                     >
@@ -432,7 +447,7 @@ export default function ContactPage() {
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z" />
                       </svg>
                       Call {COMPANY_PHONE}
-                    </a>
+                    </CTAButton>
                   </div>
                 </div>
               </div>
@@ -453,16 +468,21 @@ export default function ContactPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {["Austin", "Round Rock", "Pflugerville", "Georgetown", "Hutto", "Buda", "Kyle", "San Marcos"].map(
-                    (city) => (
-                      <span
-                        key={city}
-                        className="rounded-full border border-slate-200 bg-[#FAFAF8] px-4 py-2 text-sm font-medium text-slate-600"
-                      >
-                        {city}
-                      </span>
-                    ),
-                  )}
+                  {[
+                    { name: "Austin", href: "/service-area" },
+                    ...SERVICE_AREA_CITIES.slice(0, 6).map((city) => ({
+                      name: city.name,
+                      href: `/service-area/${city.slug}`,
+                    })),
+                  ].map((city) => (
+                    <Link
+                      key={city.name}
+                      href={city.href}
+                      className="rounded-full border border-slate-200 bg-[#FAFAF8] px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-[#0A1628]"
+                    >
+                      {city.name}
+                    </Link>
+                  ))}
                 </div>
               </div>
 
@@ -482,7 +502,7 @@ export default function ContactPage() {
                     <path d="M4 10h12M12 6l4 4-4 4" />
                   </svg>
                 </Link>
-                <Link href="/#services" className="cta-outline-dark gap-2 px-6 py-3">
+                <Link href="/services" className="cta-outline-dark gap-2 px-6 py-3">
                   Explore Our Services
                   <svg
                     aria-hidden="true"
@@ -500,8 +520,7 @@ export default function ContactPage() {
               </div>
             </div>
           </section>
-        </main>
-      </PublicPageShell>
+      </main>
     </>
   );
 }

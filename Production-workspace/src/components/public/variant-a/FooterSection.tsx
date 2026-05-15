@@ -59,10 +59,10 @@ export function FooterSection() {
             {/* MOBILE-ELEVATION: H-7 — 2-column grid on mobile halves vertical footprint from ~280px to ~140px.
                 Desktop reverts to single column via md:grid-cols-1. */}
             <ul className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm md:grid-cols-1 md:gap-x-0">
-              <li><Link href="/#services" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Services</Link></li>
-              <li><Link href="/#industries" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Who We Serve</Link></li>
-              <li><Link href="/#about" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />About</Link></li>
-              <li><Link href="/#service-area" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Service Area</Link></li>
+              <li><Link href="/services" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Services</Link></li>
+              <li><Link href="/industries" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Who We Serve</Link></li>
+              <li><Link href="/about" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />About</Link></li>
+              <li><Link href="/service-area" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Service Area</Link></li>
               <li><Link href="/faq" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />FAQ</Link></li>
               <li><Link href="/contact" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Contact</Link></li>
               <li><Link href="/privacy" className="inline-flex items-center gap-2 transition hover:text-white"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#C9A94E]" />Privacy</Link></li>
@@ -88,8 +88,8 @@ export function FooterSection() {
           <div className="hidden md:block">
             <p className="mb-4 text-xs uppercase tracking-[0.2em] text-slate-400">Built For</p>
             <ul className="flex flex-wrap gap-2" aria-label="Target clients">
-              <li className="info-chip-dark">Contractors</li>
-              <li className="info-chip-dark">Property Teams</li>
+              <li className="info-chip-dark">General Contractors</li>
+              <li className="info-chip-dark">Property Managers</li>
               <li className="info-chip-dark">Commercial Spaces</li>
             </ul>
           </div>

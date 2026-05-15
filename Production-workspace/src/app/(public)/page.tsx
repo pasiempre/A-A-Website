@@ -4,26 +4,76 @@ import { getSiteUrl } from "@/lib/site";
 import { VariantAPublicPage } from "@/components/public/variant-a";
 
 export const metadata: Metadata = {
-  title: "Construction Cleaning and Turnover Support in Austin",
+  title: "Austin Construction Cleaning, Final Clean, and Turnover Services",
   description:
-    "A&A Cleaning supports Austin-area contractors, property teams, and commercial spaces with post-construction, turnover, and final clean services.",
+    "A&A Cleaning supports Austin-area contractors, property teams, and commercial spaces with post-construction, final clean, turnover, and recurring commercial cleaning services.",
+  keywords: [
+    "Austin construction cleaning",
+    "final clean Austin",
+    "post-construction cleaning",
+    "move out cleaning Austin",
+    "commercial cleaning Austin",
+    "A&A Cleaning",
+  ],
+  robots: {
+    index: true,
+    follow: true,
+  },
   alternates: {
     canonical: "/",
+    languages: {
+      "en-US": "/",
+      "x-default": "/",
+    },
   },
   openGraph: {
-    title: "A&A Cleaning | Construction Cleaning and Turnover Support",
+    title: "A&A Cleaning | Austin Construction Cleaning and Turnover Support",
     description:
       "Construction-ready cleaning for final walkthroughs, turnovers, and active commercial spaces across Austin.",
     url: getSiteUrl(),
+    siteName: COMPANY_NAME,
+    locale: "en_US",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "A&A Cleaning - Austin construction cleaning and turnover support",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "A&A Cleaning | Construction Cleaning and Turnover Support",
+    title: "A&A Cleaning | Austin Construction Cleaning and Turnover Support",
     description:
       "Construction-ready cleaning for final walkthroughs, turnovers, and active commercial spaces across Austin.",
+    images: ["/twitter-image"],
   },
 };
+
+const REVIEW_ITEMS = [
+  {
+    author: "Marcus Torres",
+    reviewBody:
+      "A&A Cleaning has been our go-to subcontractor for three years. Reliable, detail-oriented, and always on schedule.",
+  },
+  {
+    author: "David Chen",
+    reviewBody:
+      "They fundamentally understand the demands of commercial builds. We don't worry when they're on the schedule.",
+  },
+  {
+    author: "Sarah Mitchell",
+    reviewBody:
+      "From rough clean to final walk-through, their attention to detail is unmatched. The best sub we've worked with.",
+  },
+  {
+    author: "James Rodriguez",
+    reviewBody:
+      "Fast turnaround, professional crew, zero punch list items. A&A sets the standard for construction cleaning.",
+  },
+] as const;
 
 export default function PublicHomePage() {
   const baseUrl = getSiteUrl();
@@ -74,42 +124,17 @@ export default function PublicHomePage() {
         "@id": `${baseUrl}#aggregateRating`,
         itemReviewed: { "@id": `${baseUrl}#localbusiness` },
         ratingValue: "5.0",
-        reviewCount: "4",
+        reviewCount: String(REVIEW_ITEMS.length),
         bestRating: "5",
         worstRating: "1",
       },
-      {
+      ...REVIEW_ITEMS.map((review) => ({
         "@type": "Review",
         itemReviewed: { "@id": `${baseUrl}#localbusiness` },
-        author: { "@type": "Person", name: "Marcus Torres" },
+        author: { "@type": "Person", name: review.author },
         reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-        reviewBody:
-          "A&A Cleaning has been our go-to subcontractor for three years. Reliable, detail-oriented, and always on schedule.",
-      },
-      {
-        "@type": "Review",
-        itemReviewed: { "@id": `${baseUrl}#localbusiness` },
-        author: { "@type": "Person", name: "David Chen" },
-        reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-        reviewBody:
-          "They fundamentally understand the demands of commercial builds. We don't worry when they're on the schedule.",
-      },
-      {
-        "@type": "Review",
-        itemReviewed: { "@id": `${baseUrl}#localbusiness` },
-        author: { "@type": "Person", name: "Sarah Mitchell" },
-        reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-        reviewBody:
-          "From rough clean to final walk-through, their attention to detail is unmatched. The best sub we've worked with.",
-      },
-      {
-        "@type": "Review",
-        itemReviewed: { "@id": `${baseUrl}#localbusiness` },
-        author: { "@type": "Person", name: "James Rodriguez" },
-        reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
-        reviewBody:
-          "Fast turnaround, professional crew, zero punch list items. A&A sets the standard for construction cleaning.",
-      },
+        reviewBody: review.reviewBody,
+      })),
       ...[
         {
           name: "Post-Construction Cleaning",
