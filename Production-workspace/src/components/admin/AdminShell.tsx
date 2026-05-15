@@ -54,7 +54,7 @@ const MODULE_META: Record<ModuleId, ModuleMeta> = {
   leads: {
     id: "leads",
     title: "Lead Pipeline",
-    subtitle: "New → Contacted → Quoted → Won/Lost lifecycle and quote actions.",
+    subtitle: "New → Contacted → Quoted → Converted/Lost lifecycle and quote actions.",
   },
   tickets: {
     id: "tickets",
@@ -108,12 +108,6 @@ function resolveInitialModule(paramValue: string | null): ModuleId {
   if (isModuleId(paramValue)) {
     return paramValue;
   }
-  if (typeof window !== "undefined") {
-    const saved = localStorage.getItem("aa_admin_active_module");
-    if (isModuleId(saved)) {
-      return saved;
-    }
-  }
   return "overview";
 }
 
@@ -127,12 +121,7 @@ export function AdminShell() {
   const paramModule = searchParams.get("module");
   const activeModule = isModuleId(paramModule) ? paramModule : activeModuleState;
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
-    if (typeof window === "undefined") {
-      return false;
-    }
-    return localStorage.getItem("aa_admin_sidebar_collapsed") === "true";
-  });
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [moduleAnnouncement, setModuleAnnouncement] = useState("");
@@ -142,8 +131,31 @@ export function AdminShell() {
   useFocusTrap(mobileNavRef, mobileNavOpen);
 
   useEffect(() => {
+    if (paramModule) {
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const saved = localStorage.getItem("aa_admin_active_module");
+      if (isModuleId(saved)) {
+        setActiveModuleState(saved);
+      }
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [paramModule]);
+
+  useEffect(() => {
     localStorage.setItem("aa_admin_active_module", activeModule);
   }, [activeModule]);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setSidebarCollapsed(localStorage.getItem("aa_admin_sidebar_collapsed") === "true");
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {

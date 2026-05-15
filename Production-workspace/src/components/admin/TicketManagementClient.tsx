@@ -33,6 +33,7 @@ type ChecklistTemplate = {
 type JobRow = {
   id: string;
   title: string;
+  customer_name: string | null;
   address: string;
   clean_type: string;
   priority: string;
@@ -116,6 +117,7 @@ export function TicketManagementClient({
       const searchMatches =
         searchFilter.length === 0 ||
         job.title.toLowerCase().includes(searchFilter) ||
+        (job.customer_name ?? "").toLowerCase().includes(searchFilter) ||
         job.address.toLowerCase().includes(searchFilter) ||
         (job.scope ?? "").toLowerCase().includes(searchFilter);
 
@@ -136,7 +138,7 @@ export function TicketManagementClient({
       supabase
         .from("jobs")
         .select(
-          "id, title, address, clean_type, priority, status, qa_status, qa_notes, qa_reviewed_at, scope, areas, assigned_week_start, created_at, duplicate_source_job_id, job_assignments(employee_id, role, status, profiles:employee_id(full_name))",
+          "id, title, customer_name, address, clean_type, priority, status, qa_status, qa_notes, qa_reviewed_at, scope, areas, assigned_week_start, created_at, duplicate_source_job_id, job_assignments(employee_id, role, status, profiles:employee_id(full_name))",
         )
         .order("created_at", { ascending: false })
         .limit(100),
@@ -154,6 +156,7 @@ export function TicketManagementClient({
     } else {
       const nextJobs = (((jobsData as Omit<JobRow, "issue_reports">[]) ?? []).map((job) => ({
         ...job,
+        customer_name: job.customer_name ?? null,
         issue_reports: null,
       })) as JobRow[]);
       setJobs(nextJobs);
@@ -566,7 +569,10 @@ export function TicketManagementClient({
                       Select job
                     </label>
                   ) : null}
-                  <h3 className="text-base font-semibold text-slate-900">{job.title}</h3>
+                  <h3 className="text-base font-semibold text-slate-900">{job.customer_name || job.title}</h3>
+                  {job.customer_name && job.customer_name !== job.title ? (
+                    <p className="mt-1 text-xs text-slate-500">{job.title}</p>
+                  ) : null}
                   <p className="mt-1 text-sm text-slate-600">{job.address}</p>
                   <p className="mt-1 text-xs text-slate-500">
                     {formatCleanType(job.clean_type)} • {formatPriority(job.priority)}

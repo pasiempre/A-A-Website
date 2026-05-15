@@ -15,6 +15,7 @@ const PAGE_SIZE = 25;
 type DispatchJob = {
   id: string;
   title: string;
+  customer_name: string | null;
   address: string;
   status: string;
   priority: string;
@@ -78,7 +79,7 @@ export function DispatchModule() {
     let query = supabase
       .from("jobs")
       .select(
-        "id, title, address, status, priority, clean_type, assigned_to, assigned_week_start, created_at",
+        "id, title, customer_name, address, status, priority, clean_type, assigned_to, assigned_week_start, created_at",
         { count: "exact" },
       )
       .order("created_at", { ascending: false })
@@ -92,7 +93,7 @@ export function DispatchModule() {
     }
     if (filters.search.trim()) {
       const term = `%${filters.search.trim()}%`;
-      query = query.or(`title.ilike.${term},address.ilike.${term}`);
+      query = query.or(`title.ilike.${term},customer_name.ilike.${term},address.ilike.${term}`);
     }
 
     const { data, error, count } = await query;
@@ -202,7 +203,7 @@ export function DispatchModule() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate text-sm font-medium text-slate-900">
-                        {job.title}
+                        {job.customer_name || job.title}
                       </p>
                       <span
                         className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusColor(job.status)}`}
@@ -218,6 +219,7 @@ export function DispatchModule() {
                       )}
                     </div>
                     <p className="mt-0.5 truncate text-xs text-slate-500">
+                      {job.customer_name && job.customer_name !== job.title ? `${job.title} • ` : ""}
                       {job.address}
                     </p>
                     <div className="mt-1 flex flex-wrap gap-3 text-[11px] text-slate-400">

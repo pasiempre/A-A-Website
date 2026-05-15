@@ -13,10 +13,6 @@ import {
 // Startup env check: surfaces missing server configuration in runtime logs early.
 void validateServerEnvironment();
 
-// ============================================================
-// Helpers
-// ============================================================
-
 function getClientIp(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
   const realIp = request.headers.get("x-real-ip");
@@ -44,25 +40,19 @@ function buildLogEntry(
   };
 }
 
-// ============================================================
-// Middleware
-// ============================================================
-
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const startTime = Date.now();
   const { pathname } = request.nextUrl;
   const ip = getClientIp(request);
   const userAgent = request.headers.get("user-agent");
   const shared = { method: request.method, pathname, ip, userAgent, startTime };
 
-  // 1. Dev preview bypass
   if (isDevPreviewEnabled()) {
     const response = NextResponse.next({ request });
     applySecurityHeaders(response);
     return response;
   }
 
-  // 2. Rate limiting
   const rateCheck = await rateLimitByPath(ip, pathname);
   if (!rateCheck.allowed) {
     const response = rateLimitResponse(rateCheck);
@@ -71,7 +61,6 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  // 3. Auth evaluation
   const response = NextResponse.next({ request });
   const { context, redirect } = await evaluateAuth(request, response);
 
@@ -91,7 +80,6 @@ export async function middleware(request: NextRequest) {
     return redirect;
   }
 
-  // 4. Success path
   setRateLimitHeaders(response.headers, rateCheck);
   applySecurityHeaders(response);
   logRequest(
@@ -104,10 +92,6 @@ export async function middleware(request: NextRequest) {
 
   return response;
 }
-
-// ============================================================
-// Route matcher
-// ============================================================
 
 export const config = {
   matcher: [

@@ -26,7 +26,7 @@ type OverviewMetrics = {
   openIssues: number;
   resolvedIssues: number;
   newLeads: number;
-  wonLeads: number;
+  convertedLeads: number;
   quotedLeads: number;
   lostLeads: number;
   conversionRate: number;
@@ -438,7 +438,7 @@ export function UnifiedInsightsClient() {
       const qaReworked = jobs.filter((j) => j.qa_status === "needs_rework").length;
       const qaEligible = jobs.filter((j) => ["approved", "flagged", "needs_rework"].includes(j.qa_status)).length;
       const newLeads = leads.filter((l) => l.status === "new").length;
-      const wonLeads = leads.filter((l) => l.status === "won").length;
+      const convertedLeads = leads.filter((l) => l.status === "converted").length;
       const quotedLeads = leads.filter((l) => l.status === "quoted").length;
       const lostLeads = leads.filter((l) => l.status === "lost").length;
       const resolvedIssues = issues.filter((i) => i.status === "resolved").length;
@@ -500,10 +500,10 @@ export function UnifiedInsightsClient() {
         openIssues,
         resolvedIssues,
         newLeads,
-        wonLeads,
+        convertedLeads,
         quotedLeads,
         lostLeads,
-        conversionRate: leads.length > 0 ? Math.round((wonLeads / leads.length) * 100) : 0,
+        conversionRate: leads.length > 0 ? Math.round((convertedLeads / leads.length) * 100) : 0,
         revenueTotal: Number(latestSnapshot?.total_revenue ?? 0),
         outstandingTotal: Number(latestSnapshot?.outstanding_invoices ?? 0),
         overdueTotal: Number(latestSnapshot?.overdue_invoices ?? 0),
@@ -661,7 +661,7 @@ export function UnifiedInsightsClient() {
         rows.push(`qa_approval_rate,${metrics.qaApprovalRate}%`);
         rows.push(`open_issues,${metrics.openIssues}`);
         rows.push(`new_leads,${metrics.newLeads}`);
-        rows.push(`won_leads,${metrics.wonLeads}`);
+        rows.push(`converted_leads,${metrics.convertedLeads}`);
         rows.push(`conversion_rate,${metrics.conversionRate}%`);
         rows.push(`revenue_total,${metrics.revenueTotal}`);
         rows.push(`outstanding_total,${metrics.outstandingTotal}`);
@@ -858,7 +858,7 @@ export function UnifiedInsightsClient() {
             <MetricCard
               label="Lead Conversion"
               value={`${metrics.conversionRate}%`}
-              subtitle={`${metrics.wonLeads} won / ${metrics.quotedLeads} quoted / ${metrics.lostLeads} lost`}
+              subtitle={`${metrics.convertedLeads} converted / ${metrics.quotedLeads} quoted / ${metrics.lostLeads} lost`}
             />
             <MetricCard
               label="Outstanding"
@@ -1206,7 +1206,7 @@ export function UnifiedInsightsClient() {
 }
 
 function leadsTotal(m: OverviewMetrics): number {
-  return m.newLeads + m.wonLeads + m.quotedLeads + m.lostLeads;
+  return m.newLeads + m.convertedLeads + m.quotedLeads + m.lostLeads;
 }
 
 function applicationsTotal(m: OverviewMetrics): number {

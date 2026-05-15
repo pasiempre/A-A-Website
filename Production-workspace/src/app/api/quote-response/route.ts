@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 
     await supabase
       .from("leads")
-      .update({ status: response === "accept" ? "won" : "lost" })
+      .update({ status: response === "accept" ? "converted" : "lost" })
       .eq("id", quote.lead_id);
 
     return NextResponse.json({ success: true, status: nextStatus });

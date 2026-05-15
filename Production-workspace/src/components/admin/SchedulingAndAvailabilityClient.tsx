@@ -44,6 +44,7 @@ type JobAssignment = {
 type JobRow = {
   id: string;
   title: string;
+  customer_name: string | null;
   address: string;
   status: string;
   scheduled_start: string | null;
@@ -403,7 +404,7 @@ export function SchedulingAndAvailabilityClient() {
         supabase
           .from("jobs")
           .select(
-            "id, title, address, status, scheduled_start, scheduled_end, job_assignments(id, employee_id, role, status, profiles:employee_id(full_name))",
+            "id, title, customer_name, address, status, scheduled_start, scheduled_end, job_assignments(id, employee_id, role, status, profiles:employee_id(full_name))",
           )
           .in("status", ["scheduled", "en_route", "in_progress"])
           .order("scheduled_start", {
@@ -1018,7 +1019,7 @@ export function SchedulingAndAvailabilityClient() {
                                 minHeight: "28px",
                                 zIndex: 2,
                               }}
-                              title={`${job.title} — ${job.address}${
+                              title={`${job.customer_name || job.title} — ${job.address}${
                                 hasConflict ? ` ⚠ ${jobConflicts[0].reason}` : ""
                               }`}
                               draggable
@@ -1028,7 +1029,7 @@ export function SchedulingAndAvailabilityClient() {
                                 setSelectedJobId(selectedJobId === job.id ? null : job.id);
                               }}
                             >
-                              <p className="truncate font-semibold">{job.title}</p>
+                              <p className="truncate font-semibold">{job.customer_name || job.title}</p>
                               {hasConflict && (
                                 <p className="truncate text-[10px] font-medium text-red-600">
                                   ⚠ Conflict
@@ -1205,7 +1206,10 @@ export function SchedulingAndAvailabilityClient() {
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-semibold text-slate-900">{job.title}</p>
+                      <p className="text-sm font-semibold text-slate-900">{job.customer_name || job.title}</p>
+                      {job.customer_name && job.customer_name !== job.title ? (
+                        <p className="text-xs text-slate-500">{job.title}</p>
+                      ) : null}
                       <p className="text-xs text-slate-600">{job.address}</p>
                       <p className="mt-1 text-xs text-slate-500">
                         Lead: {currentLead?.profiles?.[0]?.full_name ?? "Unassigned"}
@@ -1286,4 +1290,3 @@ export function SchedulingAndAvailabilityClient() {
     </section>
   );
 }
-

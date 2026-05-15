@@ -287,9 +287,9 @@ export function OverviewDashboard({ onModuleSelect }: OverviewDashboardProps) {
       const yesterdayValue = 0;
 
       const weeklyLeads = ((weeklyLeadsResult.data || []) as Array<{ status: string }>);
-      const weeklyWonLeads = weeklyLeads.filter((lead) => lead.status === "won").length;
+      const weeklyConvertedLeads = weeklyLeads.filter((lead) => lead.status === "converted").length;
       const weeklyLeadConversion = weeklyLeads.length
-        ? Math.round((weeklyWonLeads / weeklyLeads.length) * 100)
+        ? Math.round((weeklyConvertedLeads / weeklyLeads.length) * 100)
         : 0;
 
       const weeklyQaJobs = ((weeklyQaJobsResult.data || []) as Array<{ qa_status: string | null }>);

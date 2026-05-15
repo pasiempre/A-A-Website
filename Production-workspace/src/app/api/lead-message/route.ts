@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { authorizeAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendSms } from "@/lib/notifications";
 
@@ -12,6 +13,11 @@ const TEMPLATES = {
 };
 
 export async function POST(request: Request) {
+  const auth = await authorizeAdmin();
+  if (!auth.ok) {
+    return NextResponse.json({ error: auth.error }, { status: auth.status });
+  }
+
   try {
     const { leadId, templateId } = await request.json();
     
@@ -39,7 +45,8 @@ export async function POST(request: Request) {
     // Send SMS
     const smsResult = await sendSms(lead.phone, message);
     if (!smsResult.sent) {
-      return NextResponse.json({ error: `SMS failed: ${smsResult.error}` }, { status: 500 });
+      const status = smsResult.errorCategory === "config" ? 503 : 502;
+      return NextResponse.json({ error: `SMS failed: ${smsResult.error}` }, { status });
     }
 
     // Update notes

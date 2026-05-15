@@ -58,7 +58,7 @@ export function guardIdempotency(
     }
     return {
       isDuplicate: false,
-      replay: NextResponse.json({}, { status: 204 }),
+      replay: new NextResponse(null, { status: 204 }),
     };
   }
 

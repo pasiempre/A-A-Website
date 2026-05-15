@@ -7,13 +7,11 @@ import { createClient } from "@/lib/supabase/client";
 
 type LeadStatus =
   | "new"
-  | "qualified"
   | "contacted"
-  | "site_visit_scheduled"
   | "quoted"
-  | "won"
+  | "converted"
   | "lost"
-  | "dormant";
+  | "followup";
 
 type EmployeeOption = {
   id: string;
@@ -90,13 +88,11 @@ type QuoteTemplateRow = {
 
 const statusColumns: { key: LeadStatus; label: string }[] = [
   { key: "new", label: "New" },
-  { key: "qualified", label: "Qualified" },
   { key: "contacted", label: "Contacted" },
-  { key: "site_visit_scheduled", label: "Visit Scheduled" },
   { key: "quoted", label: "Quoted" },
-  { key: "won", label: "Won" },
+  { key: "converted", label: "Converted" },
   { key: "lost", label: "Lost" },
-  { key: "dormant", label: "Dormant" },
+  { key: "followup", label: "Follow-up" },
 ];
 
 const defaultQuoteDraft: QuoteDraft = {
@@ -215,6 +211,7 @@ export function LeadPipelineClient() {
   const [jobDraftByLead, setJobDraftByLead] = useState<Record<string, JobDraft>>({});
   const [dispatchPresetByLead, setDispatchPresetByLead] = useState<Record<string, DispatchPreset>>({});
   const [busyEmployeeIdsByLead, setBusyEmployeeIdsByLead] = useState<Record<string, string[]>>({});
+  const [jobIdByQuoteId, setJobIdByQuoteId] = useState<Record<string, string>>({});
   const [isSavingQuoteForLead, setIsSavingQuoteForLead] = useState<string | null>(null);
   const [isConvertingLead, setIsConvertingLead] = useState<string | null>(null);
   const [isCreatingJobForLead, setIsCreatingJobForLead] = useState<string | null>(null);
@@ -347,20 +344,18 @@ export function LeadPipelineClient() {
   const leadsByStatus = useMemo(() => {
     const grouped: Record<LeadStatus, LeadRow[]> = {
       new: [],
-      qualified: [],
       contacted: [],
-      site_visit_scheduled: [],
       quoted: [],
-      won: [],
+      converted: [],
       lost: [],
-      dormant: [],
+      followup: [],
     };
 
     for (const lead of leads) {
       if (lead.status in grouped) {
         grouped[lead.status].push(lead);
       } else {
-        grouped.dormant.push(lead);
+        grouped.followup.push(lead);
       }
     }
 
@@ -473,7 +468,9 @@ export function LeadPipelineClient() {
 
       const successMessage = payload?.emailed
         ? `Quote ${payload.quoteNumber} emailed successfully.`
-        : `Quote ${payload?.quoteNumber} created. Share link: ${payload?.shareUrl}`;
+        : payload?.deliveryStatus === "failed" && payload.deliveryError
+          ? `Quote ${payload?.quoteNumber} created, but email delivery failed: ${payload.deliveryError}. Share link: ${payload?.shareUrl}`
+          : `Quote ${payload?.quoteNumber} created. Share link: ${payload?.shareUrl}`;
       setStatusText(successMessage);
       announceStatus(successMessage);
       setReviewQuoteLeadId(null);
@@ -519,7 +516,7 @@ export function LeadPipelineClient() {
 
       const { error: leadUpdateError } = await supabase
         .from("leads")
-        .update({ status: "won", converted_client_id: convertedClientId })
+        .update({ status: "converted", converted_client_id: convertedClientId })
         .eq("id", lead.id);
 
       if (leadUpdateError) {
@@ -527,8 +524,8 @@ export function LeadPipelineClient() {
         return;
       }
 
-      setStatusText("Lead converted to client and marked won.");
-      announceStatus("Lead converted to client and marked won.");
+      setStatusText("Lead converted to client.");
+      announceStatus("Lead converted to client.");
       await loadData();
     } catch (error) {
       setErrorText(error instanceof Error ? error.message : "Unable to convert lead.");
@@ -568,7 +565,13 @@ export function LeadPipelineClient() {
         return;
       }
 
-      const successMessage = payload?.existing ? "Job already existed for this quote." : "Job created from accepted quote.";
+      if (payload?.jobId) {
+        setJobIdByQuoteId((prev) => ({ ...prev, [quoteId]: payload.jobId! }));
+      }
+
+      const successMessage = payload?.existing
+        ? `Job already exists for this quote (${payload?.jobId ?? "id unavailable"}).`
+        : `Job created from accepted quote (${payload?.jobId ?? "id unavailable"}).`;
       setStatusText(successMessage);
       announceStatus(successMessage);
       setActiveJobLeadId(null);
@@ -679,6 +682,7 @@ export function LeadPipelineClient() {
                 const quoteDraft = quoteDraftByLead[lead.id] ?? defaultQuoteDraft;
                 const jobDraft = jobDraftByLead[lead.id] ?? defaultJobDraft;
                 const canCreateJob = latestQuote?.status === "accepted";
+                const createdJobId = latestQuote ? jobIdByQuoteId[latestQuote.id] : undefined;
                 const draftSubtotal = Number.parseFloat(quoteDraft.quantity || "0") * Number.parseFloat(quoteDraft.unitPrice || "0");
                 const matchingTemplates = quoteTemplates.filter((template) => template.service_type === lead.service_type);
                 const fallbackTemplates = quoteTemplates.filter((template) => template.service_type !== lead.service_type);
@@ -691,7 +695,12 @@ export function LeadPipelineClient() {
                   <div key={lead.id} className="rounded-md border border-slate-200 bg-white p-3">
                     <p className="text-sm font-semibold text-slate-900">{lead.company_name || lead.name}</p>
                     <p className="mt-1 text-xs text-slate-600">{lead.name}</p>
-                    <p className="mt-1 text-xs text-slate-600">{lead.phone}</p>
+                    <p className="mt-1 text-xs text-slate-600">Text: {lead.phone || "No phone on file"}</p>
+                    {lead.email ? (
+                      <p className="mt-1 break-all text-xs text-slate-600">Email: {lead.email}</p>
+                    ) : (
+                      <p className="mt-1 text-xs text-amber-700">No email on file. Quote will create a share link only.</p>
+                    )}
                     <p className="mt-1 text-[11px] uppercase tracking-wide text-slate-500">
                       {lead.service_type || "general"} • {timeAgo(lead.created_at)}
                     </p>
@@ -721,7 +730,7 @@ export function LeadPipelineClient() {
                         onChange={(e) => void sendQuickResponse(lead.id, e.target.value)}
                       >
                         <option value="" disabled>
-                          {isSendingMessage === lead.id ? "Sending..." : "Quick Response"}
+                          {isSendingMessage === lead.id ? "Sending text..." : "Text Response"}
                         </option>
                         <option value="awaiting_scope">Awaiting Scope</option>
                         <option value="quote_sent">Quote Sent</option>
@@ -734,13 +743,11 @@ export function LeadPipelineClient() {
                         onChange={(event) => void updateLeadStatus(lead.id, event.target.value as LeadStatus)}
                       >
                         <option value="new">New</option>
-                        <option value="qualified">Qualified</option>
                         <option value="contacted">Contacted</option>
-                        <option value="site_visit_scheduled">Site Visit Scheduled</option>
                         <option value="quoted">Quoted</option>
-                        <option value="won">Won</option>
+                        <option value="converted">Converted</option>
                         <option value="lost">Lost</option>
-                        <option value="dormant">Dormant</option>
+                        <option value="followup">Follow-up</option>
                       </select>
 
                       <button
@@ -764,7 +771,11 @@ export function LeadPipelineClient() {
                         {isConvertingLead === lead.id ? "Converting..." : "Convert to Client"}
                       </button>
 
-                      {canCreateJob ? (
+                      {createdJobId ? (
+                        <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+                          Job created: {createdJobId.slice(0, 8)}
+                        </div>
+                      ) : canCreateJob ? (
                         <button
                           type="button"
                           className="rounded-md border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800"
@@ -970,7 +981,13 @@ export function LeadPipelineClient() {
                                 disabled={isSavingQuoteForLead === lead.id}
                                 onClick={() => void createQuote(lead)}
                               >
-                                {isSavingQuoteForLead === lead.id ? "Sending..." : "Confirm & Send"}
+                                {isSavingQuoteForLead === lead.id
+                                  ? lead.email
+                                    ? "Emailing..."
+                                    : "Creating..."
+                                  : lead.email
+                                    ? "Create & Email Quote"
+                                    : "Create Share Link"}
                               </button>
                             </div>
                           </div>

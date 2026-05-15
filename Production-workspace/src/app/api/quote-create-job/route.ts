@@ -201,6 +201,7 @@ export async function POST(request: Request) {
         client_id: clientId,
         quote_id: quote.id,
         title,
+        customer_name: lead.company_name || lead.name,
         address: quote.site_address || "Address pending",
         contact_name: lead.name,
         contact_phone: lead.phone,
@@ -245,7 +246,7 @@ export async function POST(request: Request) {
 
     await supabase
       .from("leads")
-      .update({ status: "won", converted_client_id: clientId })
+      .update({ status: "converted", converted_client_id: clientId })
       .eq("id", lead.id);
 
     if (assignmentId) {

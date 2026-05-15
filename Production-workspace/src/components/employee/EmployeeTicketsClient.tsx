@@ -194,13 +194,14 @@ async function uploadCompletionAsset(options: {
 
   const { error: insertError } = await options.supabase.from("job_photos").insert({
     job_id: options.jobId,
-    employee_id: options.userId,
+    assignment_id: options.assignmentId,
+    uploaded_by: options.userId,
     storage_path: filePath,
-    photo_type: "completion",
-    notes: "Completion photo uploaded from employee portal",
-    taken_at: new Date().toISOString(),
-    latitude: position?.coords.latitude ?? null,
-    longitude: position?.coords.longitude ?? null,
+    file_name: options.file.name,
+    file_size: blob.size,
+    mime_type: "image/jpeg",
+    photo_type: "after",
+    caption: "Completion photo uploaded from employee portal",
   });
   if (insertError) throw new Error(insertError.message);
 
