@@ -14,35 +14,40 @@ const industries: IndustryBlock[] = INDUSTRIES;
 
 function ContractorIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 14h16" />
-      <path d="M5 14v-1a7 7 0 0 1 14 0v1" />
-      <path d="M12 3v4" />
-      <path d="M7.5 14v1.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V14" />
-      <path d="M9 20l2-2.5L13 20" />
+      <path d="M5.5 14v-1.8A6.5 6.5 0 0 1 12 5.7a6.5 6.5 0 0 1 6.5 6.5V14" />
+      <path d="M9 6.4V12" />
+      <path d="M15 6.4V12" />
+      <path d="M7 14.2v1.2A2.6 2.6 0 0 0 9.6 18h4.8a2.6 2.6 0 0 0 2.6-2.6v-1.2" />
+      <path d="M8.5 20h7" />
     </svg>
   );
 }
 
 function PropertyIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="8" cy="10" r="3" />
-      <path d="M11 10h8" />
-      <path d="M16 10v3" />
-      <path d="M19 10v3" />
-      <path d="M5 18h14" />
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7.5" cy="10.5" r="3.25" />
+      <path d="M10.75 10.5H20" />
+      <path d="M16 10.5v3" />
+      <path d="M19 10.5v2" />
+      <path d="M5 18.5h14" />
     </svg>
   );
 }
 
 function OfficeIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="4" width="16" height="16" rx="2" />
-      <path d="M9 8h2m4 0h-2" />
-      <path d="M9 12h2m4 0h-2" />
-      <path d="M10 16h4v4h-4z" />
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="5" y="3.5" width="14" height="17" rx="2" />
+      <path d="M9 8h1.5" />
+      <path d="M13.5 8H15" />
+      <path d="M9 12h1.5" />
+      <path d="M13.5 12H15" />
+      <path d="M9 16h1.5" />
+      <path d="M13.5 16H15" />
+      <path d="M11 20.5v-3h2v3" />
     </svg>
   );
 }
@@ -127,26 +132,33 @@ export function OfferAndIndustrySection() {
             return (
               <article
                 key={`mobile-${industry.title}`}
-                className="min-w-[86%] snap-center rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                className="group relative min-w-[86%] snap-center rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
               >
-                <div className="flex items-center gap-3">
-                  <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ${industry.accentIcon}`}>
-                    <IndustryIcon icon={industry.icon} />
+                <Link
+                  href={`/industries/${industrySlug}`}
+                  className="absolute inset-0 z-10 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9A94E]"
+                  aria-label={`View ${industry.title} industry page`}
+                />
+                <div className="pointer-events-none relative z-20">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ring-1 ${industry.accentIcon}`}>
+                      <IndustryIcon icon={industry.icon} />
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{industry.eyebrow}</p>
                   </div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">{industry.eyebrow}</p>
+                  <h3 className="mt-3 font-serif text-2xl leading-[1.15] tracking-tight text-[#0A1628]">{industry.title}</h3>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className="text-xl font-bold tracking-tight text-[#0A1628]">{industry.stat}</span>
+                    <span className="text-xs text-slate-600">{industry.statLabel}</span>
+                  </div>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-500">{industry.painPoint}</p>
+                  <p className="mt-3 text-sm leading-relaxed text-slate-700">{industry.outcome}</p>
+                  <div className="mt-4 border-t border-slate-100 pt-4">
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-500">Best suited for</p>
+                    <p className="mt-2 text-xs font-medium text-slate-600">{industry.fit.join(", ")}</p>
+                  </div>
                 </div>
-                <h3 className="mt-3 font-serif text-2xl leading-[1.15] tracking-tight text-[#0A1628]">{industry.title}</h3>
-                <div className="mt-3 flex items-baseline gap-2">
-                  <span className="text-xl font-bold tracking-tight text-[#0A1628]">{industry.stat}</span>
-                  <span className="text-xs text-slate-600">{industry.statLabel}</span>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-slate-500">{industry.painPoint}</p>
-                <p className="mt-3 text-sm leading-relaxed text-slate-700">{industry.outcome}</p>
-                <div className="mt-4 border-t border-slate-100 pt-4">
-                  <p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-slate-500">Best suited for</p>
-                  <p className="mt-2 text-xs font-medium text-slate-600">{industry.fit.join(", ")}</p>
-                </div>
-                <div className="mt-4 space-y-2">
+                <div className="relative z-30 mt-4 space-y-2">
                   <QuoteCTA
                     ctaId={`industry_${industrySlug}_discuss_project_mobile`}
                     serviceType={INDUSTRY_TO_SERVICE_TYPE[industrySlug]}
@@ -155,12 +167,6 @@ export function OfferAndIndustrySection() {
                     Discuss Your Project
                     <ArrowRight className="h-4 w-4" />
                   </QuoteCTA>
-                  <Link
-                    href={`/industries/${industrySlug}`}
-                    className="inline-flex w-full items-center justify-center rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600"
-                  >
-                    View Industry Page
-                  </Link>
                 </div>
               </article>
             );
@@ -190,6 +196,11 @@ export function OfferAndIndustrySection() {
               `}
               style={{ transitionDelay: isVisible ? `${index * 150}ms` : "0ms" }}
             >
+              <Link
+                href={`/industries/${industrySlug}`}
+                className="absolute inset-0 z-10 rounded-3xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#C9A94E]"
+                aria-label={`View ${industry.title} industry page`}
+              />
               <div
                 className={`absolute inset-x-0 top-0 h-44 bg-gradient-to-b ${industry.accent} transition-opacity duration-500 hidden md:block ${
                   hoveredIndex === index ? "opacity-100" : "opacity-70"
@@ -210,7 +221,7 @@ export function OfferAndIndustrySection() {
                 aria-hidden="true"
               />
 
-              <div className="relative flex flex-1 flex-col p-5 md:p-8 lg:p-9">
+              <div className="pointer-events-none relative z-20 flex flex-1 flex-col p-5 md:p-8 lg:p-9">
                 {/* MOBILE-HARDENING: mb-4→mb-3 for tighter icon/eyebrow row. md:mb-8 preserved. */}
                 <div className="mb-3 flex items-center gap-4 md:mb-8">
                   <div
@@ -284,7 +295,7 @@ export function OfferAndIndustrySection() {
                 </p>
 
                 {/* MOBILE-HARDENING: pt-5→pt-4 for tighter CTA spacing. md:pt-8 preserved. */}
-                <div className="mt-auto pt-4 md:pt-8">
+                <div className="pointer-events-auto relative z-30 mt-auto pt-4 md:pt-8">
                   <QuoteCTA
                     ctaId={`industry_${industrySlug}_discuss_project`}
                     serviceType={INDUSTRY_TO_SERVICE_TYPE[industrySlug]}
@@ -293,11 +304,6 @@ export function OfferAndIndustrySection() {
                     Discuss Your Project
                     <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                   </QuoteCTA>
-                  <div className="mt-3">
-                    <Link href={`/industries/${industrySlug}`} className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500 hover:text-[#0A1628]">
-                      View Industry Page
-                    </Link>
-                  </div>
                 </div>
               </div>
             </article>
