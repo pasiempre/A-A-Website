@@ -82,18 +82,13 @@ function ServiceSpreadItem({ service }: { service: ServiceItem }) {
         {/* MOBILE-HARDENING: Hide top image overlay badges on mobile — redundant with content area. */}
         <div className="pointer-events-none absolute inset-x-4 top-4 hidden items-start justify-between md:flex md:inset-x-8 md:top-8">
           <ul className="flex gap-2" aria-label={`${service.titleLines.join(" ")} badges`}>
-            <li className="info-chip-dark">{service.packageLabel}</li>
+            <li className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-[#081120]/70 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur-md">
+              {service.packageLabel}
+            </li>
           </ul>
-          <span className="rounded-full border border-white/20 bg-[#081120]/28 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur-md">
+          <span className="rounded-full border border-white/25 bg-[#081120]/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm backdrop-blur-md">
             {service.index}
           </span>
-        </div>
-        {/* MOBILE-HARDENING: Hide bottom image overlay on mobile — response promise is in content area on desktop panel. */}
-        <div className="pointer-events-none absolute inset-x-4 bottom-4 hidden md:block md:inset-x-8 md:bottom-8">
-          <div className="inline-flex items-center gap-3 rounded-full border border-white/12 bg-[#081120]/30 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-100 backdrop-blur-md">
-            <span className="h-2 w-2 rounded-full bg-[#C9A94E]" aria-hidden="true" />
-            {service.responsePromise}
-          </div>
         </div>
       </div>
       <div
