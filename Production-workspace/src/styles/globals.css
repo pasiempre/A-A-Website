@@ -75,6 +75,36 @@ body[data-mobile-menu-open="true"] .floating-widget {
   }
 }
 
+.testimonial-word-reveal {
+  animation: testimonialWordReveal 520ms ease-out forwards;
+}
+
+.testimonial-author-reveal {
+  animation: testimonialAuthorReveal 720ms ease-out 360ms both;
+}
+
+@keyframes testimonialWordReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes testimonialAuthorReveal {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .hero-bounce-subtle {
   animation: heroBounceSubtle 2s ease-in-out infinite;
 }

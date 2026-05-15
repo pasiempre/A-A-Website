@@ -85,7 +85,7 @@ export function TestimonialSection() {
     transitionTimerRef.current = window.setTimeout(() => {
       setActive(nextIndex);
       setIsTransitionVisible(true);
-    }, 180);
+    }, 260);
   }, [active, isReducedMotion]);
 
   useEffect(() => {
@@ -167,7 +167,7 @@ export function TestimonialSection() {
             This is the single most expected mobile interaction pattern for card carousels. */}
         <div
           key={testimonial.name}
-          className={`relative z-10 w-full max-w-5xl px-0 text-center transition-all duration-300 md:px-6 ${isTransitionVisible ? "translate-x-0 scale-100 opacity-100" : "translate-x-2 scale-95 opacity-0"}`}
+          className={`relative z-10 w-full max-w-5xl px-0 text-center transition-opacity duration-500 ease-in-out md:px-6 ${isTransitionVisible ? "opacity-100" : "opacity-0"}`}
           onTouchStart={(e) => {
             if (e.touches[0]) {
               touchStartX.current = e.touches[0].clientX;
@@ -198,11 +198,22 @@ export function TestimonialSection() {
             </div>
 
             <blockquote className="mx-auto max-w-4xl border-l-[3px] border-[#C9A94E] pl-4 text-left font-serif text-lg leading-[1.4] tracking-tight text-white md:pl-6 md:text-4xl md:leading-[1.35]">
-              <span className="block transition duration-700">{testimonial.quote}</span>
+              <span className="block" aria-label={testimonial.quote}>
+                {testimonial.quote.split(" ").map((word, idx) => (
+                  <span
+                    key={`${testimonial.name}-${word}-${idx}`}
+                    aria-hidden="true"
+                    className="testimonial-word-reveal inline-block opacity-0"
+                    style={{ animationDelay: `${idx * 45}ms` }}
+                  >
+                    {word}&nbsp;
+                  </span>
+                ))}
+              </span>
             </blockquote>
 
             {/* MOBILE-HARDENING: mt-6→mt-5 for tighter attribution spacing. md:mt-10 preserved. */}
-            <div className="mt-5 flex items-center justify-center gap-3 transition duration-700 md:mt-10 md:gap-4">
+            <div className="testimonial-author-reveal mt-5 flex items-center justify-center gap-3 md:mt-10 md:gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#C9A94E]/30 bg-[#1a2a44] font-serif text-sm text-[#C9A94E] md:h-12 md:w-12 md:text-base">
                 {testimonial.initials}
               </div>
