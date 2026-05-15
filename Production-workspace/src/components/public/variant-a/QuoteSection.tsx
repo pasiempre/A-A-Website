@@ -9,13 +9,7 @@ import { CTAButton } from "./CTAButton";
 import { useInViewOnce } from "./useInViewOnce";
 import { useQuoteForm } from "./useQuoteForm";
 
-const EXPECTATION_CHIPS = ["Direct contact", "Scope review"] as const;
-
-const EXPECTATION_ITEMS = [
-  { title: "What to expect", body: "Direct scope follow-up", icon: "response" as const },
-  { title: "Best fit", body: "Commercial + turnover work", icon: "scope" as const },
-  { title: "Approach", body: "Clear scope before scheduling", icon: "coverage" as const },
-] as const;
+const EXPECTATION_CHIPS = ["Fast response", "Quality work"] as const;
 
 function FloatingLabel({
   id,
@@ -39,32 +33,6 @@ function FloatingLabel({
   );
 }
 
-function QuoteSignalIcon({ kind }: { kind: "response" | "scope" | "coverage" }) {
-  if (kind === "response") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
-        <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-        <path d="M12 7.5v5l3 1.8" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-      </svg>
-    );
-  }
-
-  if (kind === "scope") {
-    return (
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
-        <path d="M6 5.5h12v13H6zM9 9h6M9 12.5h6M9 16h4" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-4 w-4">
-      <path d="M12 4.5 5.5 7.5v4.6c0 4.2 2.8 7.4 6.5 8.9 3.7-1.5 6.5-4.7 6.5-8.9V7.5L12 4.5Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-      <path d="m9.6 12.2 1.7 1.7 3.2-3.5" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-    </svg>
-  );
-}
-
 export function QuoteSection() {
   const fieldPrefix = useId().replace(/:/g, "");
   const { ref, isVisible } = useInViewOnce<HTMLElement>(0.2);
@@ -84,7 +52,8 @@ export function QuoteSection() {
             sizes="(max-width: 768px) 100vw, 50vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0A1628]/82 to-[#0A1628]/22" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#061120]/92 via-[#0A1628]/58 to-[#0A1628]/24" aria-hidden="true" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#061120]/52 via-[#061120]/18 to-transparent" aria-hidden="true" />
           <div className="absolute inset-0 opacity-[0.18]" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.14) 1px, transparent 1px)", backgroundSize: "34px 34px" }} />
           <div className={`absolute bottom-8 left-6 right-6 transition duration-700 md:bottom-12 md:left-12 md:right-12 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
             <ul className="mb-4 flex flex-wrap gap-2 md:mb-5" aria-label="Quote process highlights">
@@ -94,39 +63,12 @@ export function QuoteSection() {
                 </li>
               ))}
             </ul>
-            <h2 id="quote-heading" className="font-serif text-3xl tracking-tight text-white md:text-5xl lg:text-5xl">Let&apos;s Talk About Your Project</h2>
-            <CTAButton
-              ctaId="quote_section_call_now"
-              actionType="call"
-              href={`tel:${COMPANY_PHONE_E164}`}
-              className="mt-4 gap-3 text-base font-medium text-white transition hover:text-slate-200 md:mt-5 md:text-lg"
-            >
-              <span className="rounded-full border border-white/20 bg-white/8 px-3 py-1 text-[10px] uppercase tracking-[0.18em] text-slate-200">
-                Call
-              </span>
-              <span>Or call now: {COMPANY_PHONE}</span>
-            </CTAButton>
+            <h2 id="quote-heading" className="max-w-2xl font-serif text-3xl tracking-tight text-white drop-shadow-[0_3px_18px_rgba(2,6,23,0.72)] md:text-5xl lg:text-5xl">Let&apos;s Talk About Your Project</h2>
           </div>
         </div>
 
         <div className={`flex w-full items-center justify-center bg-[#FAFAF8] px-6 py-6 transition duration-700 md:w-[50%] md:p-14 lg:p-20 ${isVisible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
           <div className="w-full max-w-lg">
-            <div className="surface-panel mb-6 grid gap-3 p-4 md:mb-8 md:grid-cols-3">
-              {EXPECTATION_ITEMS.map((item, index) => (
-                <div key={item.title} className={index === 0 ? "" : "border-slate-200 md:border-l md:pl-4"}>
-                  <div className="flex items-center gap-3">
-                    <span className="icon-tile h-10 w-10 rounded-xl text-sm">
-                      <QuoteSignalIcon kind={item.icon} />
-                    </span>
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-slate-600">{item.title}</p>
-                      <p className="mt-1 text-sm text-slate-700">{item.body}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
             <h3 className="font-serif text-2xl tracking-tight text-[#0A1628] md:text-3xl">Request a Quote</h3>
             {/* MOBILE-ELEVATION: M-5 — font-normal on mobile for legibility, font-light on md+ */}
             <p className="mt-3 max-w-md font-normal leading-relaxed text-slate-600 md:font-light">
